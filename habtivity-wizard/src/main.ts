@@ -4,8 +4,8 @@ import vuetify from './plugins/vuetify';
 import VueTextareaAutosize from 'vue-textarea-autosize'
 
 // import firebase from "firebase"; // Not working
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { FirebaseApp, initializeApp } from "firebase/app";
+import { Firestore, getFirestore } from "firebase/firestore";
 
 Vue.use(VueTextareaAutosize)
 Vue.config.productionTip = false
@@ -23,8 +23,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+const app: FirebaseApp = initializeApp(firebaseConfig);
+export const db: Firestore = getFirestore(app);
 
 new Vue({
   vuetify,

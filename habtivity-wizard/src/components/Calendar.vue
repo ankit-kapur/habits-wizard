@@ -141,7 +141,7 @@
   </v-row>
   </template>
   
-  <script>
+  <script lang="ts">
   import { db } from '@/main'
   export default {
     data: () => ({
