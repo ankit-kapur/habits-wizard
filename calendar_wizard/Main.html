@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    
+    <title>CalWizard</title>
+
+    <style>
+      table,
+      th,
+      td {
+        table-layout: fixed;
+      }
+
+      th,
+      td {
+        padding: 5px;
+        vertical-align: top;
+      }
+
+      tr {
+        background-color: #f5f5f5;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      h2 {
+        font-size: 25px;
+      }
+
+      p {
+        font-size: 14px;
+      }
+
+      b {
+        font-size: 16px;
+      }
+
+      a {
+        font-size: 12px;
+      }
+
+      div {
+        font-size: 14px;
+        padding: 10px 20px 15px;
+      }
+
+      a[disabled],
+      a[disabled]:hover {
+        pointer-events: none;
+        color: #e1e1e1;
+      }
+
+      .formInputs {
+        width: 100%;
+      }
+
+      div.scroll {
+        height: 600px;
+        width: 300px;
+        overflow: auto;
+        border: 1px solid #666;
+        background-color: #ccc;
+        padding: 8px;
+      }
+
+      pre {
+        font-size: 10px;
+      }
+    </style>
+  </head>
+
+  <body style="font-family: arial">
+    <!-- Main heading -->
+    <h3>
+      <img
+        src="https://img.icons8.com/plasticine/400/google-calendar--v1.png"
+        alt="Forms API logo"
+        style="width: 40px; height: 40px"
+      />
+      Calendarrrr Wizard
+    </h3>
+
+    <!-- Call JS function to get Calendar events -->
+    <!-- See reference: https://developers.google.com/apps-script/guides/html/templates#index.html_3 -->
+    <? var eventsToday = getEventsForToday(); ?>
+
+    <table>
+      <? for (var i = 0; i < eventsToday.length; i++) { ?>
+        <tr>
+          <? for (var j = 0; j < eventsToday[i].length; j++) { ?>
+            <td><?= eventsToday[i][j] ?></td>
+          <? } ?>
+        </tr>
+      <? } ?>
+    </table>
+
+  </body>
+</html>

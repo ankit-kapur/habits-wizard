@@ -1,36 +1,32 @@
+// TODO: Instead of making a website here, use this as a service. 
+// APIs here talk to Calendar. My website just calls the APIs when needed. 
+
 function doGet(e) {
+  return HtmlService.createTemplateFromFile("Main").evaluate();
+}
 
-  // var params = JSON.stringify(e);
-  // return HtmlService.createHtmlOutput(params);
+function getEventsForToday() {
 
-    return ContentService.createTextOutput('Hello, world!');
+  const calendarId = "primary";
+  // const calendarId =
+  // "959b054ff7e3a5324ffef527bef9c8abb7070f3719787be57013b6b903f4c07c@group.calendar.google.com";
 
-  /*
-    TODO: Goal of this thing is to allow me to
-          see the day's events and update them.
+  // get the calendar
+  console.log("xxxxxx");
 
-    UX:
-    1. Shows today's events
-        * as rows. 1 event per row.
-        * (future: < and > buttons for other days)
-    2. 'Status' Button on each event
-        * status = deferred, done, failed, skipped, vacation.
-        * 
+  // Add query parameters in optionalArgs
+  const optionalArgs = {
+      timeMin: (new Date()).toISOString(),
+      showDeleted: false,
+      singleEvents: true,
+      maxResults: 10,
+      orderBy: 'startTime'
+      // use other optional query parameter here as needed.
+  };
 
-    How it works:
-    1. Reads from GoogleSheet. Filter by date.
-    2. Displays events of the day as rows.
-    3. Updates are written back to Sheets.
-    4. Other app will sync Sheets updates to Calendar.
-    
-    ..... or should this app DIRECTLY talk to Calendar?
-    maybe that's easier.
-  */
-
-
-  /* TODO: How does this tie to the other app?
-     The one that syncs Calendar <---> Sheet
-  */
+  const eventsList = Calendar.Events.list(calendarId, optionalArgs);
+  console.log(eventsList);
+  return eventsList;
 }
 
 // ---- (low priority) todo later
