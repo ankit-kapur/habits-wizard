@@ -1,32 +1,26 @@
 import Vue from 'vue'
-import App from './App.vue'
-import vuetify from './plugins/vuetify';
-import VueTextareaAutosize from 'vue-textarea-autosize'
+import HomeScreen from './components/HomeScreen.vue'
+import Vuetify from "vuetify";
+
+// import { TextareaAutosize } from 'vue-textarea-autosize'
+
+import { firebaseConfig } from '@/config/firebaseConfig'
 
 // import firebase from "firebase"; // Not working
-import { FirebaseApp, initializeApp } from "firebase/app";
+import * as firebase from "firebase/app";
 import { Firestore, getFirestore } from "firebase/firestore";
 
-Vue.use(VueTextareaAutosize)
+// Vue.use(TextareaAutosize)
+
 Vue.config.productionTip = false
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCr1L4ewSFFgbvso4AYnI4_qDq_cfvV6GY",
-  authDomain: "habtivity-wizard.firebaseapp.com",
-  projectId: "habtivity-wizard",
-  storageBucket: "habtivity-wizard.appspot.com",
-  messagingSenderId: "921143983666",
-  appId: "1:921143983666:web:cfd4a4fded065bf119062b",
-  measurementId: "G-F5KS9S441L"
-};
-
 // Initialize Firebase
-const app: FirebaseApp = initializeApp(firebaseConfig);
-export const db: Firestore = getFirestore(app);
+const firebaseApp: firebase.FirebaseApp = firebase.initializeApp(firebaseConfig);
+export const db: Firestore = getFirestore(firebaseApp);
 
+Vue.use(Vuetify)
 new Vue({
-  vuetify,
-  render: h => h(App)
+  render: h => h(HomeScreen)
 }).$mount('#app')
+
+/* tslint:disable */
