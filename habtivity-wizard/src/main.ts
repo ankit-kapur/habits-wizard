@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import HomeScreen from './components/HomeScreen.vue'
 import Vuetify from "vuetify";
+import VueFormulate from '@braid/vue-formulate'
 
 // import { TextareaAutosize } from 'vue-textarea-autosize'
 
@@ -17,6 +18,9 @@ Vue.config.productionTip = false
 // Initialize Firebase
 const firebaseApp: firebase.FirebaseApp = firebase.initializeApp(firebaseConfig);
 export const db: Firestore = getFirestore(firebaseApp);
+
+// For forms. See https://vueformulate.com/
+Vue.use(VueFormulate)
 
 Vue.use(Vuetify)
 new Vue({

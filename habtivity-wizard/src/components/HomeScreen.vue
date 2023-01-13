@@ -33,26 +33,6 @@
         <label> {{ area }} </label>
       </v-sheet>
 
-      <!-- Navigation bar @ bottom -->
-      <v-bottom-navigation v-model="currentBottomNavPage" :input-value="isBottomNavActive" color="indigo">
-        <v-btn>
-          <span>Recents</span>
-
-          <v-icon>mdi-history</v-icon>
-        </v-btn>
-
-        <v-btn>
-          <span>Favorites</span>
-
-          <v-icon>mdi-heart</v-icon>
-        </v-btn>
-
-        <v-btn>
-          <span>Nearby</span>
-
-          <v-icon>mdi-map-marker</v-icon>
-        </v-btn>
-      </v-bottom-navigation>
     </v-col>
   </v-row>
 </template>
@@ -68,12 +48,13 @@ export default defineComponent({
     activityTitle: "default title",
     area: "default area",
 
-    // Bottom nav
-    isBottomNavActive: true,
-    currentBottomNavPage: 1
   }),
   mounted() {},
   methods: {},
   computed: {},
 });
 </script>
+
+<style>
+  @import '@/assets/styles/somerandom.css';
+</style>
