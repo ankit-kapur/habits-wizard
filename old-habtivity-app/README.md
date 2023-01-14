@@ -16,6 +16,8 @@ npm run build
 ```
 
 ### Lints and fixes files
+To disable specific lint rules, go to `package.json` and add a rule under `eslintConfig`
+
 ```
 npm run lint
 ```

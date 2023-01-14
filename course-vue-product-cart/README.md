@@ -1,4 +1,4 @@
-# habtivity-wizard
+# product-and-cart
 
 ## Project setup
 ```
