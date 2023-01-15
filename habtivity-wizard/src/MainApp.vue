@@ -1,21 +1,118 @@
 <template>
-  <div id="app">
+  <v-card id="app" class="overflow-hidden">
     <v-app id="MainApp">
-      <v-navigation-drawer app>
-        <!-- -->
-      </v-navigation-drawer>
+      <v-app-bar app elevation="14">
+        <!-- Other props: shrink-on-scroll prominent -->
 
-      <v-app-bar app>
-        <!-- TODO: Make an app bar -->
+        <v-app-bar-nav-icon @click="openDrawer"></v-app-bar-nav-icon>
+        <v-toolbar-title>Lizard Wizard</v-toolbar-title>
+
+        <!-- Spaces out so icons on the top-right stay far -->
+        <v-spacer></v-spacer>
+
+        <template v-slot:extension>
+          <v-tabs align-with-title>
+            <v-tab>Tab 1</v-tab>
+            <v-tab>Tab 2</v-tab>
+            <v-tab>Tab 3</v-tab>
+          </v-tabs>
+        </template>
+
+        <v-menu bottom left>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item>
+              <v-list-item-title>Click Me 1</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <v-list-item-title>Click Me 2</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <v-list-item-title>Click Me 3</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <v-list-item-title>Click Me 4</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-app-bar>
+
+      <v-navigation-drawer v-model="isNavDrawerOpen" temporary absolute>
+        <!-- Fancier options: mini-variant expand-on-hover-->
+        <v-list nav dense>
+          <v-list-item-group
+            v-model="group"
+            active-class="deep-purple--text text--accent-4"
+          >
+            <v-list-item
+              v-for="route in routes"
+              :key="route.name"
+              link
+              @click="$router.push({ path: route.to })"
+            >
+              <v-list-item-icon>
+                <v-icon> {{ route.icon }} </v-icon>
+              </v-list-item-icon>
+
+              <v-list-item-title>
+                {{ route.name }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+      </v-navigation-drawer>
 
       <!-- Sizes your content based upon application components -->
       <v-main>
         <!-- Provides the application the proper gutter -->
         <v-container fluid>
+          <!-- Show the ACTUAL CONTENT on the current view -->
           <router-view />
         </v-container>
       </v-main>
+
+      <!-- SPEED DIAL -->
+      <v-speed-dial
+        v-model="expandFloatingActionButton"
+        :top="false"
+        :bottom="true"
+        :right="true"
+        :left="false"
+        :direction="`top`"
+        :open-on-hover="true"
+        :transition="`slide-y-reverse-transition`"
+      >
+        <!-- ACTIVATOR button for the fab-menu  -->
+        <template v-slot:activator>
+          <v-btn
+            v-model="expandFloatingActionButton"
+            color="blue darken-2"
+            dark
+            fab
+          >
+            <v-icon v-if="expandFloatingActionButton"> mdi-close </v-icon>
+            <v-icon v-else> mdi-plus </v-icon>
+          </v-btn>
+        </template>
+        <!-- Buttons that pop-up are down here -->
+        <v-btn fab dark small color="green">
+          <v-icon>mdi-pencil</v-icon>
+        </v-btn>
+        <v-btn fab dark small color="indigo">
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
+        <v-btn fab dark small color="red">
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
+      </v-speed-dial>
 
       <!-- BOTTOM NAV -->
       <v-bottom-navigation
@@ -37,7 +134,7 @@
       </v-bottom-navigation>
       <!-- End of BOTTOM -->
     </v-app>
-  </div>
+  </v-card>
 </template>
 
 <script lang="ts">
@@ -49,6 +146,8 @@ import { Component, Vue } from "vue-property-decorator";
 export default class MainApp extends Vue {
   // Data
   currentTabValue = 0;
+  isNavDrawerOpen = false;
+  expandFloatingActionButton = false;
 
   // Icons here: https://materialdesignicons.com/
   routes = [
@@ -65,6 +164,20 @@ export default class MainApp extends Vue {
   //     currentTab: 1
   //   }
   // }
+
+  openDrawer(): void {
+    console.log("Opening drawer");
+    this.isNavDrawerOpen = !this.isNavDrawerOpen;
+  }
+
+  get group(): number {
+    this.isNavDrawerOpen = false;
+    return this.currentTabValue;
+  }
+
+  set group(currTab: number) {
+    this.currentTabValue = currTab;
+  }
 
   get color(): string {
     console.log(
@@ -98,5 +211,6 @@ export default class MainApp extends Vue {
 </script>
 
 <style lang="scss">
-@import "@/assets/styles/normalize.scss";
+// TODO: Figure out styling.
+// @import "@/assets/styles/normalize.scss";
 </style>
