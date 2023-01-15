@@ -1,93 +1,102 @@
 <template>
   <div id="app">
-    <v-bottom-navigation v-model="currentTab" :background-color="color" dark shift>
-      <v-btn>
-        <span>Video</span>
+    <v-app id="MainApp">
+      <v-navigation-drawer app>
+        <!-- -->
+      </v-navigation-drawer>
 
-        <v-icon>mdi-television-play</v-icon>
-      </v-btn>
+      <v-app-bar app>
+        <!-- TODO: Make an app bar -->
+      </v-app-bar>
 
-      <v-btn>
-        <span>Music</span>
+      <!-- Sizes your content based upon application components -->
+      <v-main>
+        <!-- Provides the application the proper gutter -->
+        <v-container fluid>
+          <router-view />
+        </v-container>
+      </v-main>
 
-        <v-icon>mdi-music-note</v-icon>
-      </v-btn>
-
-      <v-btn>
-        <span>Book</span>
-
-        <v-icon>mdi-book</v-icon>
-      </v-btn>
-
-      <v-btn>
-        <span>Image</span>
-
-        <v-icon>mdi-image</v-icon>
-      </v-btn>
-    </v-bottom-navigation>
-
-    <!-- TODO: Replace this thing with BOTTOM NAV BAR from Vuetify -->
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </nav>
-    <router-view />
+      <!-- BOTTOM NAV -->
+      <v-bottom-navigation
+        v-model="currentTabValue"
+        :background-color="color"
+        shift
+      >
+        <v-btn
+          v-for="(route, key) in routes"
+          ref="link"
+          :key="'route' + key"
+          :to="route.to"
+          min-width="48"
+          min-height="30"
+        >
+          <span>{{ route.name }} </span>
+          <v-icon>{{ route.icon }}</v-icon>
+        </v-btn>
+      </v-bottom-navigation>
+      <!-- End of BOTTOM -->
+    </v-app>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue } from "vue-property-decorator";
 
 // See documentation on class-components:
 // 👉🏽 https://class-component.vuejs.org/guide/class-component.html#computed-properties
 @Component
 export default class MainApp extends Vue {
-
   // Data
-  currentTab = 1;
+  currentTabValue = 0;
 
-  data() {
-    return {
-      currentTab: 1
-    }
-  }
+  // Icons here: https://materialdesignicons.com/
+  routes = [
+    { name: "Home", to: "/", icon: "mdi-calendar-today" },
+    { name: "About", to: "/about", icon: "mdi-pine-tree" },
+    { name: "Third", to: "/third", icon: "mdi-baguette" },
+    { name: "Stats", to: "/fourth", icon: "mdi-gauge" },
+  ];
 
-  get color() {
-    switch (this.currentTab) {
+  // class property will not be reactive (i.e. the changes for the properties will not be detected). Use data() hook instead
+  // Not sure how to access the data elsewhere though.
+  // data() {
+  //   return {
+  //     currentTab: 1
+  //   }
+  // }
+
+  get color(): string {
+    console.log(
+      `inside COLOR fuinction. this.currentTabValue = ${this.currentTabValue}`
+    );
+
+    switch (this.currentTabValue) {
       case 0:
-        return 'blue-grey'
+        return "blue-grey";
       case 1:
-        return 'teal'
+        return "teal";
       case 2:
-        return 'brown'
+        return "brown";
       case 3:
-        return 'indigo'
+        return "indigo";
       default:
-        return 'blue-grey'
+        return "blue-grey";
     }
   }
+
+  // get currentTab(): number {
+  //   return this.currentTabValue;
+  // }
+  // set currentTab(value: number) {
+  //   // this.currentTabValue = value;
+  //   console.log(
+  //     `inside compute fuinction. this.currentTabValue = ${this.currentTabValue}. this.currentTab = ${this.currentTab}`
+  //   );
+  // }
 }
 </script>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
+@import "@/assets/styles/normalize.scss";
 </style>
