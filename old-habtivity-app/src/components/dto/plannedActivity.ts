@@ -14,7 +14,7 @@ export class PlannedActivity {
 
     // Plan
     private plannedStartTime: Timestamp;
-    private plannedEndTime: Timestamp;    
+    private plannedEndTime: Timestamp;
     private durationInSeconds: number;
 
     // Outcomes of the plan. 

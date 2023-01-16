@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import HabitCard from "@/components/HabitCard.vue"; // @ is an alias to /src
-import { useHabitStore } from "@/store/HabitState";
+import { useHabitsStore } from "@/store/HabitsStore";
 
 @Component({
   components: {
@@ -9,10 +9,10 @@ import { useHabitStore } from "@/store/HabitState";
   },
 })
 export default class HomeView extends Vue {
-  habitStore = useHabitStore();
+  habitsStore = useHabitsStore();
 
   mounted() {
-    this.habitStore.fillData();
+    this.habitsStore.fillData();
     // TODO: Load Things for today.
   }
 
@@ -27,7 +27,7 @@ export default class HomeView extends Vue {
     Morning
     <v-divider inset />
     <HabitCard
-      v-for="habit in habitStore.habitList"
+      v-for="habit in habitsStore.morningHabits()"
       :key="habit.id"
       :habit="habit"
     />
@@ -35,7 +35,7 @@ export default class HomeView extends Vue {
     Afternoon
     <v-divider inset />
     <HabitCard
-      v-for="habit in habitStore.habitList"
+      v-for="habit in habitsStore.afternoonHabits()"
       :key="habit.id"
       :habit="habit"
     />

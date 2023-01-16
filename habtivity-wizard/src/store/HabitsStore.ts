@@ -1,20 +1,14 @@
+import Habit from "@/pojo/HabitPojo";
 import { defineStore } from "pinia";
 
-export interface HabitPojo {
-  id: string;
-  title: string;
-  areaId: string;
-  categoryId: string;
-  plannedStartTime: string; // Change to date format
-  icon: string;
-  color: string;
-}
-
 export interface State {
-  habitList: HabitPojo[];
+  // TODO: Maybe change to DICTIONARY of habits?
+  // TODO: Hook this up with FIREBASE to see which one works better,
+  //       especially for UPDATES
+  habitList: Habit[];
 }
 
-export const useHabitStore = defineStore("HabitStore", {
+export const useHabitsStore = defineStore("HabitsStore", {
   // Initial state. TODO: Load from Firebase DB.
   state: (): State => {
     return {
@@ -30,6 +24,13 @@ export const useHabitStore = defineStore("HabitStore", {
     async fillData() {
       // TODO: Is this getting called automatically?
       this.habitList = (await import("@/assets/dummydata/habits.json")).default;
+    },
+    morningHabits(): Habit[] {
+      // TODO: Filter by time
+      return this.habitList.slice(0, 2);
+    },
+    afternoonHabits(): Habit[] {
+      return this.habitList.slice(2, 4);
     },
   },
 });

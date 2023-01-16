@@ -16,12 +16,12 @@
 </template>
 
 <script lang="ts">
-import { HabitPojo } from "@/store/HabitState";
+import Habit from "@/pojo/HabitPojo";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class HabitCardHomePage extends Vue {
   @Prop()
-  habit!: HabitPojo;
+  habit!: Habit;
 }
 </script>
