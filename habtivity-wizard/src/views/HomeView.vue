@@ -1,18 +1,43 @@
-<template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
-  </div>
-</template>
-
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
+import HabitCard from "@/components/HabitCard.vue"; // @ is an alias to /src
+import { useHabitStore } from "@/store/HabitState";
 
 @Component({
   components: {
-    HelloWorld,
+    HabitCard: HabitCard,
   },
 })
-export default class HomeView extends Vue {}
+export default class HomeView extends Vue {
+  habitStore = useHabitStore();
+
+  mounted() {
+    this.habitStore.fillData();
+    // TODO: Load Things for today.
+  }
+
+  getThingsForToday() {
+    // TODO: Query Firestore by date.
+  }
+}
 </script>
+
+<template>
+  <div class="home">
+    Morning
+    <v-divider inset />
+    <HabitCard
+      v-for="habit in habitStore.habitList"
+      :key="habit.id"
+      :habit="habit"
+    />
+
+    Afternoon
+    <v-divider inset />
+    <HabitCard
+      v-for="habit in habitStore.habitList"
+      :key="habit.id"
+      :habit="habit"
+    />
+  </div>
+</template>

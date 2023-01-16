@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "title": "Wake up early",
+    "areaId": "selfdiscipline",
+    "categoryId": "wakeUpEarly",
+    "plannedStartTime": "January 15, 2023 at 9:50:10 AM UTC-8",
+    "icon": "mdi-alarm-light",
+    "color": "#fcba03"
+  },
+  {
+    "id": "2",
+    "title": "Nap at noon",
+    "areaId": "lazyness",
+    "categoryId": "napping",
+    "plannedStartTime": "January 15, 2023 at 9:50:10 AM UTC-8",
+    "icon": "mdi-baguette",
+    "color": "#6ac5cc"
+  },
+  {
+    "id": "3",
+    "title": "Snack in the evening",
+    "areaId": "eating",
+    "categoryId": "wakeUpEarly",
+    "plannedStartTime": "January 15, 2023 at 9:50:10 AM UTC-8",
+    "icon": "mdi-baguette",
+    "color": "#afcc6a"
+  },
+  {
+    "id": "4",
+    "title": "Sleep early bro",
+    "areaId": "sleeping",
+    "categoryId": "wakeUpEarly",
+    "plannedStartTime": "January 15, 2023 at 9:50:10 AM UTC-8",
+    "icon": "mdi-sleep",
+    "color": "#ae8cde"
+  }
+]

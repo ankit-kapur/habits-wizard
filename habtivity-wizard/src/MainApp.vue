@@ -1,7 +1,7 @@
 <template>
   <v-card id="app" class="overflow-hidden">
     <v-app id="MainApp">
-      <v-app-bar app elevation="14">
+      <v-app-bar app elevation="0">
         <!-- Other props: shrink-on-scroll prominent -->
 
         <v-app-bar-nav-icon @click="openDrawer"></v-app-bar-nav-icon>
@@ -10,15 +10,11 @@
         <!-- Spaces out so icons on the top-right stay far -->
         <v-spacer></v-spacer>
 
-        <template v-slot:extension>
-          <v-tabs align-with-title>
-            <v-tab>Tab 1</v-tab>
-            <v-tab>Tab 2</v-tab>
-            <v-tab>Tab 3</v-tab>
-          </v-tabs>
-        </template>
+        <v-btn icon>
+          <v-icon>mdi-filter</v-icon>
+        </v-btn>
 
-        <v-menu bottom left>
+        <v-menu>
           <template v-slot:activator="{ on, attrs }">
             <v-btn icon v-bind="attrs" v-on="on">
               <v-icon>mdi-dots-vertical</v-icon>
@@ -118,7 +114,9 @@
       <v-bottom-navigation
         v-model="currentTabValue"
         :background-color="color"
-        shift
+        fixed
+        fluid
+        class="d-flex d-sm-none"
       >
         <v-btn
           v-for="(route, key) in routes"
@@ -151,7 +149,7 @@ export default class MainApp extends Vue {
 
   // Icons here: https://materialdesignicons.com/
   routes = [
-    { name: "Home", to: "/", icon: "mdi-calendar-today" },
+    { name: "Today", to: "/", icon: "mdi-calendar-today" },
     { name: "About", to: "/about", icon: "mdi-pine-tree" },
     { name: "Third", to: "/third", icon: "mdi-baguette" },
     { name: "Stats", to: "/fourth", icon: "mdi-gauge" },
