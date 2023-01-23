@@ -20,5 +20,6 @@ module.exports = {
     "padded-blocks": "off",
     quotes: "off",
     semi: "off",
+    "no-multiple-empty-lines": "off",
   },
 };

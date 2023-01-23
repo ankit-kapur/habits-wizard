@@ -1,36 +1,35 @@
-import Habit from "@/pojo/HabitPojo";
+import Thing from "@/model/pojo/main/Thing";
 import { defineStore } from "pinia";
 
 export interface State {
-  // TODO: Maybe change to DICTIONARY of habits?
-  // TODO: Hook this up with FIREBASE to see which one works better,
-  //       especially for UPDATES
-  habitList: Habit[];
+  // TODO: change to DICTIONARY
+  // TODO: Hook this up with FIREBASE to see potential CRUD issues
+  things: Thing[];
 }
 
 export const useHabitsStore = defineStore("HabitsStore", {
   // Initial state. TODO: Load from Firebase DB.
   state: (): State => {
     return {
-      habitList: [],
+      things: [],
     };
   },
   // Getters
   getters: {},
   actions: {
     nothingJustLog() {
-      console.log(this.habitList);
+      console.log(this.things);
     },
     async fillData() {
-      // TODO: Is this getting called automatically?
-      this.habitList = (await import("@/assets/dummydata/habits.json")).default;
+      // TODO: Fix JSON data to match schema
+      this.things = (await import("@/assets/dummydata/things.json")).default;
     },
-    morningHabits(): Habit[] {
+    morningHabits(): Thing[] {
       // TODO: Filter by time
-      return this.habitList.slice(0, 2);
+      return this.things.slice(0, 2);
     },
-    afternoonHabits(): Habit[] {
-      return this.habitList.slice(2, 4);
+    afternoonHabits(): Thing[] {
+      return this.things.slice(2, 4);
     },
   },
 });
