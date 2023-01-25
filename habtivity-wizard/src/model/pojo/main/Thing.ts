@@ -1,9 +1,5 @@
-import { Priority } from "../../enum/Priority";
-import { ThingType } from "../../enum/ThingType";
-import { TimeOfTheDay } from "../../enum/TimeOfTheDay";
 import DayGoalForThing from "../goal/DayGoalForThing";
 import Measurable from "../Measurable";
-import { DayOfTheWeek } from "../../enum/DayOfTheWeek";
 import { WeekGoalForThing } from "../goal/WeekGoalForThing";
 
 export default interface Thing {
@@ -13,42 +9,63 @@ export default interface Thing {
 
   // Categorization
   areaId: string;
-  type: ThingType;
-  priority: Priority;
+  type: string; // TODO: type = ThingType
+  priority: number; // map to Priority enum in store.
 
   // Decoration
-  icon?: string;
+  icon: string;
+
+  // TODO: Find a solution for using ENUMS in pojo,
+  // without needed the "as Type" thing in .json
 
   // Tracking
-  // By default, these Measurables should get auto-added.
-  //  - For Habits: Time
-  //  - For Activities: StartTime and Duration.
-  measurables: Map<string, Measurable>; // Key = measurableId
+  /**
+   * Default measurables for Activities:
+   * "StartTime" and "Duration" should get auto-added.
+   * For Habits, there can only be 1 measurable,
+   * and the user will define it.
+   * */
+  measurables: Measurable[];
   // typically just 1 per day. List for Things done multiple times a day.
-  weeklySchedule: Map<DayOfTheWeek, DaySchedule[]>;
-
+  weeklySchedule?: WeekSchedule;
   // Goals
   dayGoal?: DayGoalForThing;
-  weekGoal?: WeekGoalForThing;
-  // Archived goals. Ordered by date.
-  archivedDayGoals?: DayGoalForThing[];
-  archivedWeekGoals?: WeekGoalForThing[];
+  weekGoal?: WeekGoalForThing | null;
 
-  // Misc
-  isArchived: boolean;
+  // Archived
+  isArchived?: boolean | null; // should default to false
+  archivedDayGoals?: DayGoalForThing[] | null; // Ordered by date.
+  archivedWeekGoals?: WeekGoalForThing[] | null;
 
   // Future-fields
-  // defaultTags?: defaultTags[];
+  // defaultTags?: defaultTags[]; // Templates are better.
 
   // Non-fields. Here for clarification only.
   // color?: string; // Get from Area instead.
 }
 
 // TODO: Move out?
-export interface DaySchedule {
-  // Preferred time-segment of the day.
-  timeOfTheDay: TimeOfTheDay;
+export interface WeekSchedule {
+  // Which days are on the schedule,
+  // values for each day represent what time, and how long.
+  dailyScheduleList: DaySchedule[];
 
-  plannedStartTime?: Date;
-  plannedDurationInMinutes?: number;
+  // Applies to all days in the map (unless overridden in the map)
+  defaultDaySchedule: DaySchedule;
+}
+
+export interface DaySchedule {
+  // Which day this is for.
+  dayOfTheWeek: string; // TODO: type = DayOfTheWeek
+  // Usually just 1 time slot.
+  timeSlots?: TimeSlot[];
+}
+
+export interface TimeSlot {
+  // Time-segment of the day.
+  timeOfTheDay: string; // TODO: type = TimeOfTheDay
+  // When exactly
+  plannedStartTime?: string;
+  // How long
+  plannedDurationInMinutes?: number; // Activities only.
 }

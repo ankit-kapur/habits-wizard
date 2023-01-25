@@ -21,7 +21,6 @@ export const useHabitsStore = defineStore("HabitsStore", {
       console.log(this.things);
     },
     async fillData() {
-      // TODO: Fix JSON data to match schema
       this.things = (await import("@/assets/dummydata/things.json")).default;
     },
     morningHabits(): Thing[] {

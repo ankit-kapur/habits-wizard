@@ -7,4 +7,5 @@ export enum DayOfTheWeek {
   Friday,
   Saturday,
   Sunday,
+  NotApplicable,
 }

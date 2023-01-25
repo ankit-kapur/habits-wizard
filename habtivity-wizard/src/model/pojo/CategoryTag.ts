@@ -4,6 +4,6 @@ export default interface CategoryTag {
 
   // Display attributes
   title: string;
-  icon?: string;
+  icon?: string; // Maybe don't really need this. Too many icons.
   color?: string;
 }

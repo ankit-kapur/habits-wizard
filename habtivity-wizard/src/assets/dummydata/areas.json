@@ -1,5 +1,89 @@
 [
-    {
-        "areaId": ""
-    }
+  {
+    "id": "discipine",
+    "title": "Self-discipline",
+    "icon": "mdi-reminder",
+    "color": "#db863b",
+    "categoryTags": []
+  },
+  {
+    "id": "physical_health",
+    "title": "Physical Health",
+    "icon": "mdi-weight-lifter",
+    "color": "#277000",
+    "categoryTags": [
+      {
+        "id": "1",
+        "title": "Treadmill"
+      },
+      {
+        "id": "2",
+        "title": "Elliptical"
+      },
+      {
+        "id": "3",
+        "title": "Calesthenics"
+      },
+      {
+        "id": "4",
+        "title": "WeightTraining"
+      }
+    ]
+  },
+  {
+    "id": "mental_health",
+    "title": "Mental Health",
+    "icon": "mdi-meditation",
+    "color": "#3700B3",
+    "categoryTags": [
+      {
+        "id": "1",
+        "title": "Treadmill"
+      },
+      {
+        "id": "2",
+        "title": "Elliptical"
+      },
+      {
+        "id": "3",
+        "title": "Calesthenics"
+      },
+      {
+        "id": "4",
+        "title": "WeightTraining"
+      }
+    ]
+  },
+  {
+    "id": "creative_growth",
+    "title": "Creative Growth",
+    "icon": "mdi-palette",
+    "color": "#3700B3",
+    "categoryTags": [
+      {
+        "id": "1",
+        "title": "Guitar"
+      },
+      {
+        "id": "2",
+        "title": "Piano"
+      }
+    ]
+  },
+  {
+    "id": "creative_output",
+    "title": "Creative Output",
+    "icon": "mdi-brush-variant",
+    "color": "#a975d9",
+    "categoryTags": [
+      {
+        "id": "1",
+        "title": "Guitar"
+      },
+      {
+        "id": "2",
+        "title": "Piano"
+      }
+    ]
+  }
 ]

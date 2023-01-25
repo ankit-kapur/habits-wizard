@@ -1,4 +1,4 @@
 export enum ThingType {
-  Habit,
-  Activity,
+  Habit = "Habit",
+  Activity = "Activity",
 }

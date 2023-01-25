@@ -1,38 +1,49 @@
 [
   {
     "id": "1",
-    "title": "Wake up early",
-    "areaId": "selfdiscipline",
-    "categoryId": "wakeUpEarly",
-    "plannedStartTime": "January 15, 2023 at 9:50:10 AM UTC-8",
+    "title": "Early to bed",
+    "areaId": "discipline",
+    "type": "Habit",
+    "priority": 1,
     "icon": "mdi-alarm-light",
-    "color": "#fcba03"
-  },
-  {
-    "id": "2",
-    "title": "Nap at noon",
-    "areaId": "lazyness",
-    "categoryId": "napping",
-    "plannedStartTime": "January 15, 2023 at 9:50:10 AM UTC-8",
-    "icon": "mdi-baguette",
-    "color": "#6ac5cc"
-  },
-  {
-    "id": "3",
-    "title": "Snack in the evening",
-    "areaId": "eating",
-    "categoryId": "wakeUpEarly",
-    "plannedStartTime": "January 15, 2023 at 9:50:10 AM UTC-8",
-    "icon": "mdi-baguette",
-    "color": "#afcc6a"
-  },
-  {
-    "id": "4",
-    "title": "Sleep early bro",
-    "areaId": "sleeping",
-    "categoryId": "wakeUpEarly",
-    "plannedStartTime": "January 15, 2023 at 9:50:10 AM UTC-8",
-    "icon": "mdi-sleep",
-    "color": "#ae8cde"
+    "measurables": [
+      {
+        "id": "m1",
+        "title": "Bed-time",
+        "dataType": "Timestamp",
+        "unit": ""
+      }
+    ],
+    "dayGoal": {
+      "setOnDate": "Jan 24 2023 20:36:28 UTC-8",
+      "goalMeasureCondition": [{
+        "measurableId": "m1",
+        "dayGoalOperator": "LESS_THAN_EQUALS",
+        "dayGoalTargetValue": "22:15"
+      }],
+      "conditionalOperator": "AND"
+    },
+    "weekGoal": null,
+    "weeklySchedule": {
+      "dailyScheduleList": [
+        {"dayOfTheWeek": "Sunday"},
+        {"dayOfTheWeek": "Monday"},
+        {"dayOfTheWeek": "Tuesday"},
+        {"dayOfTheWeek": "Wednesday"},
+        {"dayOfTheWeek": "Thursday"}
+      ],
+      "defaultDaySchedule": {
+        "dayOfTheWeek": "NotApplicable",
+        "timeSlots": [{
+          "timeOfTheDay": "Bedtime",
+          "plannedStartTime": "22:00",
+          "plannedDurationInMinutes": 0
+        }]
+      }
+    },
+    "archivedDayGoals": [],
+    "archivedWeekGoals": [],
+    "isArchived": null
   }
+
 ]
