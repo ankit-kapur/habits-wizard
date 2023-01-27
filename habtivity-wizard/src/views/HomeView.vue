@@ -1,43 +1,42 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import HabitCard from "@/components/HabitCard.vue"; // @ is an alias to /src
-import { useHabitsStore } from "@/store/HabitsStore";
+import RecordedThingCard from "@/components/RecordedThingCard.vue"; // @ is an alias to /src
+import { useThingsStore } from "@/store/ThingsStore";
+import { useAreasStore } from "@/store/AreasStore";
+import { useRecordedThingsStore } from "@/store/RecordedThingsStore";
 
 @Component({
   components: {
-    HabitCard: HabitCard,
+    RecordedThingCard: RecordedThingCard,
   },
 })
 export default class HomeView extends Vue {
-  habitsStore = useHabitsStore();
+  thingsStore = useThingsStore();
+  areasStore = useAreasStore();
+  recordedThingsStore = useRecordedThingsStore();
 
   mounted() {
-    this.habitsStore.fillData();
-    // TODO: Load Things for today.
-  }
-
-  getThingsForToday() {
-    // TODO: Query Firestore by date.
+    this.thingsStore.loadData();
+    this.areasStore.loadData();
+    this.recordedThingsStore.loadData();
   }
 }
 </script>
 
 <template>
   <div class="home">
-    Morning
+    Now
     <v-divider inset />
-    <HabitCard
-      v-for="habit in habitsStore.morningHabits()"
-      :key="habit.id"
-      :habit="habit"
-    />
-
-    Afternoon
-    <v-divider inset />
-    <HabitCard
-      v-for="habit in habitsStore.afternoonHabits()"
-      :key="habit.id"
-      :habit="habit"
+    <RecordedThingCard
+      v-for="recordedThing in recordedThingsStore.getRecordedThingsByDay()"
+      :key="recordedThing.id"
+      :recordedThing="recordedThing"
+      :thing="thingsStore.getThingById(recordedThing.thingId)"
+      :area="areasStore.getAreaById(recordedThing.areaId)"
     />
   </div>
 </template>
+
+function useRecordedThingsStore() {
+  throw new Error("Function not implemented.");
+}

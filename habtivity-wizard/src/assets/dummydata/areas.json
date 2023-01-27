@@ -1,6 +1,6 @@
 [
   {
-    "id": "discipine",
+    "id": "discipline",
     "title": "Self-discipline",
     "icon": "mdi-reminder",
     "color": "#db863b",
@@ -38,19 +38,7 @@
     "categoryTags": [
       {
         "id": "1",
-        "title": "Treadmill"
-      },
-      {
-        "id": "2",
-        "title": "Elliptical"
-      },
-      {
-        "id": "3",
-        "title": "Calesthenics"
-      },
-      {
-        "id": "4",
-        "title": "WeightTraining"
+        "title": "Headspace"
       }
     ]
   },

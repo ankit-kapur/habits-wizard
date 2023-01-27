@@ -1,6 +1,6 @@
 [
   {
-    "id": "1",
+    "id": "thing_1",
     "title": "Early to bed",
     "areaId": "discipline",
     "type": "Habit",
@@ -44,6 +44,57 @@
     "archivedDayGoals": [],
     "archivedWeekGoals": [],
     "isArchived": null
+  },
+  {
+    "id": "thing_2",
+    "title": "Strength",
+    "areaId": "physical_health",
+    "type": "Activity",
+    "priority": 2,
+    "icon": "mdi-weight-kilogram",
+    "measurables": [
+      {
+        "id": "m1",
+        "title": "Duration",
+        "dataType": "DurationInMinutes",
+        "unit": ""
+      },
+      {
+        "id": "m2",
+        "title": "Start Time",
+        "dataType": "Timestamp",
+        "unit": ""
+      }
+    ],
+    "dayGoal": {
+      "setOnDate": "Jan 25 2023 19:22:33 UTC-8",
+      "goalMeasureCondition": [{
+        "measurableId": "m1",
+        "dayGoalOperator": "GREATER_THAN_EQUALS",
+        "dayGoalTargetValue": "30"
+      }],
+      "conditionalOperator": "AND"
+    },
+    "weekGoal": null,
+    "weeklySchedule": {
+      "dailyScheduleList": [
+        {"dayOfTheWeek": "Sunday"},
+        {"dayOfTheWeek": "Monday"},
+        {"dayOfTheWeek": "Tuesday"},
+        {"dayOfTheWeek": "Wednesday"},
+        {"dayOfTheWeek": "Thursday"}
+      ],
+      "defaultDaySchedule": {
+        "dayOfTheWeek": "NotApplicable",
+        "timeSlots": [{
+          "timeOfTheDay": "Bedtime",
+          "plannedStartTime": "22:00",
+          "plannedDurationInMinutes": 0
+        }]
+      }
+    },
+    "archivedDayGoals": [],
+    "archivedWeekGoals": [],
+    "isArchived": null
   }
-
 ]

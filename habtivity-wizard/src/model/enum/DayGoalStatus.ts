@@ -7,10 +7,11 @@ export enum DayGoalStatus {
   Exceeded, // If a STRETCH goal has been set.
 
   // Failed
-  Skipped,
   Partial,
+  Failed,
 
   // not failed. streak should continue
+  Skipped,
   SickDay,
   Vacation,
 }

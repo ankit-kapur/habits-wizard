@@ -1,7 +1,6 @@
-import CategoryTag from "../CategoryTag";
+import CategoryTag from "./CategoryTag";
 
-// TODO: Make AreasStore with DICTIONARY of Areas.
-export default interface Area {
+export interface Area {
   // Identifiers
   id: string;
   title: string;

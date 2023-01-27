@@ -1,8 +1,8 @@
 import DayGoalForThing from "../goal/DayGoalForThing";
-import Measurable from "../Measurable";
+import Measurable from "./Measurable";
 import { WeekGoalForThing } from "../goal/WeekGoalForThing";
 
-export default interface Thing {
+export interface Thing {
   // Identification
   id: string;
   title: string;
