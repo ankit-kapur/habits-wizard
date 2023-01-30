@@ -1,9 +1,12 @@
 <template>
-  <v-card :color="area.color" class="pa-md-4 mx-lg-auto">
+  <v-card
+    :color="area.color"
+    class="mx-auto px-auto"
+    max-width="450"
+    elevation="20"
+  >
     <v-card-title>
-      <v-icon large left>
-        {{ thing.icon }}
-      </v-icon>
+      <v-icon large left> {{ thing.icon }} </v-icon>
 
       <span class="text-h6 font-weight-light">
         {{ recordedThing.title }}

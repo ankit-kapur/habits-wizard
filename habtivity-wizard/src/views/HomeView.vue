@@ -24,8 +24,19 @@ export default class HomeView extends Vue {
 </script>
 
 <template>
-  <div class="home">
+  <div class="">
     Now
+    <v-divider inset />
+
+    <RecordedThingCard
+      v-for="recordedThing in recordedThingsStore.getRecordedThingsByDay()"
+      :key="recordedThing.id"
+      :recordedThing="recordedThing"
+      :thing="thingsStore.getThingById(recordedThing.thingId)"
+      :area="areasStore.getAreaById(recordedThing.areaId)"
+    />
+
+    <div class="mt-8">Next</div>
     <v-divider inset />
     <RecordedThingCard
       v-for="recordedThing in recordedThingsStore.getRecordedThingsByDay()"
@@ -36,7 +47,3 @@ export default class HomeView extends Vue {
     />
   </div>
 </template>
-
-function useRecordedThingsStore() {
-  throw new Error("Function not implemented.");
-}
