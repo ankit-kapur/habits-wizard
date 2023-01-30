@@ -3,14 +3,14 @@
     "id": "discipline",
     "title": "Self-discipline",
     "icon": "mdi-reminder",
-    "color": "#db863b",
+    "color": "#e6ab2c",
     "categoryTags": []
   },
   {
     "id": "physical_health",
     "title": "Physical Health",
     "icon": "mdi-weight-lifter",
-    "color": "#277000",
+    "color": "#85c983",
     "categoryTags": [
       {
         "id": "1",
@@ -46,7 +46,7 @@
     "id": "creative_growth",
     "title": "Creative Growth",
     "icon": "mdi-palette",
-    "color": "#3700B3",
+    "color": "#a278c2",
     "categoryTags": [
       {
         "id": "1",

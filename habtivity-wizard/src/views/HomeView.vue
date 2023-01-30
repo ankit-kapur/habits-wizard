@@ -38,12 +38,5 @@ export default class HomeView extends Vue {
 
     <div class="mt-8">Next</div>
     <v-divider inset />
-    <RecordedThingCard
-      v-for="recordedThing in recordedThingsStore.getRecordedThingsByDay()"
-      :key="recordedThing.id"
-      :recordedThing="recordedThing"
-      :thing="thingsStore.getThingById(recordedThing.thingId)"
-      :area="areasStore.getAreaById(recordedThing.areaId)"
-    />
   </div>
 </template>

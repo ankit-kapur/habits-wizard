@@ -2,7 +2,7 @@
   font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-//   display: flex;
+  //   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
   justify-content: left;
@@ -16,3 +16,55 @@
 #app .fill-height {
   align-items: flex-start;
 }
+
+/* BUTTONS */
+.discard-button {
+  padding: 0 3.2rem;
+  height: 50px;
+  text-align: center;
+  text-decoration: wavy;
+  font-size: 16px;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: #8c1212;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 3px 3px 0px rgb(176, 171, 171);
+}
+
+.discard-button:hover {
+  background-color: #a92b2b;
+}
+
+.discard-button:active {
+  box-shadow: 3px 3px 0px rgb(176, 171, 171);
+  transform: translateY(2px);
+}
+
+.confirm-button {
+    padding: 0 3.2rem;
+    height: 50px;
+    text-align: center;
+    text-decoration: wavy;
+    font-size: 16px;
+    text-transform: uppercase;
+    cursor: pointer;
+    background: #09551d;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 3px 3px 0px rgb(176, 171, 171);
+  }
+  
+  .confirm-button:hover {
+    background-color: #4aa92b;
+  }
+  
+  .confirm-button:active {
+    box-shadow: 3px 3px 0px rgb(176, 171, 171);
+    transform: translateY(2px);
+  }
+  

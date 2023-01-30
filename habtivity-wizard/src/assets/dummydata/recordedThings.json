@@ -11,5 +11,31 @@
     },
     "recordCreationTime": "Jan 26 2023 22:36:28 UTC-8",
     "recordLastUpdateTime": "Jan 26 2023 22:36:28 UTC-8"
+  },
+  {
+    "id": "rec_thing_2",
+    "thingId": "thing_2",
+    "areaId": "physical_health",
+    "title": "Lift weights",
+    "isAdHoc": true,
+    "dayGoalStatus": "Success",
+    "measurements": {
+      "m1": "22:15"
+    },
+    "recordCreationTime": "Jan 26 2023 22:36:28 UTC-8",
+    "recordLastUpdateTime": "Jan 26 2023 22:36:28 UTC-8"
+  },
+  {
+    "id": "rec_thing_3",
+    "thingId": "thing_3",
+    "areaId": "creative_growth",
+    "title": "Play Piano",
+    "isAdHoc": true,
+    "dayGoalStatus": "Success",
+    "measurements": {
+      "m1": "22:15"
+    },
+    "recordCreationTime": "Jan 26 2023 22:36:28 UTC-8",
+    "recordLastUpdateTime": "Jan 26 2023 22:36:28 UTC-8"
   }
 ]

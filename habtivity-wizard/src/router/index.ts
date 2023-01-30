@@ -24,7 +24,7 @@ const routes: Array<RouteConfig> = [
     component: ThirdView,
   },
   {
-    path: "/fourth",
+    path: "/record",
     name: "fourth",
     component: FourthView,
   },

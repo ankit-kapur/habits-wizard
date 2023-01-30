@@ -1,9 +1,10 @@
 <template>
   <v-card
     :color="area.color"
-    class="mx-auto px-auto"
+    class="mt-3 mx-auto px-auto"
     max-width="450"
     elevation="20"
+    @click="expandCard = !expandCard"
   >
     <v-card-title>
       <v-icon large left> {{ thing.icon }} </v-icon>
@@ -16,6 +17,24 @@
     <v-card-text class="text-sm-3 font-weight-light">
       {{ thing.areaId }}
     </v-card-text>
+
+    <v-expand-transition>
+      <div v-if="expandCard">
+        <v-card
+          class="transition-fast-in-fast-out v-card--reveal"
+          style="height: 100%"
+        >
+          <v-card-text class="pb-0">
+            <p>
+              late 16th century (as a noun denoting a place where alms were
+              distributed): from medieval Latin eleemosynarius, from late Latin
+              eleemosyna ‘alms’, from Greek eleēmosunē ‘compassion’
+            </p>
+          </v-card-text>
+          <v-card-actions class="pt-0"> </v-card-actions>
+        </v-card>
+      </div>
+    </v-expand-transition>
   </v-card>
 </template>
 
@@ -33,5 +52,7 @@ export default class RecordedThingCard extends Vue {
   thing!: Thing;
   @Prop()
   area!: Area;
+
+  expandCard = false;
 }
 </script>

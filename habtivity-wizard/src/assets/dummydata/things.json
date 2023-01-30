@@ -87,8 +87,60 @@
       "defaultDaySchedule": {
         "dayOfTheWeek": "NotApplicable",
         "timeSlots": [{
-          "timeOfTheDay": "Bedtime",
-          "plannedStartTime": "22:00",
+          "timeOfTheDay": "Evening",
+          "plannedStartTime": "18:00",
+          "plannedDurationInMinutes": 0
+        }]
+      }
+    },
+    "archivedDayGoals": [],
+    "archivedWeekGoals": [],
+    "isArchived": null
+  },
+  {
+    "id": "thing_3",
+    "title": "Play Piano",
+    "areaId": "creative_growth",
+    "type": "Activity",
+    "priority": 2,
+    "icon": "mdi-piano",
+    "measurables": [
+      {
+        "id": "m1",
+        "title": "Duration",
+        "dataType": "DurationInMinutes",
+        "unit": ""
+      },
+      {
+        "id": "m2",
+        "title": "Start Time",
+        "dataType": "Timestamp",
+        "unit": ""
+      }
+    ],
+    "dayGoal": {
+      "setOnDate": "Jan 25 2023 19:22:33 UTC-8",
+      "goalMeasureCondition": [{
+        "measurableId": "m1",
+        "dayGoalOperator": "GREATER_THAN_EQUALS",
+        "dayGoalTargetValue": "30"
+      }],
+      "conditionalOperator": "AND"
+    },
+    "weekGoal": null,
+    "weeklySchedule": {
+      "dailyScheduleList": [
+        {"dayOfTheWeek": "Sunday"},
+        {"dayOfTheWeek": "Monday"},
+        {"dayOfTheWeek": "Tuesday"},
+        {"dayOfTheWeek": "Wednesday"},
+        {"dayOfTheWeek": "Thursday"}
+      ],
+      "defaultDaySchedule": {
+        "dayOfTheWeek": "NotApplicable",
+        "timeSlots": [{
+          "timeOfTheDay": "Evening",
+          "plannedStartTime": "19:00",
           "plannedDurationInMinutes": 0
         }]
       }
