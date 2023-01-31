@@ -128,7 +128,7 @@
         </v-menu>
 
         <!-- TODO: Move out to a new component "RecordHabitDialog.vue" -->
-        <v-dialog v-model="showRecordingDialog" persistent max-width="600px">
+        <v-bottom-sheet v-model="showRecordingDialog" persistent>
           <template v-slot:activator="{ on, attrs }">
             <v-btn color="primary" dark v-bind="attrs" v-on="on">
               Open Dialog
@@ -338,7 +338,7 @@
               </v-btn>
             </v-card-actions>
           </v-card>
-        </v-dialog>
+        </v-bottom-sheet>
 
         <!-- CONFIRMATION dialog for discarding a recorded thing -->
         <v-dialog v-model="showDiscardConfirmationDialog" max-width="500px">
