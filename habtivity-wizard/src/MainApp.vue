@@ -54,42 +54,34 @@
       <!-- BOTTOM NAV -->
       <v-bottom-navigation
         v-model="currentTabValue"
-        :background-color="color"
+        :background-color="getColorOfBottomNavBar"
         fixed
         class=""
       >
         <!-- Home -->
-        <v-btn
-          ref="link"
-          key="homeButton"
-          to="/"
-          min-width="48"
-          min-height="30"
-        >
-          <span> Home </span>
-          <v-icon> mdi-home </v-icon>
+        <v-btn ref="link" to="/" min-width="38" min-height="30">
+          <span> Today </span>
+          <v-icon> mdi-rocket </v-icon>
+        </v-btn>
+
+        <v-btn ref="link" to="/calendarPage" min-width="38" min-height="30">
+          <span> Calendar </span>
+          <v-icon> mdi-calendar </v-icon>
+        </v-btn>
+
+        <v-btn ref="link" to="/progressPage" min-width="38" min-height="30">
+          <span> Progress </span>
+          <v-icon> mdi-progress-check </v-icon>
         </v-btn>
 
         <v-btn
           ref="link"
-          key="aboutButton"
-          to="/about"
-          min-width="48"
+          to="/configurationPage"
+          min-width="38"
           min-height="30"
         >
-          <span> About </span>
-          <v-icon> mdi-pine-tree </v-icon>
-        </v-btn>
-
-        <v-btn
-          ref="link"
-          key="thirdButton"
-          to="/third"
-          min-width="48"
-          min-height="30"
-        >
-          <span> Third </span>
-          <v-icon> mdi-baguette </v-icon>
+          <span> Settings </span>
+          <v-icon> mdi-account-cog-outline </v-icon>
         </v-btn>
 
         <!-- Record button, and it's popup menu -->
@@ -101,39 +93,47 @@
           offset-y
         >
           <v-list>
-            <v-list-item
-              v-for="(item, index) in recordingOptions"
-              :key="index"
-              :to="item.to"
-            >
+            <!-- TODO: Set different @click action -->
+            <v-list-item @click="showRecordingDialog = true">
               <v-list-item-icon>
-                <v-icon>{{ item.icon }}</v-icon>
+                <v-icon> mdi-fruit-cherries </v-icon>
               </v-list-item-icon>
-              <v-list-item-title>{{ item.name }}</v-list-item-title>
+              <v-list-item-title> Pomodoro </v-list-item-title>
+            </v-list-item>
+
+            <!-- TODO: Set different @click action -->
+            <v-list-item @click="showRecordingDialog = true">
+              <v-list-item-icon>
+                <v-icon> mdi-timer-play </v-icon>
+              </v-list-item-icon>
+              <v-list-item-title> Timer </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item @click="showRecordingDialog = true">
+              <v-list-item-icon>
+                <v-icon> mdi-location-enter </v-icon>
+              </v-list-item-icon>
+              <v-list-item-title> Enter </v-list-item-title>
             </v-list-item>
           </v-list>
           <template
             v-slot:activator="{ on: recordMenuOn, attrs: recordMenuAttrs }"
           >
             <v-btn
+              ref="link"
               v-bind="recordMenuAttrs"
               v-on="recordMenuOn"
-              min-width="48"
+              min-width="38"
               min-height="30"
             >
               <span> Record </span>
-              <v-icon> mdi-record </v-icon>
+              <v-icon> mdi-radiobox-marked </v-icon>
             </v-btn>
           </template>
         </v-menu>
 
-        <!-- TODO: Move out to a new component "RecordHabitDialog.vue" -->
+        <!-- TODO: Move out to a new component "RecordHabitBottomSheet.vue" -->
         <v-bottom-sheet v-model="showRecordingDialog" persistent>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn color="primary" dark v-bind="attrs" v-on="on">
-              Open Dialog
-            </v-btn>
-          </template>
           <v-card>
             <v-card-title>
               <span class="text-h6">Record a Thing</span>
@@ -435,20 +435,17 @@ export default class MainApp extends Vue {
     this.currentTabValue = currTab;
   }
 
-  get color(): string {
-    console.log(
-      `inside COLOR fuinction. this.currentTabValue = ${this.currentTabValue}`
-    );
-
+  // TODO: Just use 1 color from the theme.
+  get getColorOfBottomNavBar(): string {
     switch (this.currentTabValue) {
       case 0:
-        return "blue-grey";
+        return "indigo";
       case 1:
         return "teal";
       case 2:
         return "brown";
       case 3:
-        return "indigo";
+        return "blue-grey";
       default:
         return "blue-grey";
     }

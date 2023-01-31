@@ -1,5 +1,5 @@
 <template>
   <div class="about">
-    <h1>This is some 3rd view page</h1>
+    <h1>Progress page: placeholder</h1>
   </div>
 </template>

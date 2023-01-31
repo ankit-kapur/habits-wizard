@@ -1,32 +1,32 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import HomeView from "@/views/HomeView.vue";
-import AboutView from "@/views/AboutView.vue";
-import ThirdView from "@/views/SomeThirdView.vue";
-import FourthView from "@/views/SomeFourthView.vue";
+import HomePage from "@/views/HomePage.vue";
+import ProgressPage from "@/views/ProgressPage.vue";
+import CalendarPage from "@/views/CalendarPage.vue";
+import ConfigurationPage from "@/views/ConfigurationPage.vue";
 
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
+    name: "homePage",
+    component: HomePage,
   },
   {
-    path: "/about",
-    name: "about",
-    component: AboutView,
+    path: "/calendarPage",
+    name: "calendarPage",
+    component: CalendarPage,
   },
   {
-    path: "/third",
-    name: "third",
-    component: ThirdView,
+    path: "/progressPage",
+    name: "progressPage",
+    component: ProgressPage,
   },
   {
-    path: "/record",
-    name: "fourth",
-    component: FourthView,
+    path: "/configurationPage",
+    name: "configurationPage",
+    component: ConfigurationPage,
   },
 ];
 
