@@ -1,7 +1,7 @@
 [
   {
     "id": "rec_thing_1",
-    "thingId": "thing_1",
+    "thingId": "activity_1_early_to_bed",
     "areaId": "discipline",
     "title": "Early to bed",
     "isAdHoc": true,

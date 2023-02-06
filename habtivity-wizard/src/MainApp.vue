@@ -12,6 +12,11 @@
         <v-spacer></v-spacer>
 
         <!-- TOP-RIGHT icons -->
+        <v-btn icon @click="$router.push({ path: '/configurationPage' })">
+          <v-icon>mdi-cog-outline</v-icon>
+        </v-btn>
+
+        <!-- TODO: Filter @click should show/hide filters component -->
         <v-btn icon>
           <v-icon>mdi-filter</v-icon>
         </v-btn>
@@ -60,17 +65,17 @@
       >
         <!-- Home -->
         <v-btn ref="link" to="/" min-width="38" min-height="30">
-          <span> Today </span>
+          <span> Day </span>
           <v-icon> mdi-rocket </v-icon>
         </v-btn>
 
         <v-btn ref="link" to="/calendarPage" min-width="38" min-height="30">
-          <span> Calendar </span>
+          <span> Week </span>
           <v-icon> mdi-calendar </v-icon>
         </v-btn>
 
         <v-btn ref="link" to="/progressPage" min-width="38" min-height="30">
-          <span> Progress </span>
+          <span> Month </span>
           <v-icon> mdi-progress-check </v-icon>
         </v-btn>
 
@@ -80,7 +85,7 @@
           min-width="38"
           min-height="30"
         >
-          <span> Settings </span>
+          <span> Configure </span>
           <v-icon> mdi-account-cog-outline </v-icon>
         </v-btn>
 
@@ -260,20 +265,8 @@
                           </template>
                           <v-date-picker v-model="date" no-title scrollable>
                             <v-spacer></v-spacer>
-                            <v-btn
-                              text
-                              color="primary"
-                              @click="$refs.startMenu.isActive = false"
-                            >
-                              Cancel
-                            </v-btn>
-                            <v-btn
-                              text
-                              color="primary"
-                              @click="$refs.startMenu.save(date)"
-                            >
-                              OK
-                            </v-btn>
+                            <v-btn text color="primary"> Cancel </v-btn>
+                            <v-btn text color="primary"> OK </v-btn>
                           </v-date-picker>
                         </v-menu>
                       </v-col>
@@ -298,20 +291,8 @@
                           </template>
                           <v-date-picker v-model="date" no-title scrollable>
                             <v-spacer></v-spacer>
-                            <v-btn
-                              text
-                              color="primary"
-                              @click="$refs.endMenu.isActive = false"
-                            >
-                              Cancel
-                            </v-btn>
-                            <v-btn
-                              text
-                              color="primary"
-                              @click="$refs.endMenu.save(date)"
-                            >
-                              OK
-                            </v-btn>
+                            <v-btn text color="primary"> Cancel </v-btn>
+                            <v-btn text color="primary"> OK </v-btn>
                           </v-date-picker>
                         </v-menu>
                       </v-col>
@@ -375,7 +356,8 @@ import { Component, Vue } from "vue-property-decorator";
 // 👉🏽 https://class-component.vuejs.org/guide/class-component.html#computed-properties
 @Component
 export default class MainApp extends Vue {
-  // Data
+  //
+  // ------------------------ Data
   currentTabValue = 0;
   isNavDrawerOpen = false;
   expandFloatingActionButton = false;
@@ -406,6 +388,8 @@ export default class MainApp extends Vue {
     { name: "Pomodoro", to: "/pomodoro", icon: "mdi-fruit-cherries" },
     { name: "Start activity", to: "/third", icon: "mdi-play-outline" },
   ];
+
+  // ------------------------------------------------ Methods
 
   // TODO: Move to dialog-box component
   saveRecordedThing(): void {

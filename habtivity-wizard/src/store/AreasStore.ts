@@ -1,4 +1,4 @@
-import { Area } from "@/model/pojo/main/Area";
+import { Area } from "@/model/pojo/definitions/Area";
 import { defineStore } from "pinia";
 
 interface State {
@@ -27,6 +27,16 @@ export const useAreasStore = defineStore("AreasStore", {
     },
     getAreaById(areaId: string): Area {
       return this.areas[areaId];
+    },
+    getAreasList(): Area[] {
+      console.log("Gettings list of Areas from the Store");
+      return Object.values(this.areas);
+    },
+
+    // -------------------------------------------- Save
+    saveArea(area: Area) {
+      console.log("Saving area to store: " + JSON.stringify(area));
+      this.areas[area.id] = area;
     },
   },
 });

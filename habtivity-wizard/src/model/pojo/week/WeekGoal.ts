@@ -1,7 +1,7 @@
 import { ComparisonOperator } from "@/model/enum/ComparisonOperator";
 import { ConditionalOperator } from "@/model/enum/ConditionalOperator";
 
-export interface WeekGoalForThing {
+export interface WeekGoal {
   // Metadata
   setOnDate: Date;
 

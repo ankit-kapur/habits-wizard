@@ -5,8 +5,9 @@ export default interface Measurable {
 
   // Types
   dataType: string; // TODO: type = MeasurableType
-  // only used for display, not calculations.
-  // only relevant for Number types actually.
+
+  // TODO: Change to 'unitId'. Unit definition should exist in Area.
+  // Note: Units are only used for display, not calculations.
   unit?: string;
 
   // Future fields

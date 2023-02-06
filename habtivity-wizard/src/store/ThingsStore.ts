@@ -1,9 +1,9 @@
-import { Thing } from "@/model/pojo/main/Thing";
+import { Activity } from "@/model/pojo/definitions/Activity";
 import { defineStore } from "pinia";
 
 interface State {
   // Key = thingId
-  things: Record<string, Thing>;
+  things: Record<string, Activity>;
 }
 
 export const useThingsStore = defineStore("ThingsStore", {
@@ -18,7 +18,7 @@ export const useThingsStore = defineStore("ThingsStore", {
   getters: {},
   actions: {
     async loadData() {
-      const thingsList: Thing[] = (
+      const thingsList: Activity[] = (
         await import("@/assets/dummydata/things.json")
       ).default;
       console.log("loaded things.json");
@@ -27,7 +27,7 @@ export const useThingsStore = defineStore("ThingsStore", {
         this.things[thing.id] = thing;
       }
     },
-    getThingById(thingId: string): Thing {
+    getThingById(thingId: string): Activity {
       return this.things[thingId];
     },
   },

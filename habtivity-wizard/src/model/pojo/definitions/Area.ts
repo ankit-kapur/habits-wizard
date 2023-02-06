@@ -1,4 +1,4 @@
-import CategoryTag from "./CategoryTag";
+import CategoryTag from "../main/CategoryTag";
 
 export interface Area {
   // Identifiers
