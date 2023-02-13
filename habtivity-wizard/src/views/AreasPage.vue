@@ -13,25 +13,35 @@ import AreaDialogToEditOrCreate from "@/components/dialogs/AreaDialogToEditOrCre
     AreaDialogToEditOrCreate: AreaDialogToEditOrCreate,
   },
 })
-export default class MainApp extends Vue {
+export default class AreasPage extends Vue {
   // ------------------------------------------------ Data
   areasStore = useAreasStore();
 
   areAreasLoaded = false;
 
-  showDialogToEditOrCreate = false;
+  showDialogForNewArea = false;
   showDiscardConfirmationDialog = false;
 
   selectedArea!: Area | null;
 
+  // Move to a Constants file maybe.
+  defaultNewArea = {
+    id: "placeholder",
+    title: "New Area",
+    icon: "mdi-new-box",
+    color: "#8686D6",
+  };
+
   // ------------------------------------------------ Mounted
   mounted() {
     this.selectedArea = null;
-    this.showDialogToEditOrCreate = false;
-    this.areasStore.loadData().then((_value): void => {
+    this.showDialogForNewArea = false;
+    this.areasStore.loadData().then((numOfAreas): void => {
       this.areAreasLoaded = true;
-      console.log(_value);
+      console.log("Done loading " + numOfAreas + " areas.");
     }); // Tell components to start loading.
+
+    console.log("🪁 🪁 🪁 Mounted ---> AreasPage");
   }
 
   // ------------------------------------------------ Methods
@@ -42,7 +52,12 @@ export default class MainApp extends Vue {
 
   discardAreaEdit(): void {
     this.showDiscardConfirmationDialog = false;
-    this.showDialogToEditOrCreate = false;
+    this.showDialogForNewArea = false;
+  }
+
+  closeNewAreaDialog(showNewAreaDialog: boolean): void {
+    console.log("👾 👾 👾  Inside ---> closeNewAreaDialog");
+    this.showDialogForNewArea = showNewAreaDialog;
   }
 }
 </script>
@@ -67,26 +82,23 @@ export default class MainApp extends Vue {
 
     <v-sheet class="mt-8">
       <v-row align="center" justify="space-around">
-        <v-btn
-          tile
-          color="accent"
-          @click="showDialogToEditOrCreate = !showDialogToEditOrCreate"
-        >
+        <v-btn tile color="accent" @click="showDialogForNewArea = true">
           <v-icon left> mdi-plus-thick </v-icon>
           Add an Area
         </v-btn>
       </v-row>
     </v-sheet>
 
-    <!-- Dialog component: for creating or editing an Area -->
+    <!------------------- Dialog: New Area -------------------->
+    <!-- Child component: for creating an Area -->
 
-    <!-- TODO: Fix the component visibility issue. 
-         Need Parent-Child 2-way sync on variable (showDialogToEditOrCreate: boolean)  -->
-
-    <!-- v-if="showDialogForAreaEditOrCreate" -->
+    <!-- v-model="showDialogForNewArea" -->
     <AreaDialogToEditOrCreate
-      v-model="showDialogToEditOrCreate"
-      :providedArea="selectedArea"
+      v-on:close-dialog="closeNewAreaDialog"
+      :dialogMode="'EDIT'"
+      :showDialog="showDialogForNewArea"
+      :providedArea="defaultNewArea"
     />
+    <!-- :providedArea="selectedArea" -->
   </div>
 </template>

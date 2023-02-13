@@ -24,12 +24,14 @@ export const useAreasStore = defineStore("AreasStore", {
       for (const area of areasList) {
         this.areas[area.id] = area;
       }
+
+      return areasList.length;
     },
     getAreaById(areaId: string): Area {
       return this.areas[areaId];
     },
     getAreasList(): Area[] {
-      console.log("Gettings list of Areas from the Store");
+      console.log("Getting list of Areas from the Store");
       return Object.values(this.areas);
     },
 

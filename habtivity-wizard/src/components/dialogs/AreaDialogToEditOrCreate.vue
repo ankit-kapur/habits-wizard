@@ -2,41 +2,57 @@
 import { Limits } from "@/constants/Limits";
 import { useAreasStore } from "@/store/AreasStore";
 import { Area } from "@/model/pojo/definitions/Area";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { v4 as uuid } from "uuid";
-
-// TODO: Icon loader --- Make this library import work
-// import VueIconPicker from "vue-icon-picker";
+import { deepCopy } from "deep-copy-ts";
 
 @Component
 export default class AreaDialogToEditOrCreate extends Vue {
   // ------------------------------------------------ Props
   @Prop()
   providedArea!: Area;
+  @Prop()
+  showDialog!: boolean;
+  @Prop()
+  dialogMode!: DialogMode;
 
-  currentArea!: Area;
+  /**
+   * Watches parent variable, and sync's its value to the child variable.
+   */
+  @Watch("showDialog")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onPropertyChanged(_newValue: string, _oldValue: string) {
+    this.showThisDialog = this.showDialog;
+    console.log("this.showThisDialog ===> " + this.showThisDialog);
+  }
 
   // Store
   areasStore = useAreasStore();
 
-  // sync'd with parent (via v-model)
-  showDialogForAreaEditOrCreate = true;
+  // State
+  currentArea: Area = {
+    id: "",
+    title: "",
+    color: "",
+    icon: "",
+  };
 
-  readyToLoad = false;
+  // Toggles for displays
+  showThisDialog = false;
+  showDiscardConfirmationDialog = false;
+  showColorPicker = false;
+
+  mdiIcons = import("@/assets/icons/mdi_icons.json");
 
   // ------------------------------------------------ Data
-  showDiscardConfirmationDialog = false;
   valid = true;
-  areaName = "";
-  areaColor = "#ffffff";
-  areaIcon = "";
+
   areaNameRules = [
     (v: unknown) => !!v || "Name is required",
     (v: string | unknown[]) =>
       (v && v.length <= Limits.AREA_NAME_MAX_LENGTH) ||
       `Name must be less than ${Limits.AREA_NAME_MAX_LENGTH} characters`,
   ];
-  showColorPicker = false;
 
   // Put some nice colors here. And hide the full color-picker.
   colorSwatches = [
@@ -47,122 +63,135 @@ export default class AreaDialogToEditOrCreate extends Vue {
     ["#0000FF", "#0000AA", "#000055"],
   ];
 
-  defaultNewArea = {
-    id: "placeholder",
-    title: "New Area",
-    icon: "mdi-new-box",
-    color: "#8686D6",
-  };
-
   // ------------------------------------------------ Mounted
   mounted() {
-    this.resetToDefaultArea();
-    this.readyToLoad = true;
+    console.log("🪁 🪁 🪁 Mounted ---> AreaDialogToEditOrCreate");
   }
 
-  beforeUpdate() {
-    this.currentArea = this.providedArea;
-    this.resetToDefaultArea();
-    this.readyToLoad = true;
+  // Maybe don't need this?
+  beforeMount() {
+    this.resetToDefaultState();
   }
 
   // ------------------------------------------------ Methods
-  resetToDefaultArea() {
-    // Default Area
-    // this.currentArea = this.providedArea
-    //   ? this.providedArea
-    //   : this.defaultNewArea;
-
-    this.currentArea = this.defaultNewArea;
-  }
 
   saveArea(): void {
     this.currentArea.id = uuid(); // Generate a new UUID
-    this.areasStore.saveArea(this.currentArea); // Save.
-    this.showDialogForAreaEditOrCreate = false; // Hide the bottom-sheet.
-    this.resetToDefaultArea(); // Reset.
+    // Save to store.
+    this.areasStore.saveArea(this.currentArea);
+
+    this.closeThisDialog();
   }
 
-  triggerDiscardConfirmation(): void {
-    this.showDiscardConfirmationDialog = true;
+  closeThisDialog() {
+    // Reset
+    this.resetToDefaultState();
+    // Ask parent to update its state // close this child. (i.e. make invisible)
+    this.$emit("close-dialog", false);
   }
 
-  discardAreaEdit(): void {
+  resetToDefaultState() {
+    // Reset to DEFAULT area
+    this.currentArea = deepCopy(this.providedArea);
+
+    // Hide dialogs and windows
     this.showDiscardConfirmationDialog = false;
-    this.showDialogForAreaEditOrCreate = false;
+    this.showColorPicker = false;
   }
+}
+
+export enum DialogMode {
+  CREATE,
+  EDIT,
 }
 </script>
 
 <template>
-  <!-- Dialog for NEW Area -->
-  <v-bottom-sheet
-    v-if="readyToLoad"
-    persistent
-    @input="$emit('input', $event.target.showDialogForAreaEditOrCreate)"
-  >
-    <v-card>
-      <v-card-title>
-        <span class="text-h6">{{ currentArea.title }}</span>
-      </v-card-title>
-      <v-card-text>
-        <v-form ref="areaForm" v-model="valid" lazy-validation>
-          <v-text-field
-            v-model="currentArea.title"
-            :rules="areaNameRules"
-            label="Title"
-            required
-          ></v-text-field>
+  <div class="">
+    <!-- Dialog for NEW Area -->
+    <!-- fullscreen attach="v-app" -->
+    <v-bottom-sheet v-model="showThisDialog" persistent>
+      <v-card>
+        <v-card-title>
+          <span class="text-h4">{{ currentArea.title }}</span>
+        </v-card-title>
+        <v-card-text>
+          <v-form ref="areaForm" v-model="valid" lazy-validation>
+            <v-text-field
+              v-model="currentArea.title"
+              :rules="areaNameRules"
+              label="Title"
+              required
+            ></v-text-field>
 
-          <!-- TODO: Icon loader --- Make this library import work -->
-          <!-- <vue-icon-loader
-            v-model="areaIcon"
-            height="300px"
-          ></vue-icon-loader> -->
+            <v-color-picker
+              v-show="showColorPicker"
+              v-model="currentArea.color"
+              dot-size="25"
+              mode="hexa"
+              hide-inputs
+              :swatches="colorSwatches"
+              swatches-max-height="100"
+              show-swatches
+            ></v-color-picker>
 
-          <v-color-picker
-            v-if="showColorPicker"
-            v-model="currentArea.color"
-            dot-size="25"
-            mode="hex"
-            hide-inputs
-            :swatches="colorSwatches"
-            swatches-max-height="100"
-            show-swatches
-          ></v-color-picker>
+            Color:
+            <v-btn
+              @click="showColorPicker = !showColorPicker"
+              :color="currentArea.color"
+            ></v-btn>
 
-          Color:
+            <!-- Temporary -->
+            <v-text-field
+              v-model="currentArea.icon"
+              label="Icon"
+              required
+            ></v-text-field>
+
+            <!-- TODO: Make and icon picker component -->
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
           <v-btn
-            @click="showColorPicker = !showColorPicker"
-            :color="currentArea.color"
-          ></v-btn>
+            class="discard-button white--text"
+            text
+            @click="showDiscardConfirmationDialog = true"
+          >
+            Discard
+          </v-btn>
+          <v-btn
+            class="confirm-button white--text"
+            text
+            :disabled="!valid"
+            @click="saveArea"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-bottom-sheet>
 
-          <!-- Temporary -->
-          <v-text-field
-            v-model="currentArea.icon"
-            label="Icon"
-            required
-          ></v-text-field>
-        </v-form>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn
-          class="discard-button white--text"
-          text
-          @click="triggerDiscardConfirmation"
-        >
-          Discard
-        </v-btn>
-        <v-btn
-          class="confirm-button white--text"
-          text
-          :disabled="!valid"
-          @click="saveArea"
-        >
-          Save
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-bottom-sheet>
+    <!-- TODO: Make a custom component: ConfirmationDialog -->
+    <!-- CONFIRMATION dialog for discarding a recorded thing -->
+    <v-dialog v-model="showDiscardConfirmationDialog" max-width="500px">
+      <v-card>
+        <v-card-title>
+          <span>Sure you want to discard this?</span>
+          <v-spacer></v-spacer>
+        </v-card-title>
+        <v-card-actions>
+          <v-btn color="primary" text @click="closeThisDialog"> Yes </v-btn>
+
+          <v-btn
+            color="primary"
+            text
+            @click="showDiscardConfirmationDialog = false"
+          >
+            No
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>

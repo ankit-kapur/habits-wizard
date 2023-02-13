@@ -39,9 +39,9 @@
 </template>
 
 <script lang="ts">
+import { Activity } from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import { RecordedThing } from "@/model/pojo/main/RecordedThing";
-import { ActivityDefinition } from "@/model/pojo/main/Thing";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
@@ -49,7 +49,7 @@ export default class RecordedThingCard extends Vue {
   @Prop()
   recordedThing!: RecordedThing;
   @Prop()
-  thing!: ActivityDefinition;
+  thing!: Activity;
   @Prop()
   area!: Area;
 
