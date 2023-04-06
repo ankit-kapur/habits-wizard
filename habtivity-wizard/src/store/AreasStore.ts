@@ -1,5 +1,6 @@
 import { Area } from "@/model/pojo/definitions/Area";
 import { defineStore } from "pinia";
+import Vue from "vue";
 
 interface State {
   // Key = areaId
@@ -39,6 +40,19 @@ export const useAreasStore = defineStore("AreasStore", {
     saveArea(area: Area) {
       console.log("Saving area to store: " + JSON.stringify(area));
       this.areas[area.id] = area;
+    },
+
+    // -------------------------------------------- Delete
+    deleteArea(area: Area) {
+      // Shouldn't need to add validation for if area doesn't exist.
+      console.log("Deleting area: " + JSON.stringify(area));
+
+      // delete this.areas[area.id];
+
+      Vue.delete(this.areas, area.id);
+
+      // this.areas.splice(this.areas.indexOf(area), 1);
+      // this.areas = this.areas.filter((a)=>a.id !== area.id )
     },
   },
 });

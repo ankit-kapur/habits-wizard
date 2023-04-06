@@ -20,44 +20,44 @@ export default class AreasPage extends Vue {
   areAreasLoaded = false;
 
   showDialogForNewArea = false;
-  showDiscardConfirmationDialog = false;
-
-  selectedArea!: Area | null;
+  showDialogForEditArea = false;
 
   // Move to a Constants file maybe.
-  defaultNewArea = {
+  defaultNewArea: Area = {
     id: "placeholder",
     title: "New Area",
     icon: "mdi-new-box",
     color: "#8686D6",
   };
 
+  selectedArea: Area = this.defaultNewArea;
+
   // ------------------------------------------------ Mounted
   mounted() {
-    this.selectedArea = null;
+    // this.selectedArea = null;
     this.showDialogForNewArea = false;
     this.areasStore.loadData().then((numOfAreas): void => {
       this.areAreasLoaded = true;
       console.log("Done loading " + numOfAreas + " areas.");
     }); // Tell components to start loading.
-
-    console.log("🪁 🪁 🪁 Mounted ---> AreasPage");
+    console.log("🪁 🪁 🪁 Mount complete for AreasPage");
   }
 
   // ------------------------------------------------ Methods
 
-  triggerDiscardConfirmation(): void {
-    this.showDiscardConfirmationDialog = true;
-  }
-
-  discardAreaEdit(): void {
-    this.showDiscardConfirmationDialog = false;
-    this.showDialogForNewArea = false;
-  }
-
   closeNewAreaDialog(showNewAreaDialog: boolean): void {
     console.log("👾 👾 👾  Inside ---> closeNewAreaDialog");
     this.showDialogForNewArea = showNewAreaDialog;
+  }
+
+  triggerEditMode(selectedArea: Area): void {
+    this.selectedArea = selectedArea;
+    this.showDialogForEditArea = true;
+  }
+
+  closeEditAreaDialog(showEditAreaDialog: boolean): void {
+    console.log("👾 👾 👾  Inside ---> closeEditAreaDialog");
+    this.showDialogForEditArea = showEditAreaDialog;
   }
 }
 </script>
@@ -72,9 +72,11 @@ export default class AreasPage extends Vue {
 
     <v-sheet v-if="areAreasLoaded">
       <AreaCard
-        v-for="area in areasStore.getAreasList()"
-        :key="area.id"
-        :area="area"
+        v-for="(area, index) in areasStore.getAreasList()"
+        v-bind:area="area"
+        v-bind:index="index"
+        v-bind:key="area.id"
+        v-on:edit-area="triggerEditMode"
       ></AreaCard>
     </v-sheet>
 
@@ -89,16 +91,21 @@ export default class AreasPage extends Vue {
       </v-row>
     </v-sheet>
 
-    <!------------------- Dialog: New Area -------------------->
-    <!-- Child component: for creating an Area -->
-
-    <!-- v-model="showDialogForNewArea" -->
+    <!------------------- Dialogs -------------------->
+    <!-- Create dialog -->
     <AreaDialogToEditOrCreate
+      :dialog-mode="'CREATE'"
       v-on:close-dialog="closeNewAreaDialog"
-      :dialogMode="'EDIT'"
       :showDialog="showDialogForNewArea"
       :providedArea="defaultNewArea"
     />
-    <!-- :providedArea="selectedArea" -->
+
+    <!-- Edit dialog -->
+    <AreaDialogToEditOrCreate
+      :dialog-mode="'EDIT'"
+      v-on:close-dialog="closeEditAreaDialog"
+      :showDialog="showDialogForEditArea"
+      :providedArea="selectedArea"
+    />
   </div>
 </template>

@@ -5,8 +5,13 @@ import { Area } from "@/model/pojo/definitions/Area";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { v4 as uuid } from "uuid";
 import { deepCopy } from "deep-copy-ts";
+import ConfirmationDialog from "./ConfirmationDialog.vue";
 
-@Component
+@Component({
+  components: {
+    ConfirmationDialog: ConfirmationDialog,
+  },
+})
 export default class AreaDialogToEditOrCreate extends Vue {
   // ------------------------------------------------ Props
   @Prop()
@@ -20,10 +25,11 @@ export default class AreaDialogToEditOrCreate extends Vue {
    * Watches parent variable, and sync's its value to the child variable.
    */
   @Watch("showDialog")
+  @Watch("providedArea")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
+    this.currentArea = deepCopy(this.providedArea);
     this.showThisDialog = this.showDialog;
-    console.log("this.showThisDialog ===> " + this.showThisDialog);
   }
 
   // Store
@@ -64,9 +70,6 @@ export default class AreaDialogToEditOrCreate extends Vue {
   ];
 
   // ------------------------------------------------ Mounted
-  mounted() {
-    console.log("🪁 🪁 🪁 Mounted ---> AreaDialogToEditOrCreate");
-  }
 
   // Maybe don't need this?
   beforeMount() {
@@ -76,7 +79,9 @@ export default class AreaDialogToEditOrCreate extends Vue {
   // ------------------------------------------------ Methods
 
   saveArea(): void {
-    this.currentArea.id = uuid(); // Generate a new UUID
+    if (this.dialogMode == DialogMode.CREATE) {
+      this.currentArea.id = uuid(); // Generate a new UUID
+    }
     // Save to store.
     this.areasStore.saveArea(this.currentArea);
 
@@ -98,6 +103,22 @@ export default class AreaDialogToEditOrCreate extends Vue {
     this.showDiscardConfirmationDialog = false;
     this.showColorPicker = false;
   }
+
+  confirmDiscardAction() {
+    // If no changes, discard without confirmation
+    if (JSON.stringify(this.providedArea) == JSON.stringify(this.currentArea)) {
+      this.closeThisDialog();
+    } else {
+      this.showDiscardConfirmationDialog = true;
+    }
+  }
+
+  respondToConfirmDialog(isConfirmed: boolean): void {
+    if (isConfirmed) {
+      this.closeThisDialog();
+    }
+    this.showDiscardConfirmationDialog = false;
+  }
 }
 
 export enum DialogMode {
@@ -107,7 +128,7 @@ export enum DialogMode {
 </script>
 
 <template>
-  <div class="">
+  <div class="" v-if="showThisDialog">
     <!-- Dialog for NEW Area -->
     <!-- fullscreen attach="v-app" -->
     <v-bottom-sheet v-model="showThisDialog" persistent>
@@ -148,7 +169,7 @@ export enum DialogMode {
               required
             ></v-text-field>
 
-            <!-- TODO: Make and icon picker component -->
+            <!-- TODO Make an icon picker component -->
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -156,7 +177,7 @@ export enum DialogMode {
           <v-btn
             class="discard-button white--text"
             text
-            @click="showDiscardConfirmationDialog = true"
+            @click="confirmDiscardAction"
           >
             Discard
           </v-btn>
@@ -172,26 +193,11 @@ export enum DialogMode {
       </v-card>
     </v-bottom-sheet>
 
-    <!-- TODO: Make a custom component: ConfirmationDialog -->
     <!-- CONFIRMATION dialog for discarding a recorded thing -->
-    <v-dialog v-model="showDiscardConfirmationDialog" max-width="500px">
-      <v-card>
-        <v-card-title>
-          <span>Sure you want to discard this?</span>
-          <v-spacer></v-spacer>
-        </v-card-title>
-        <v-card-actions>
-          <v-btn color="primary" text @click="closeThisDialog"> Yes </v-btn>
-
-          <v-btn
-            color="primary"
-            text
-            @click="showDiscardConfirmationDialog = false"
-          >
-            No
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmationDialog
+      v-on:confirm-status-change="respondToConfirmDialog"
+      :showDialog="showDiscardConfirmationDialog"
+      messageToDisplay="Sure you want to discard this?"
+    />
   </div>
 </template>

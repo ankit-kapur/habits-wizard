@@ -1,11 +1,14 @@
 <script lang="ts">
 import { Area } from "@/model/pojo/definitions/Area";
+import { useAreasStore } from "@/store/AreasStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import AreaDialogToEditOrCreate from "./dialogs/AreaDialogToEditOrCreate.vue";
+import ConfirmationDialog from "./dialogs/ConfirmationDialog.vue";
 
 @Component({
   components: {
     AreaDialogToEditOrCreate: AreaDialogToEditOrCreate,
+    ConfirmationDialog: ConfirmationDialog,
   },
 })
 export default class AreaCard extends Vue {
@@ -13,16 +16,19 @@ export default class AreaCard extends Vue {
   @Prop()
   area!: Area;
 
+  // ------------------------------------------------ Stores
+  areasStore = useAreasStore();
+
   // ------------------------------------------------ Data
   isAreaCardExpanded = false;
   showEditButton = false;
   showDeleteButton = false;
 
   showDialogForAreaEditOrCreate = false;
+  showDialogForConfirmDelete = false;
 
   // ------------------------------------------------ Methods
   expandAreaClicked() {
-    console.log("AREA CARD CLICKED");
     this.isAreaCardExpanded = !this.isAreaCardExpanded;
     this.showDeleteButton = this.isAreaCardExpanded;
     this.showEditButton = this.isAreaCardExpanded;
@@ -30,7 +36,10 @@ export default class AreaCard extends Vue {
 
   // Edits
   showEditDialog() {
-    console.log("SHOW EDIT DIALOG");
+    this.showDialogForAreaEditOrCreate = true;
+
+    // Ask parent to update its state
+    this.$emit("edit-area", this.area);
   }
 
   editMode() {
@@ -47,14 +56,18 @@ export default class AreaCard extends Vue {
   }
 
   confirmDelete() {
-    // TODO: show dialog box for confirmation
-    console.log("CONFIRM DELETE");
+    this.showDialogForConfirmDelete = true;
   }
 
   performDelete() {
-    console.log("PERFORM DELETE");
-    // TODO: import Areas store
-    // TODO: Call store method
+    this.areasStore.deleteArea(this.area);
+  }
+
+  respondToConfirmDeleteDialog(isConfirmed: boolean): void {
+    if (isConfirmed) {
+      this.performDelete();
+    }
+    this.showDialogForConfirmDelete = false;
   }
 }
 </script>
@@ -118,6 +131,13 @@ export default class AreaCard extends Vue {
     <AreaDialogToEditOrCreate
       v-if="showDialogForAreaEditOrCreate"
       :area="area"
+    />
+
+    <!-- CONFIRMATION dialog for discarding a recorded thing -->
+    <ConfirmationDialog
+      v-on:confirm-status-change="respondToConfirmDeleteDialog"
+      :showDialog="showDialogForConfirmDelete"
+      messageToDisplay="Sure you want to delete this?"
     />
   </v-card>
 </template>

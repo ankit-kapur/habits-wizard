@@ -45,11 +45,11 @@ export default class HomePage extends Vue {
       "
     />
 
-    <!-------------- Now -------------->
-    <div class="mt-8">Now</div>
+    <!-------------- Next -------------->
+    <div class="mt-8">Next</div>
     <v-divider />
 
-    <!-- TODO: Placeholder. Replace with v-for w/ function call -->
+    <!-- TODO Placeholder. Replace with v-for w/ function call -->
     <RecordedThingCard
       :recordedThing="recordedThingsStore.getRecordedThingsByDay()[2]"
       :thing="
@@ -65,7 +65,7 @@ export default class HomePage extends Vue {
     />
 
     <!-------------- Overdue -------------->
-    <!-- TODO: Hide when nothing's overdue -->
+    <!-- TODO Hide when nothing's overdue -->
     <div class="mt-8">Overdue</div>
     <v-divider />
     <i> Hide when nothing's overdue </i>
