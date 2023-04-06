@@ -1,4 +1,11 @@
+import { firestoreDatabase } from "@/firebase";
 import { Area } from "@/model/pojo/definitions/Area";
+import {
+  collection,
+  FirestoreDataConverter,
+  getDocs,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
 import { defineStore } from "pinia";
 import Vue from "vue";
 
@@ -6,6 +13,11 @@ interface State {
   // Key = areaId
   areas: Record<string, Area>;
 }
+
+const firestoreConvertor: FirestoreDataConverter<Area> = {
+  toFirestore: (data: Area) => data,
+  fromFirestore: (snapshot: QueryDocumentSnapshot) => snapshot.data() as Area,
+};
 
 export const useAreasStore = defineStore("AreasStore", {
   // Initial state.
@@ -19,8 +31,21 @@ export const useAreasStore = defineStore("AreasStore", {
   getters: {},
   actions: {
     async loadData() {
-      const areasList: Area[] = (await import("@/assets/dummydata/areas.json"))
-        .default;
+      const areasCollection = collection(
+        firestoreDatabase,
+        "areas"
+      ).withConverter(firestoreConvertor);
+
+      const areasSnapshot = await getDocs(areasCollection);
+      const areasList: Area[] = areasSnapshot.docs.map((doc) => doc.data());
+
+      console.log(
+        "🚀 🚀 🚀 Snapshot from firebase: " + JSON.stringify(areasList)
+      );
+
+      // // Load from static file
+      // const areasList: Area[] = (await import("@/assets/dummydata/areas.json"))
+      //   .default;
 
       for (const area of areasList) {
         this.areas[area.id] = area;
