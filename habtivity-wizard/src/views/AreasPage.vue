@@ -46,7 +46,6 @@ export default class AreasPage extends Vue {
   // ------------------------------------------------ Methods
 
   closeNewAreaDialog(showNewAreaDialog: boolean): void {
-    console.log("👾 👾 👾  Inside ---> closeNewAreaDialog");
     this.showDialogForNewArea = showNewAreaDialog;
   }
 
@@ -56,7 +55,6 @@ export default class AreasPage extends Vue {
   }
 
   closeEditAreaDialog(showEditAreaDialog: boolean): void {
-    console.log("👾 👾 👾  Inside ---> closeEditAreaDialog");
     this.showDialogForEditArea = showEditAreaDialog;
   }
 }
@@ -94,7 +92,7 @@ export default class AreasPage extends Vue {
     <!------------------- Dialogs -------------------->
     <!-- Create dialog -->
     <AreaDialogToEditOrCreate
-      :dialog-mode="'CREATE'"
+      :dialog-mode="`CREATE`"
       v-on:close-dialog="closeNewAreaDialog"
       :showDialog="showDialogForNewArea"
       :providedArea="defaultNewArea"
@@ -102,7 +100,7 @@ export default class AreasPage extends Vue {
 
     <!-- Edit dialog -->
     <AreaDialogToEditOrCreate
-      :dialog-mode="'EDIT'"
+      :dialog-mode="`UPDATE`"
       v-on:close-dialog="closeEditAreaDialog"
       :showDialog="showDialogForEditArea"
       :providedArea="selectedArea"

@@ -3,7 +3,6 @@ import { Limits } from "@/constants/Limits";
 import { useAreasStore } from "@/store/AreasStore";
 import { Area } from "@/model/pojo/definitions/Area";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { v4 as uuid } from "uuid";
 import { deepCopy } from "deep-copy-ts";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 
@@ -79,11 +78,13 @@ export default class AreaDialogToEditOrCreate extends Vue {
   // ------------------------------------------------ Methods
 
   saveArea(): void {
-    if (this.dialogMode == DialogMode.CREATE) {
-      this.currentArea.id = uuid(); // Generate a new UUID
+    if (this.dialogMode === DialogMode.CREATE) {
+      console.log("CREATE mode");
+      this.areasStore.createArea(this.currentArea);
+    } else {
+      console.log("UPDATE mode");
+      this.areasStore.updateArea(this.currentArea);
     }
-    // Save to store.
-    this.areasStore.saveArea(this.currentArea);
 
     this.closeThisDialog();
   }
@@ -122,8 +123,8 @@ export default class AreaDialogToEditOrCreate extends Vue {
 }
 
 export enum DialogMode {
-  CREATE,
-  EDIT,
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
 }
 </script>
 
