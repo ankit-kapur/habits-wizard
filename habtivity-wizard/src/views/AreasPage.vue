@@ -24,7 +24,6 @@ export default class AreasPage extends Vue {
 
   // Move to a Constants file maybe.
   defaultNewArea: Area = {
-    id: "placeholder",
     title: "New Area",
     icon: "mdi-new-box",
     color: "#8686D6",

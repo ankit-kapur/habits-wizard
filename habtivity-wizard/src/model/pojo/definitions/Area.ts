@@ -2,7 +2,7 @@ import CategoryTag from "../main/CategoryTag";
 
 export interface Area {
   // Identifiers
-  id: string;
+  id?: string;
   title: string;
 
   // Display attributes

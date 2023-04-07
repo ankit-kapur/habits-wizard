@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { firestoreDatabase } from "@/firebase";
 import { Area } from "@/model/pojo/definitions/Area";
 import {
@@ -5,6 +6,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  DocumentReference,
   FirestoreDataConverter,
   getDocs,
   QueryDocumentSnapshot,
@@ -56,7 +58,9 @@ export const useAreasStore = defineStore("AreasStore", {
       console.log(
         "🚀 🚀 🚀 Snapshot from firebase: " + JSON.stringify(this.areasRecord)
       );
+      return docsSnapshot.length;
     },
+
     getAreaById(areaId: string): Area {
       return this.areasRecord[areaId];
     },
@@ -66,27 +70,40 @@ export const useAreasStore = defineStore("AreasStore", {
     },
 
     // -------------------------------------------- Save
+    // TODO -- The async is causing the parent v-ifs etc. to not get updated.
     async createArea(area: Area) {
       console.log("Creating NEW area in store: " + JSON.stringify(area));
 
       // Add to Firestore
-      await addDoc(areasCollection, area);
-
-      // const newDocID = uuid(); // Generate a new UUID
-      // setDoc(doc(areasCollection, newDocID), area);
+      const promise: Promise<DocumentReference> = addDoc(areasCollection, area);
 
       // Add to areasRecord
-      this.areasRecord[area.id] = area;
+      promise.then((firestoreDoc): void => {
+        // Copy over the ID that Firebase gave us.
+        area.id = firestoreDoc.id;
+        this.updateArea(area); // Hacky but works.
+
+        this.areasRecord[firestoreDoc.id] = area;
+        console.log("CREATED CREATED CREATED " + JSON.stringify(area));
+
+        // TODO ---- Get the parent state to update (in AreasPage) after this.
+      });
     },
 
-    updateArea(area: Area) {
+    async updateArea(area: Area) {
       console.log("Updating area in store: " + JSON.stringify(area));
 
       // Update in Firestore
-      updateDoc(doc(areasCollection, area.id), area);
+      const promise: Promise<void> = updateDoc(
+        doc(areasCollection, area.id),
+        area
+      );
 
       // Update to areasRecord
-      this.areasRecord[area.id] = area;
+      promise.then((): void => {
+        this.areasRecord[area.id!] = area;
+        console.log("UPDATED UPDATED UPDATED " + JSON.stringify(area));
+      });
     },
 
     // -------------------------------------------- Delete
@@ -98,7 +115,7 @@ export const useAreasStore = defineStore("AreasStore", {
       deleteDoc(doc(areasCollection, area.id));
 
       // Delete from areasRecord
-      Vue.delete(this.areasRecord, area.id);
+      Vue.delete(this.areasRecord, area.id!);
     },
   },
 });
