@@ -79,10 +79,8 @@ export default class AreaDialogToEditOrCreate extends Vue {
 
   saveArea(): void {
     if (this.dialogMode === DialogMode.CREATE) {
-      console.log("CREATE mode");
       this.areasStore.createArea(this.currentArea);
     } else {
-      console.log("UPDATE mode");
       this.areasStore.updateArea(this.currentArea);
     }
 

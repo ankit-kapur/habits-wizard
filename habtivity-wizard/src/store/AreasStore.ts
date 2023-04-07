@@ -8,13 +8,15 @@ import {
   FirestoreDataConverter,
   getDocs,
   QueryDocumentSnapshot,
+  QuerySnapshot,
   updateDoc,
 } from "firebase/firestore";
 import { defineStore } from "pinia";
+import Vue from "vue";
 
 interface State {
   // Key = areaId
-  areas: Record<string, Area>;
+  areasRecord: Record<string, Area>;
 }
 
 // Replace with Generics <T> across all stores.
@@ -33,52 +35,34 @@ export const useAreasStore = defineStore("AreasStore", {
   state: (): State => {
     return {
       // Load from Firebase DB eventually.
-      areas: {},
+      areasRecord: {},
     };
   },
   // Getters
   getters: {},
   actions: {
     async loadData() {
-      const areasSnapshot = await getDocs(areasCollection);
+      // Take a snapshot
+      const areasSnapshot: QuerySnapshot<Area> = await getDocs(areasCollection);
+      const docsSnapshot: QueryDocumentSnapshot<Area>[] = areasSnapshot.docs;
 
-      // const areasList: Area[] = areasSnapshot.docs.map((doc) => {
-      //   return doc.data();
-      // });
-
-      areasSnapshot.docs.forEach((document) => {
+      // Map to areasRecord
+      docsSnapshot.forEach((document) => {
         const loadedDoc: Area = document.data();
         loadedDoc.id = document.id;
-        this.areas[document.id] = loadedDoc;
+        this.areasRecord[document.id] = loadedDoc;
       });
 
-      // this.areas = areasSnapshot.docs.map((document) => [
-      //   document.id,
-      //   document.data(),
-      // ]);
-
-      // return document.data();
-      //   return [document.id, document.data()];
-      // });
-
       console.log(
-        "🚀 🚀 🚀 Snapshot from firebase: " + JSON.stringify(this.areas)
+        "🚀 🚀 🚀 Snapshot from firebase: " + JSON.stringify(this.areasRecord)
       );
-
-      // // Load from static file
-      // const areasList: Area[] = (await import("@/assets/dummydata/areas.json"))
-      //   .default;
-
-      // for (const area of areasList) {
-      //   this.areas[area.id] = area;
-      // }
     },
     getAreaById(areaId: string): Area {
-      return this.areas[areaId];
+      return this.areasRecord[areaId];
     },
     getAreasList(): Area[] {
       console.log("Getting list of Areas from the Store");
-      return Object.values(this.areas);
+      return Object.values(this.areasRecord);
     },
 
     // -------------------------------------------- Save
@@ -91,15 +75,18 @@ export const useAreasStore = defineStore("AreasStore", {
       // const newDocID = uuid(); // Generate a new UUID
       // setDoc(doc(areasCollection, newDocID), area);
 
-      // Add to static HashMap (i.e. Record)
-      // this.areas[area.id] = area;
+      // Add to areasRecord
+      this.areasRecord[area.id] = area;
     },
 
     updateArea(area: Area) {
       console.log("Updating area in store: " + JSON.stringify(area));
 
-      // Add to Firestore
+      // Update in Firestore
       updateDoc(doc(areasCollection, area.id), area);
+
+      // Update to areasRecord
+      this.areasRecord[area.id] = area;
     },
 
     // -------------------------------------------- Delete
@@ -110,8 +97,8 @@ export const useAreasStore = defineStore("AreasStore", {
       // Delete from Firestore
       deleteDoc(doc(areasCollection, area.id));
 
-      // Delete from HashMap (i.e. Record)
-      // Vue.delete(this.areas, area.id);
+      // Delete from areasRecord
+      Vue.delete(this.areasRecord, area.id);
     },
   },
 });
