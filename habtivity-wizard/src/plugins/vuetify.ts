@@ -7,4 +7,17 @@ export default new Vuetify({
   icons: {
     iconfont: "mdi",
   },
+  theme: {
+    themes: {
+      light: {
+        primary: "#673ab7",
+        secondary: "#ff9800",
+        accent: "#9c27b0",
+        error: "#f44336",
+        warning: "#ffc107",
+        info: "#795548",
+        success: "#4caf50",
+      },
+    },
+  },
 });
