@@ -4,6 +4,7 @@ import { useAreasStore } from "@/store/AreasStore";
 import AreaCard from "@/components/AreaCard.vue";
 import { Area } from "@/model/pojo/definitions/Area";
 import AreaDialogToEditOrCreate from "@/components/dialogs/AreaDialogToEditOrCreate.vue";
+import { defaultNewArea } from "@/constants/DefaultDataForForms";
 
 // See documentation on class-components:
 // 👉🏽 https://class-component.vuejs.org/guide/class-component.html#computed-properties
@@ -15,22 +16,15 @@ import AreaDialogToEditOrCreate from "@/components/dialogs/AreaDialogToEditOrCre
 })
 export default class AreasPage extends Vue {
   // ------------------------------------------------ Data
+  // Stores
   areasStore = useAreasStore();
 
+  // Toggles
   showDialogForNewArea = false;
   showDialogForEditArea = false;
 
-  // Move to a Constants file maybe.
-  defaultNewArea: Area = {
-    title: "New Area",
-    imageUrl: "https://cdn.vuetifyjs.com/images/cards/sunshine.jpg",
-    color: "#8686D6",
-    description:
-      "late 16th century (as a noun denoting a place where alms were distributed): from medieval Latin eleemosynarius, from late Latin eleemosyna ‘alms’, from Greek eleēmosunē ‘compassion’",
-    categoryTags: [],
-  };
-
-  selectedArea: Area = this.defaultNewArea;
+  // State
+  selectedArea: Area = defaultNewArea;
 
   // ------------------------------------------------ Mounted
   mounted() {
@@ -64,34 +58,32 @@ export default class AreasPage extends Vue {
 </script>
 
 <!------------- Template  --------------->
-
 <template>
-  <div class="">
+  <v-container>
     <h1 align="center">Areas</h1>
 
     <!------------------- Area cards -------------------->
-
-    <v-sheet>
-      <!-- v-if="areAreasLoaded" -->
-      <AreaCard
-        v-for="(area, index) in areasStore.getAreasList()"
-        v-bind:area="area"
-        v-bind:index="index"
-        v-bind:key="area.id"
-        v-on:edit-area="triggerEditMode"
-      ></AreaCard>
-    </v-sheet>
+    <AreaCard
+      v-for="(area, index) in areasStore.getAreasList()"
+      v-bind:area="area"
+      v-bind:index="index"
+      v-bind:key="area.id"
+      v-on:edit-area="triggerEditMode"
+    ></AreaCard>
 
     <!----------------- (+) Add button ------------------>
-
-    <v-sheet class="mt-8">
-      <v-row align="center" justify="space-around">
-        <v-btn tile color="accent" @click="showDialogForNewArea = true">
-          <v-icon left> mdi-plus-thick </v-icon>
-          Add an Area
-        </v-btn>
-      </v-row>
-    </v-sheet>
+    <div class="pa-4 text-center">
+      <v-btn
+        fab
+        color="blue"
+        dark
+        variant="outlined"
+        elevation="4"
+        @click="showDialogForNewArea = true"
+      >
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
+    </div>
 
     <!------------------- Dialogs -------------------->
     <!-- Create dialog -->
@@ -99,7 +91,6 @@ export default class AreasPage extends Vue {
       :dialog-mode="`CREATE`"
       v-on:close-dialog="closeNewAreaDialog"
       :showDialog="showDialogForNewArea"
-      :providedArea="defaultNewArea"
     />
 
     <!-- Edit dialog -->
@@ -109,5 +100,5 @@ export default class AreasPage extends Vue {
       :showDialog="showDialogForEditArea"
       :providedArea="selectedArea"
     />
-  </div>
+  </v-container>
 </template>

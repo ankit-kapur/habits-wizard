@@ -5,6 +5,7 @@ import { Area } from "@/model/pojo/definitions/Area";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { deepCopy } from "deep-copy-ts";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
+import { defaultNewArea } from "@/constants/DefaultDataForForms";
 
 @Component({
   components: {
@@ -27,7 +28,8 @@ export default class AreaDialogToEditOrCreate extends Vue {
   @Watch("providedArea")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
-    this.currentArea = deepCopy(this.providedArea);
+    if (this.providedArea != null)
+      this.currentArea = deepCopy(this.providedArea);
     this.showThisDialog = this.showDialog;
   }
 
@@ -35,13 +37,7 @@ export default class AreaDialogToEditOrCreate extends Vue {
   areasStore = useAreasStore();
 
   // State
-  currentArea: Area = {
-    id: "",
-    title: "",
-    color: "",
-    imageUrl: "",
-    categoryTags: [],
-  };
+  currentArea: Area = deepCopy(defaultNewArea);
 
   // Toggles for displays
   showThisDialog = false;
@@ -70,14 +66,12 @@ export default class AreaDialogToEditOrCreate extends Vue {
   ];
 
   // ------------------------------------------------ Mounted
-
   // Maybe don't need this?
   beforeMount() {
     this.resetToDefaultState();
   }
 
   // ------------------------------------------------ Methods
-
   saveArea(): void {
     if (this.dialogMode === DialogMode.CREATE) {
       this.areasStore.createArea(this.currentArea);
@@ -96,7 +90,7 @@ export default class AreaDialogToEditOrCreate extends Vue {
 
   resetToDefaultState() {
     // Reset to DEFAULT area
-    this.currentArea = deepCopy(this.providedArea);
+    this.currentArea = deepCopy(defaultNewArea);
 
     // Hide dialogs and windows
     this.showDiscardConfirmationDialog = false;
@@ -104,8 +98,11 @@ export default class AreaDialogToEditOrCreate extends Vue {
   }
 
   confirmDiscardAction() {
-    // If no changes, discard without confirmation
-    if (JSON.stringify(this.providedArea) == JSON.stringify(this.currentArea)) {
+    // If nothing's changed, discard without confirmation
+    if (
+      JSON.stringify(this.providedArea) == JSON.stringify(this.currentArea) ||
+      JSON.stringify(defaultNewArea) == JSON.stringify(this.currentArea)
+    ) {
       this.closeThisDialog();
     } else {
       this.showDiscardConfirmationDialog = true;

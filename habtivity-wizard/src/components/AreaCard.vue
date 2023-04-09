@@ -83,16 +83,6 @@ export default class AreaCard extends Vue {
 
   // Categories
   getCategoriesForArea(): CategoryTag[] {
-    console.log(
-      "🍍 🍍 🍍 this.area.categoryTags ====> " +
-        JSON.stringify(this.area.categoryTags)
-    );
-    console.log(
-      "🍍 🍍 🍍 result ====> " +
-        JSON.stringify(
-          this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags)
-        )
-    );
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
   }
 }
@@ -104,6 +94,7 @@ export default class AreaCard extends Vue {
     class="mt-3 mx-auto px-auto"
     max-width="400"
     elevation="20"
+    :ripple="false"
     v-touch="{
       left: () => deleteMode,
       right: () => editMode,
@@ -147,27 +138,33 @@ export default class AreaCard extends Vue {
           style="height: 100%"
         >
           <v-card-text class="pb-0">
-            <p>
-              {{ area.description }}
-            </p>
+            {{ area.description }}
           </v-card-text>
-          <v-card-actions class="pt-0"> </v-card-actions>
+
           <!-- Category chips -->
-          <v-chip
-            v-for="(categoryTag, index) in getCategoriesForArea()"
-            v-bind:categoryTag="categoryTag"
-            v-bind:index="index"
-            v-bind:key="categoryTag.id"
-            class="ma-4"
-            closable
-            :color="categoryTag.color"
-            :append-icon="categoryTag.icon"
-            text-color="white"
-            close-icon="mdi-delete"
-            :model-value="true"
-          >
-            {{ categoryTag.title }}
-          </v-chip>
+          <v-chip-group column multiple>
+            <!--  -->
+            <!-- TODO 1 --- Icon's not showing up on the chip. Outline not working. -->
+            <!-- TODO 2 --- Chips in Edit/Create dialog. Make sub-dialog to create new CategoryTag. -->
+            <!-- TODO 3 --- Show created-at time -->
+            <!-- TODO 4 --- AreasPage should be sorted by created-at time -->
+
+            <v-chip
+              v-for="(categoryTag, index) in getCategoriesForArea()"
+              v-bind:categoryTag="categoryTag"
+              v-bind:index="index"
+              v-bind:key="categoryTag.id"
+              :model-value="true"
+              class="ma-4"
+              variant="outlined"
+              :color="categoryTag.color"
+              :append-icon="categoryTag.icon"
+              text-color="white"
+            >
+              <v-icon start icon="mdi-server-plus"></v-icon>
+              {{ categoryTag.title }}
+            </v-chip>
+          </v-chip-group>
         </v-card>
       </div>
     </v-expand-transition>
