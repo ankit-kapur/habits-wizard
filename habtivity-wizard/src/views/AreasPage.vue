@@ -23,8 +23,11 @@ export default class AreasPage extends Vue {
   // Move to a Constants file maybe.
   defaultNewArea: Area = {
     title: "New Area",
-    icon: "mdi-new-box",
+    imageUrl: "https://cdn.vuetifyjs.com/images/cards/sunshine.jpg",
     color: "#8686D6",
+    description:
+      "late 16th century (as a noun denoting a place where alms were distributed): from medieval Latin eleemosynarius, from late Latin eleemosyna ‘alms’, from Greek eleēmosunē ‘compassion’",
+    categoryTags: [],
   };
 
   selectedArea: Area = this.defaultNewArea;

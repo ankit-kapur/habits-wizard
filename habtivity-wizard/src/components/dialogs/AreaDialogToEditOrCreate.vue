@@ -39,7 +39,8 @@ export default class AreaDialogToEditOrCreate extends Vue {
     id: "",
     title: "",
     color: "",
-    icon: "",
+    imageUrl: "",
+    categoryTags: [],
   };
 
   // Toggles for displays
@@ -143,6 +144,12 @@ export enum DialogMode {
               required
             ></v-text-field>
 
+            <v-text-field
+              v-model="currentArea.description"
+              label="Description"
+              required
+            ></v-text-field>
+
             <v-color-picker
               v-show="showColorPicker"
               v-model="currentArea.color"
@@ -160,14 +167,17 @@ export enum DialogMode {
               :color="currentArea.color"
             ></v-btn>
 
-            <!-- Temporary -->
             <v-text-field
-              v-model="currentArea.icon"
-              label="Icon"
+              v-model="currentArea.imageUrl"
+              label="Image URL"
               required
             ></v-text-field>
 
-            <!-- TODO Make an icon picker component -->
+            <v-text-field
+              v-model="currentArea.description"
+              label="Description"
+              required
+            ></v-text-field>
           </v-form>
         </v-card-text>
         <v-card-actions>

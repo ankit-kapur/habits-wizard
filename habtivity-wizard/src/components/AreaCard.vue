@@ -1,6 +1,8 @@
 <script lang="ts">
 import { Area } from "@/model/pojo/definitions/Area";
+import CategoryTag from "@/model/pojo/main/CategoryTag";
 import { useAreasStore } from "@/store/AreasStore";
+import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import AreaDialogToEditOrCreate from "./dialogs/AreaDialogToEditOrCreate.vue";
 import ConfirmationDialog from "./dialogs/ConfirmationDialog.vue";
@@ -18,14 +20,25 @@ export default class AreaCard extends Vue {
 
   // ------------------------------------------------ Stores
   areasStore = useAreasStore();
+  categoryTagsStore = useCategoryTagsStore();
 
   // ------------------------------------------------ Data
   isAreaCardExpanded = false;
   showEditButton = false;
   showDeleteButton = false;
-
-  showDialogForAreaEditOrCreate = false;
   showDialogForConfirmDelete = false;
+
+  // ------------------------------------------------ Mounted
+  mounted() {
+    this.categoryTagsStore.subscribeToStore();
+    console.log("🐪 🐪 🐪  Mounted AreaCard");
+  }
+
+  unmounted() {
+    // TODO -- not the right place to unsubscribe. not getting called.
+    this.categoryTagsStore.unsubscribe();
+    console.log("🐪 🐪 🐪  UN-mounted AreaCard");
+  }
 
   // ------------------------------------------------ Methods
   expandAreaClicked() {
@@ -36,9 +49,7 @@ export default class AreaCard extends Vue {
 
   // Edits
   showEditDialog() {
-    this.showDialogForAreaEditOrCreate = true;
-
-    // Ask parent to update its state
+    // Ask parent to show edit dialog
     this.$emit("edit-area", this.area);
   }
 
@@ -69,6 +80,21 @@ export default class AreaCard extends Vue {
     }
     this.showDialogForConfirmDelete = false;
   }
+
+  // Categories
+  getCategoriesForArea(): CategoryTag[] {
+    console.log(
+      "🍍 🍍 🍍 this.area.categoryTags ====> " +
+        JSON.stringify(this.area.categoryTags)
+    );
+    console.log(
+      "🍍 🍍 🍍 result ====> " +
+        JSON.stringify(
+          this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags)
+        )
+    );
+    return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
+  }
 }
 </script>
 
@@ -82,16 +108,20 @@ export default class AreaCard extends Vue {
       left: () => deleteMode,
       right: () => editMode,
     }"
+    @click="expandAreaClicked"
   >
+    <!--------------------- Image ----------------------->
+    <v-img :src="area.imageUrl" height="150px" cover></v-img>
+
     <v-card-title>
       <v-row justify="center">
-        <v-col justify="center" @click="expandAreaClicked">
+        <!-- <v-col justify="center">
           <v-icon left>
             {{ area.icon }}
           </v-icon>
-        </v-col>
+        </v-col> -->
 
-        <v-col cols="6" justify="center" @click="expandAreaClicked">
+        <v-col cols="6" justify="center">
           <span left class="text-h6 font-weight-light">
             {{ area.title }}
           </span>
@@ -118,20 +148,29 @@ export default class AreaCard extends Vue {
         >
           <v-card-text class="pb-0">
             <p>
-              late 16th century (as a noun denoting a place where alms were
-              distributed): from medieval Latin eleemosynarius, from late Latin
-              eleemosyna ‘alms’, from Greek eleēmosunē ‘compassion’
+              {{ area.description }}
             </p>
           </v-card-text>
           <v-card-actions class="pt-0"> </v-card-actions>
+          <!-- Category chips -->
+          <v-chip
+            v-for="(categoryTag, index) in getCategoriesForArea()"
+            v-bind:categoryTag="categoryTag"
+            v-bind:index="index"
+            v-bind:key="categoryTag.id"
+            class="ma-4"
+            closable
+            :color="categoryTag.color"
+            :append-icon="categoryTag.icon"
+            text-color="white"
+            close-icon="mdi-delete"
+            :model-value="true"
+          >
+            {{ categoryTag.title }}
+          </v-chip>
         </v-card>
       </div>
     </v-expand-transition>
-
-    <AreaDialogToEditOrCreate
-      v-if="showDialogForAreaEditOrCreate"
-      :area="area"
-    />
 
     <!-- CONFIRMATION dialog for discarding a recorded thing -->
     <ConfirmationDialog

@@ -28,15 +28,15 @@ const firestoreConvertor: FirestoreDataConverter<Area> = {
   fromFirestore: (snapshot: QueryDocumentSnapshot) => snapshot.data() as Area,
 };
 
-const areasCollection = collection(firestoreDatabase, "areas").withConverter(
-  firestoreConvertor
-);
+const firestoreCollection = collection(
+  firestoreDatabase,
+  "areas"
+).withConverter(firestoreConvertor);
 
 export const useAreasStore = defineStore("AreasStore", {
   // Initial state.
   state: (): State => {
     return {
-      // Load from Firebase DB eventually.
       areasList: [],
       unsubscribeHooks: [],
     };
@@ -47,7 +47,7 @@ export const useAreasStore = defineStore("AreasStore", {
     subscribeToStore() {
       console.log("🔥 🔥 🔥 LOADING Areas list from FireStore.");
 
-      const queryToLoadAreas = query(areasCollection); // , where("title", "!=", "CA")
+      const queryToLoadAreas = query(firestoreCollection); // , where("title", "!=", "CA")
       const unsubscribe: Unsubscribe = onSnapshot(
         queryToLoadAreas,
         (querySnapshot: QuerySnapshot<Area>) => {
@@ -61,16 +61,6 @@ export const useAreasStore = defineStore("AreasStore", {
         }
       );
       this.unsubscribeHooks.push(unsubscribe);
-
-      // const areasSnapshot: QuerySnapshot<Area> = await getDocs(areasCollection);
-      // const docsSnapshot: QueryDocumentSnapshot<Area>[] = areasSnapshot.docs;
-
-      // // Map to areasRecord
-      // this.areasList = docsSnapshot.map((document) => {
-      //   const area: Area = document.data();
-      //   area.id = document.id;
-      //   return area;
-      // });
     },
 
     unsubscribe() {
@@ -87,43 +77,20 @@ export const useAreasStore = defineStore("AreasStore", {
     },
 
     // -------------------------------------------- Save
-    // TODO -- The async is causing the parent v-ifs etc. to not get updated.
     createArea(area: Area) {
       console.log("Creating NEW area in store: " + JSON.stringify(area));
-
-      // Add to Firestore
-      addDoc(areasCollection, area);
-
-      // // Add to areasRecord
-      // promise.then((firestoreDoc): void => {
-      //   // Copy over the ID that Firebase gave us.
-      //   area.id = firestoreDoc.id;
-      //   this.updateArea(area); // Hacky but works.
-
-      //   this.areasRecord[firestoreDoc.id] = area;
-      //   console.log("CREATED CREATED CREATED " + JSON.stringify(area));
-
-      //   // TODO ---- Get the parent state to update (in AreasPage) after this.
-      // });
+      addDoc(firestoreCollection, area);
     },
 
     async updateArea(area: Area) {
       console.log("Updating area in store: " + JSON.stringify(area));
-
-      // Update in Firestore
-      updateDoc(doc(areasCollection, area.id), area);
+      updateDoc(doc(firestoreCollection, area.id), area);
     },
 
     // -------------------------------------------- Delete
     deleteArea(area: Area) {
-      // Shouldn't need to add validation for if area doesn't exist.
       console.log("Deleting area: " + JSON.stringify(area));
-
-      // Delete from Firestore
-      deleteDoc(doc(areasCollection, area.id));
-
-      // Delete from areasRecord
-      // Vue.delete(this.areasList, area.id!);
+      deleteDoc(doc(firestoreCollection, area.id));
     },
   },
 });

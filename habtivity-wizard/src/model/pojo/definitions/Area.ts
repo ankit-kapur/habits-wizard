@@ -1,16 +1,17 @@
-import CategoryTag from "../main/CategoryTag";
-
 export interface Area {
   // Identifiers
   id?: string;
   title: string;
 
   // Display attributes
-  icon: string;
   color: string;
+  imageUrl: string;
+  description?: string;
+
+  // TODO --- Add timestamp attributes. Created on. Last modified on.
 
   // Allow-list of tags that can used in Things under this Area.
-  categoryTags?: CategoryTag[];
+  categoryTags: string[];
 
   // ------------------ Future attributes ------------------ //
 
@@ -22,7 +23,7 @@ export interface Area {
   // weeklyGoals: WeeklyGoalForArea[];
 
   // Challenges
-  // TODO: Should Challenges live OUTSIDE Area?
+  // TODO Should Challenges live OUTSIDE Area?
   // activeChallenges?: Challenge[];
   // archivedChallenges: Challenge[];
   // completedChallenges: Challenge[];
