@@ -17,8 +17,6 @@ export default class AreasPage extends Vue {
   // ------------------------------------------------ Data
   areasStore = useAreasStore();
 
-  areAreasLoaded = false;
-
   showDialogForNewArea = false;
   showDialogForEditArea = false;
 
@@ -33,13 +31,16 @@ export default class AreasPage extends Vue {
 
   // ------------------------------------------------ Mounted
   mounted() {
-    // this.selectedArea = null;
+    this.areasStore.subscribeToStore();
     this.showDialogForNewArea = false;
-    this.areasStore.loadData().then((numOfAreas): void => {
-      this.areAreasLoaded = true;
-      console.log("Done loading " + numOfAreas + " areas.");
-    }); // Tell components to start loading.
-    console.log("🪁 🪁 🪁 Mount complete for AreasPage");
+    console.log("🐪 🐪 🐪  Mounted AreasPage");
+  }
+
+  unmounted() {
+    // TODO -- not the right place to unsubscribe. not getting called.
+
+    this.areasStore.unsubscribe();
+    console.log("🐪 🐪 🐪  UN-mounted AreasPage");
   }
 
   // ------------------------------------------------ Methods
@@ -67,7 +68,8 @@ export default class AreasPage extends Vue {
 
     <!------------------- Area cards -------------------->
 
-    <v-sheet v-if="areAreasLoaded">
+    <v-sheet>
+      <!-- v-if="areAreasLoaded" -->
       <AreaCard
         v-for="(area, index) in areasStore.getAreasList()"
         v-bind:area="area"

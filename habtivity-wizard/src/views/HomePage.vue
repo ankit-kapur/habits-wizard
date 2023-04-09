@@ -17,7 +17,7 @@ export default class HomePage extends Vue {
 
   mounted() {
     this.thingsStore.loadData();
-    this.areasStore.loadData();
+    // this.areasStore.loadData();
     this.recordedThingsStore.loadData();
   }
 }

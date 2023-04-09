@@ -79,14 +79,11 @@ export default class AreaDialogToEditOrCreate extends Vue {
 
   saveArea(): void {
     if (this.dialogMode === DialogMode.CREATE) {
-      this.areasStore.createArea(this.currentArea).then((): void => {
-        this.closeThisDialog();
-      });
+      this.areasStore.createArea(this.currentArea);
     } else {
-      this.areasStore.updateArea(this.currentArea).then((): void => {
-        this.closeThisDialog();
-      });
+      this.areasStore.updateArea(this.currentArea);
     }
+    this.closeThisDialog();
   }
 
   closeThisDialog() {

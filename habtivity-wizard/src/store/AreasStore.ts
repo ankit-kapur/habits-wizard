@@ -6,19 +6,19 @@ import {
   collection,
   deleteDoc,
   doc,
-  DocumentReference,
   FirestoreDataConverter,
-  getDocs,
+  onSnapshot,
+  query,
   QueryDocumentSnapshot,
   QuerySnapshot,
+  Unsubscribe,
   updateDoc,
 } from "firebase/firestore";
 import { defineStore } from "pinia";
-import Vue from "vue";
 
 interface State {
-  // Key = areaId
-  areasRecord: Record<string, Area>;
+  areasList: Area[];
+  unsubscribeHooks: Unsubscribe[];
 }
 
 // Replace with Generics <T> across all stores.
@@ -37,73 +37,81 @@ export const useAreasStore = defineStore("AreasStore", {
   state: (): State => {
     return {
       // Load from Firebase DB eventually.
-      areasRecord: {},
+      areasList: [],
+      unsubscribeHooks: [],
     };
   },
   // Getters
   getters: {},
   actions: {
-    async loadData() {
-      // Take a snapshot
-      const areasSnapshot: QuerySnapshot<Area> = await getDocs(areasCollection);
-      const docsSnapshot: QueryDocumentSnapshot<Area>[] = areasSnapshot.docs;
+    subscribeToStore() {
+      console.log("🔥 🔥 🔥 LOADING Areas list from FireStore.");
 
-      // Map to areasRecord
-      docsSnapshot.forEach((document) => {
-        const loadedDoc: Area = document.data();
-        loadedDoc.id = document.id;
-        this.areasRecord[document.id] = loadedDoc;
-      });
+      const queryToLoadAreas = query(areasCollection); // , where("title", "!=", "CA")
+      const unsubscribe: Unsubscribe = onSnapshot(
+        queryToLoadAreas,
+        (querySnapshot: QuerySnapshot<Area>) => {
+          this.areasList = querySnapshot.docs.map((document) => {
+            const area: Area = document.data();
+            area.id = document.id;
+            return area;
+          });
 
-      console.log(
-        "🚀 🚀 🚀 Snapshot from firebase: " + JSON.stringify(this.areasRecord)
+          console.log("🔥 🔥 🔥 Snapshot updated. Refreshing areasList");
+        }
       );
-      return docsSnapshot.length;
+      this.unsubscribeHooks.push(unsubscribe);
+
+      // const areasSnapshot: QuerySnapshot<Area> = await getDocs(areasCollection);
+      // const docsSnapshot: QueryDocumentSnapshot<Area>[] = areasSnapshot.docs;
+
+      // // Map to areasRecord
+      // this.areasList = docsSnapshot.map((document) => {
+      //   const area: Area = document.data();
+      //   area.id = document.id;
+      //   return area;
+      // });
+    },
+
+    unsubscribe() {
+      this.unsubscribeHooks.forEach((unsubscribeHook) => unsubscribeHook());
     },
 
     getAreaById(areaId: string): Area {
-      return this.areasRecord[areaId];
+      const area: Area = this.areasList.find((area) => area.id === areaId)!;
+      return area;
     },
     getAreasList(): Area[] {
-      console.log("Getting list of Areas from the Store");
-      return Object.values(this.areasRecord);
+      console.log("🔥 🔥 🔥 Getting Areas list from FireStore.");
+      return this.areasList;
     },
 
     // -------------------------------------------- Save
     // TODO -- The async is causing the parent v-ifs etc. to not get updated.
-    async createArea(area: Area) {
+    createArea(area: Area) {
       console.log("Creating NEW area in store: " + JSON.stringify(area));
 
       // Add to Firestore
-      const promise: Promise<DocumentReference> = addDoc(areasCollection, area);
+      addDoc(areasCollection, area);
 
-      // Add to areasRecord
-      promise.then((firestoreDoc): void => {
-        // Copy over the ID that Firebase gave us.
-        area.id = firestoreDoc.id;
-        this.updateArea(area); // Hacky but works.
+      // // Add to areasRecord
+      // promise.then((firestoreDoc): void => {
+      //   // Copy over the ID that Firebase gave us.
+      //   area.id = firestoreDoc.id;
+      //   this.updateArea(area); // Hacky but works.
 
-        this.areasRecord[firestoreDoc.id] = area;
-        console.log("CREATED CREATED CREATED " + JSON.stringify(area));
+      //   this.areasRecord[firestoreDoc.id] = area;
+      //   console.log("CREATED CREATED CREATED " + JSON.stringify(area));
 
-        // TODO ---- Get the parent state to update (in AreasPage) after this.
-      });
+      //   // TODO ---- Get the parent state to update (in AreasPage) after this.
+      // });
     },
 
     async updateArea(area: Area) {
       console.log("Updating area in store: " + JSON.stringify(area));
 
       // Update in Firestore
-      const promise: Promise<void> = updateDoc(
-        doc(areasCollection, area.id),
-        area
-      );
-
-      // Update to areasRecord
-      promise.then((): void => {
-        this.areasRecord[area.id!] = area;
-        console.log("UPDATED UPDATED UPDATED " + JSON.stringify(area));
-      });
+      updateDoc(doc(areasCollection, area.id), area);
     },
 
     // -------------------------------------------- Delete
@@ -115,7 +123,7 @@ export const useAreasStore = defineStore("AreasStore", {
       deleteDoc(doc(areasCollection, area.id));
 
       // Delete from areasRecord
-      Vue.delete(this.areasRecord, area.id!);
+      // Vue.delete(this.areasList, area.id!);
     },
   },
 });
