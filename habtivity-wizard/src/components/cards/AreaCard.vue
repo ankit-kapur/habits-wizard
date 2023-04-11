@@ -4,8 +4,8 @@ import CategoryTag from "@/model/pojo/main/CategoryTag";
 import { useAreasStore } from "@/store/AreasStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
-import AreaDialogToEditOrCreate from "./dialogs/AreaDialogToEditOrCreate.vue";
-import ConfirmationDialog from "./dialogs/ConfirmationDialog.vue";
+import AreaDialogToEditOrCreate from "@/components/dialogs/AreaDialogToEditOrCreate.vue";
+import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 
 @Component({
   components: {
@@ -141,9 +141,13 @@ export default class AreaCard extends Vue {
             {{ area.description }}
           </v-card-text>
 
+          <!-- TODO --- random idea, move to Notion: allow ongoing activities to be paused and resumed. 
+                calc totalDuration = (endTime - startTime - all paused durations)  -->
+
           <!-- Category chips -->
           <v-chip-group column multiple>
-            <!--  -->
+            <!-- TODO 0 --- New component for "CategoryChip". Props: CategoryTag[] -->
+
             <!-- TODO 1 --- Icon's not showing up on the chip. Outline not working. -->
             <!-- TODO 2 --- Chips in Edit/Create dialog. Make sub-dialog to create new CategoryTag. -->
             <!-- TODO 3 --- Show created-at time -->

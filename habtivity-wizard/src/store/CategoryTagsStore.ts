@@ -72,7 +72,10 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
 
     // -------------------------------------------- Queries
     getCategoryTagsList(): CategoryTag[] {
-      console.log("🔥 🔥 🔥 Getting CategoryTags list from FireStore.");
+      console.log(
+        "🔥 🔥 🔥 getCategoryTagsList() ====> " +
+          JSON.stringify(this.categoryTagsList)
+      );
       return this.categoryTagsList;
     },
 

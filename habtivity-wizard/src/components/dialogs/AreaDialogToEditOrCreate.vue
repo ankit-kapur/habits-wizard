@@ -6,6 +6,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { deepCopy } from "deep-copy-ts";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { defaultNewArea } from "@/constants/DefaultDataForForms";
+import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 
 @Component({
   components: {
@@ -35,6 +36,7 @@ export default class AreaDialogToEditOrCreate extends Vue {
 
   // Store
   areasStore = useAreasStore();
+  categoryStore = useCategoryTagsStore();
 
   // State
   currentArea: Area = deepCopy(defaultNewArea);
@@ -43,6 +45,7 @@ export default class AreaDialogToEditOrCreate extends Vue {
   showThisDialog = false;
   showDiscardConfirmationDialog = false;
   showColorPicker = false;
+  areCategoriesLoaded = false;
 
   mdiIcons = import("@/assets/icons/mdi_icons.json");
 
@@ -66,6 +69,12 @@ export default class AreaDialogToEditOrCreate extends Vue {
   ];
 
   // ------------------------------------------------ Mounted
+  mounted() {
+    console.log("🐪 🐪 🐪  Loading categories");
+    this.categoryStore.subscribeToStore();
+    this.areCategoriesLoaded = true;
+    console.log("🐪 🐪 🐪  Mounted AreaDialogToEditOrCreate");
+  }
   // Maybe don't need this?
   beforeMount() {
     this.resetToDefaultState();
@@ -170,13 +179,45 @@ export enum DialogMode {
               required
             ></v-text-field>
 
-            <v-text-field
-              v-model="currentArea.description"
-              label="Description"
-              required
-            ></v-text-field>
+            <!-------------------------- Chips auto-complete  -------------------------->
+            <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
+            <v-autocomplete
+              auto-select-first
+              v-if="areCategoriesLoaded"
+              chips
+              closable-chips
+              deletable-chips
+              clearable
+              label="Categories"
+              v-model="currentArea.categoryTags"
+              :items="categoryStore.getCategoryTagsList()"
+              item-text="title"
+              item-value="id"
+              multiple
+              color="blue-grey-lighten-2"
+              variant="solo"
+              hide-no-data
+            >
+              <!-- <template v-slot:chip="{ props, item }">
+                <v-chip
+                  v-bind="props"
+                  :prepend-avatar="item.raw.icon"
+                  :text="item.raw.title"
+                ></v-chip>
+              </template>
+
+              <template v-slot:item="{ props, item }">
+                <v-list-item
+                  v-bind="props"
+                  :prepend-avatar="item?.raw?.icon"
+                  :title="item?.raw?.title"
+                  :subtitle="item?.raw?.color"
+                ></v-list-item>
+              </template> -->
+            </v-autocomplete>
           </v-form>
         </v-card-text>
+
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn

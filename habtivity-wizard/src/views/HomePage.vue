@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import RecordedThingCard from "@/components/RecordedThingCard.vue"; // @ is an alias to /src
+import RecordedThingCard from "@/components/cards/RecordedThingCard.vue";
 import { useThingsStore } from "@/store/ThingsStore";
 import { useAreasStore } from "@/store/AreasStore";
 import { useRecordedThingsStore } from "@/store/RecordedThingsStore";

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { useAreasStore } from "@/store/AreasStore";
-import AreaCard from "@/components/AreaCard.vue";
+import AreaCard from "@/components/cards/AreaCard.vue";
 import { Area } from "@/model/pojo/definitions/Area";
 import AreaDialogToEditOrCreate from "@/components/dialogs/AreaDialogToEditOrCreate.vue";
 import { defaultNewArea } from "@/constants/DefaultDataForForms";
