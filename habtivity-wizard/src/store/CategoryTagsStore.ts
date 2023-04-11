@@ -72,10 +72,6 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
 
     // -------------------------------------------- Queries
     getCategoryTagsList(): CategoryTag[] {
-      console.log(
-        "🔥 🔥 🔥 getCategoryTagsList() ====> " +
-          JSON.stringify(this.categoryTagsList)
-      );
       return this.categoryTagsList;
     },
 

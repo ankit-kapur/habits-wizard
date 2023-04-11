@@ -1,9 +1,10 @@
 export interface Area {
   // Identifiers
   id?: string;
-  title: string;
+  userId: string;
 
   // Display attributes
+  title: string;
   color: string;
   imageUrl: string;
   description?: string;

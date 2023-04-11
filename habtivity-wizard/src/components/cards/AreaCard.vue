@@ -142,10 +142,10 @@ export default class AreaCard extends Vue {
           </v-card-text>
 
           <!-- TODO --- random idea, move to Notion: allow ongoing activities to be paused and resumed. 
-                calc totalDuration = (endTime - startTime - all paused durations)  -->
+           *  calc totalDuration = (endTime - startTime - all paused durations)  -->
 
           <!-- Category chips -->
-          <v-chip-group column multiple>
+          <v-chip-group column multiple class="ml-4">
             <!-- TODO 0 --- New component for "CategoryChip". Props: CategoryTag[] -->
 
             <!-- TODO 1 --- Icon's not showing up on the chip. Outline not working. -->
@@ -159,13 +159,11 @@ export default class AreaCard extends Vue {
               v-bind:index="index"
               v-bind:key="categoryTag.id"
               :model-value="true"
-              class="ma-4"
               variant="outlined"
-              :color="categoryTag.color"
-              :append-icon="categoryTag.icon"
+              :prepend-icon="categoryTag.icon"
               text-color="white"
             >
-              <v-icon start icon="mdi-server-plus"></v-icon>
+              <v-icon icon="mdi-account-circle-outline" start></v-icon>
               {{ categoryTag.title }}
             </v-chip>
           </v-chip-group>

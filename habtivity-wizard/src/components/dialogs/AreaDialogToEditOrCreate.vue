@@ -44,6 +44,7 @@ export default class AreaDialogToEditOrCreate extends Vue {
   // Toggles for displays
   showThisDialog = false;
   showDiscardConfirmationDialog = false;
+  showCreateCategoryDialog = false;
   showColorPicker = false;
   areCategoriesLoaded = false;
 
@@ -124,6 +125,21 @@ export default class AreaDialogToEditOrCreate extends Vue {
     }
     this.showDiscardConfirmationDialog = false;
   }
+
+  promptForNewCategory(searchWord: string) {
+    // If none of the existing categoryTags match.
+    if (
+      searchWord &&
+      this.categoryStore
+        .getCategoryTagsList()
+        .filter((value) =>
+          value.title.toLowerCase().startsWith(searchWord.toLowerCase())
+        ).length === 0
+    ) {
+      // Nothing matched. Show create dialog.
+      this.showCreateCategoryDialog = true;
+    }
+  }
 }
 
 export enum DialogMode {
@@ -182,6 +198,7 @@ export enum DialogMode {
             <!-------------------------- Chips auto-complete  -------------------------->
             <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
             <v-autocomplete
+              loading
               auto-select-first
               v-if="areCategoriesLoaded"
               chips
@@ -197,23 +214,13 @@ export enum DialogMode {
               color="blue-grey-lighten-2"
               variant="solo"
               hide-no-data
+              @update:search-input="promptForNewCategory"
             >
-              <!-- <template v-slot:chip="{ props, item }">
-                <v-chip
-                  v-bind="props"
-                  :prepend-avatar="item.raw.icon"
-                  :text="item.raw.title"
-                ></v-chip>
-              </template>
+              <!-- TODO P0 --- Text should disappear after chip is selected -->
 
-              <template v-slot:item="{ props, item }">
-                <v-list-item
-                  v-bind="props"
-                  :prepend-avatar="item?.raw?.icon"
-                  :title="item?.raw?.title"
-                  :subtitle="item?.raw?.color"
-                ></v-list-item>
-              </template> -->
+              <!-- TODO P1 --- "CreateCategory" dialog box. 
+                                  Should popup when category doesn't exist. 
+                                  See stackoverflow post.  -->
             </v-autocomplete>
           </v-form>
         </v-card-text>
