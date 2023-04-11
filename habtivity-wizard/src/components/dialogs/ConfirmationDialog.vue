@@ -48,8 +48,8 @@ export default class ConfirmationDialog extends Vue {
         <v-spacer></v-spacer>
       </v-card-title>
       <v-card-actions>
+        <v-btn text @click="noClicked"> No </v-btn>
         <v-btn color="primary" text @click="yesClicked"> Yes </v-btn>
-        <v-btn color="primary" text @click="noClicked"> No </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

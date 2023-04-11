@@ -138,6 +138,8 @@ export default class AreaDialogToEditOrCreate extends Vue {
     ) {
       // Nothing matched. Show create dialog.
       this.showCreateCategoryDialog = true;
+    } else {
+      this.showCreateCategoryDialog = false;
     }
   }
 }
@@ -195,33 +197,95 @@ export enum DialogMode {
               required
             ></v-text-field>
 
-            <!-------------------------- Chips auto-complete  -------------------------->
-            <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
-            <v-autocomplete
-              loading
-              auto-select-first
-              v-if="areCategoriesLoaded"
-              chips
-              closable-chips
-              deletable-chips
-              clearable
-              label="Categories"
-              v-model="currentArea.categoryTags"
-              :items="categoryStore.getCategoryTagsList()"
-              item-text="title"
-              item-value="id"
-              multiple
-              color="blue-grey-lighten-2"
-              variant="solo"
-              hide-no-data
-              @update:search-input="promptForNewCategory"
-            >
-              <!-- TODO P0 --- Text should disappear after chip is selected -->
+            <!-- TODO 1) -------- Move to separate component "CategorySelectionComponent" -->
 
-              <!-- TODO P1 --- "CreateCategory" dialog box. 
-                                  Should popup when category doesn't exist. 
-                                  See stackoverflow post.  -->
-            </v-autocomplete>
+            <!-- TODO 2) -------- Add fields to the the popup box. Save should call "createCategoryTag" in store -->
+
+            <div class="text-center">
+              <v-menu
+                v-model="showCreateCategoryDialog"
+                :close-on-content-click="false"
+                :nudge-top="240"
+              >
+                <template v-slot:activator="{ props }">
+                  <!-- * ------------------------ Chips auto-complete  -------------------------->
+                  <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
+                  <v-autocomplete
+                    v-bind="props"
+                    loading
+                    auto-select-first
+                    chips
+                    closable-chips
+                    deletable-chips
+                    clearable
+                    label="Categories"
+                    v-model="currentArea.categoryTags"
+                    :items="categoryStore.getCategoryTagsList()"
+                    item-text="title"
+                    item-value="id"
+                    multiple
+                    color="blue-grey-lighten-2"
+                    variant="solo"
+                    hide-no-data
+                    @update:search-input="promptForNewCategory"
+                  >
+                    <!-- ? TODO --- P2 --- Text should disappear after chip is selected -->
+                  </v-autocomplete>
+                </template>
+
+                <v-card>
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-avatar>
+                        <img
+                          src="https://cdn.vuetifyjs.com/images/john.jpg"
+                          alt="John"
+                        />
+                      </v-list-item-avatar>
+
+                      <v-list-item-content>
+                        <v-list-item-title>John Leider</v-list-item-title>
+                        <v-list-item-subtitle
+                          >Founder of Vuetify</v-list-item-subtitle
+                        >
+                      </v-list-item-content>
+
+                      <v-list-item-action>
+                        <v-btn icon>
+                          <v-icon>mdi-heart</v-icon>
+                        </v-btn>
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-list>
+
+                  <v-divider></v-divider>
+
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-action>
+                        <v-switch color="purple"></v-switch>
+                      </v-list-item-action>
+                      <v-list-item-title>Enable messages</v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item>
+                      <v-list-item-action>
+                        <v-switch color="purple"></v-switch>
+                      </v-list-item-action>
+                      <v-list-item-title>Enable hints</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text @click="showCreateCategoryDialog = false">
+                      Cancel
+                    </v-btn>
+                    <v-btn color="primary" text> Save </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-menu>
+            </div>
           </v-form>
         </v-card-text>
 
