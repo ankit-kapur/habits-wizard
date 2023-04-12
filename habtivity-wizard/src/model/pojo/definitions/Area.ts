@@ -1,7 +1,13 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface Area {
   // Identifiers
   id?: string;
   userId: string;
+
+  // Time-related
+  createdAt?: Timestamp;
+  lastUpdatedAt?: Timestamp;
 
   // Display attributes
   title: string;

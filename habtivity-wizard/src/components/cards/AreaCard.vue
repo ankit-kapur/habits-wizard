@@ -6,6 +6,7 @@ import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import AreaDialogToEditOrCreate from "@/components/dialogs/AreaDialogToEditOrCreate.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
+import { Timestamp } from "firebase/firestore";
 
 @Component({
   components: {
@@ -85,6 +86,18 @@ export default class AreaCard extends Vue {
   getCategoriesForArea(): CategoryTag[] {
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
   }
+
+  getPrettyTimestamp(firestoreTimestamp?: Timestamp): string {
+    if (!firestoreTimestamp) return "";
+    return firestoreTimestamp.toDate().toLocaleString("en-US", {
+      // weekday: "short",
+      // year: "numeric",
+      // month: "2-digit",
+      // day: "2-digit",
+      timeStyle: "short",
+      dateStyle: "long",
+    });
+  }
 }
 </script>
 
@@ -141,18 +154,20 @@ export default class AreaCard extends Vue {
             {{ area.description }}
           </v-card-text>
 
-          <!-- TODO --- random idea, move to Notion: allow ongoing activities to be paused and resumed. 
-           *  calc totalDuration = (endTime - startTime - all paused durations)  -->
+          <v-card-text class="pb-0 ma-0">
+            Created at: {{ getPrettyTimestamp(area.createdAt) }} <br />
+            Last updated at: {{ getPrettyTimestamp(area.lastUpdatedAt) }}
+          </v-card-text>
+
+          <!-- TODO P0 --- New component for "CategoryChip". Props: CategoryTag[] -->
+
+          <!-- TODO P1 --- Icon's not showing up on the chip. Outline not working. -->
+
+          <!-- TODO --- (random idea, move to Notion) allow ongoing activities to be paused and resumed. 
+                     *  calc totalDuration = (endTime - startTime - all paused durations)  -->
 
           <!-- Category chips -->
           <v-chip-group column multiple class="ml-4">
-            <!-- TODO 0 --- New component for "CategoryChip". Props: CategoryTag[] -->
-
-            <!-- TODO 1 --- Icon's not showing up on the chip. Outline not working. -->
-            <!-- TODO 2 --- Chips in Edit/Create dialog. Make sub-dialog to create new CategoryTag. -->
-            <!-- TODO 3 --- Show created-at time -->
-            <!-- TODO 4 --- AreasPage should be sorted by created-at time -->
-
             <v-chip
               v-for="(categoryTag, index) in getCategoriesForArea()"
               v-bind:categoryTag="categoryTag"
@@ -171,7 +186,7 @@ export default class AreaCard extends Vue {
       </div>
     </v-expand-transition>
 
-    <!-- CONFIRMATION dialog for discarding a recorded thing -->
+    <!-- CONFIRMATION dialog for deleting this area -->
     <ConfirmationDialog
       v-on:confirm-status-change="respondToConfirmDeleteDialog"
       :showDialog="showDialogForConfirmDelete"

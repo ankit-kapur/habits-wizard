@@ -28,7 +28,7 @@ export default class AreasPage extends Vue {
 
   // ------------------------------------------------ Mounted
   mounted() {
-    this.areasStore.subscribeToStore();
+    this.areasStore.subscribeToLoadAllQuery();
     this.showDialogForNewArea = false;
     console.log("🐪 🐪 🐪  Mounted AreasPage");
   }
@@ -36,7 +36,7 @@ export default class AreasPage extends Vue {
   unmounted() {
     // TODO -- not the right place to unsubscribe. not getting called.
 
-    this.areasStore.unsubscribe();
+    this.areasStore.unsubscribeAll();
     console.log("🐪 🐪 🐪  UN-mounted AreasPage");
   }
 

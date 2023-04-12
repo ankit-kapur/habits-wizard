@@ -1,4 +1,5 @@
 import { Area } from "@/model/pojo/definitions/Area";
+import CategoryTag from "@/model/pojo/main/CategoryTag";
 
 export const defaultNewArea: Area = {
   title: "New Area",
@@ -6,6 +7,13 @@ export const defaultNewArea: Area = {
   color: "#8686D6",
   userId: "testuser",
   description:
-    "late 16th century (as a noun denoting a place where alms were distributed): from medieval Latin eleemosynarius, from late Latin eleemosyna ‘alms’, from Greek eleēmosunē ‘compassion’",
+    "late 16th century from medieval Latin eleemosynarius, from late Latin eleemosyna‘alms",
   categoryTags: [],
+};
+
+export const defaultNewCategory: CategoryTag = {
+  id: "",
+  title: "New category",
+  icon: "mdi-rocket",
+  userId: "userId",
 };

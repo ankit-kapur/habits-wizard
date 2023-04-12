@@ -7,10 +7,12 @@ import { deepCopy } from "deep-copy-ts";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { defaultNewArea } from "@/constants/DefaultDataForForms";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import CategorySelector from "../chips/CategorySelector.vue";
 
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
+    CategorySelector: CategorySelector,
   },
 })
 export default class AreaDialogToEditOrCreate extends Vue {
@@ -126,21 +128,8 @@ export default class AreaDialogToEditOrCreate extends Vue {
     this.showDiscardConfirmationDialog = false;
   }
 
-  promptForNewCategory(searchWord: string) {
-    // If none of the existing categoryTags match.
-    if (
-      searchWord &&
-      this.categoryStore
-        .getCategoryTagsList()
-        .filter((value) =>
-          value.title.toLowerCase().startsWith(searchWord.toLowerCase())
-        ).length === 0
-    ) {
-      // Nothing matched. Show create dialog.
-      this.showCreateCategoryDialog = true;
-    } else {
-      this.showCreateCategoryDialog = false;
-    }
+  onCategoryTagsChanged(updatedCategoryTagIdList: string[]) {
+    this.currentArea.categoryTags = updatedCategoryTagIdList;
   }
 }
 
@@ -152,8 +141,7 @@ export enum DialogMode {
 
 <template>
   <div class="" v-if="showThisDialog">
-    <!-- Dialog for NEW Area -->
-    <!-- fullscreen attach="v-app" -->
+    <!-- * ------------------------------------------------ Bottom sheet -->
     <v-bottom-sheet v-model="showThisDialog" persistent>
       <v-card>
         <v-card-title>
@@ -197,95 +185,13 @@ export enum DialogMode {
               required
             ></v-text-field>
 
-            <!-- TODO 1) -------- Move to separate component "CategorySelectionComponent" -->
-
-            <!-- TODO 2) -------- Add fields to the the popup box. Save should call "createCategoryTag" in store -->
-
-            <div class="text-center">
-              <v-menu
-                v-model="showCreateCategoryDialog"
-                :close-on-content-click="false"
-                :nudge-top="240"
-              >
-                <template v-slot:activator="{ props }">
-                  <!-- * ------------------------ Chips auto-complete  -------------------------->
-                  <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
-                  <v-autocomplete
-                    v-bind="props"
-                    loading
-                    auto-select-first
-                    chips
-                    closable-chips
-                    deletable-chips
-                    clearable
-                    label="Categories"
-                    v-model="currentArea.categoryTags"
-                    :items="categoryStore.getCategoryTagsList()"
-                    item-text="title"
-                    item-value="id"
-                    multiple
-                    color="blue-grey-lighten-2"
-                    variant="solo"
-                    hide-no-data
-                    @update:search-input="promptForNewCategory"
-                  >
-                    <!-- ? TODO --- P2 --- Text should disappear after chip is selected -->
-                  </v-autocomplete>
-                </template>
-
-                <v-card>
-                  <v-list>
-                    <v-list-item>
-                      <v-list-item-avatar>
-                        <img
-                          src="https://cdn.vuetifyjs.com/images/john.jpg"
-                          alt="John"
-                        />
-                      </v-list-item-avatar>
-
-                      <v-list-item-content>
-                        <v-list-item-title>John Leider</v-list-item-title>
-                        <v-list-item-subtitle
-                          >Founder of Vuetify</v-list-item-subtitle
-                        >
-                      </v-list-item-content>
-
-                      <v-list-item-action>
-                        <v-btn icon>
-                          <v-icon>mdi-heart</v-icon>
-                        </v-btn>
-                      </v-list-item-action>
-                    </v-list-item>
-                  </v-list>
-
-                  <v-divider></v-divider>
-
-                  <v-list>
-                    <v-list-item>
-                      <v-list-item-action>
-                        <v-switch color="purple"></v-switch>
-                      </v-list-item-action>
-                      <v-list-item-title>Enable messages</v-list-item-title>
-                    </v-list-item>
-
-                    <v-list-item>
-                      <v-list-item-action>
-                        <v-switch color="purple"></v-switch>
-                      </v-list-item-action>
-                      <v-list-item-title>Enable hints</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn text @click="showCreateCategoryDialog = false">
-                      Cancel
-                    </v-btn>
-                    <v-btn color="primary" text> Save </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-menu>
-            </div>
+            <!-- * -------------------------------- Tag selector for category chips -->
+            <CategorySelector
+              :allItemsList="categoryStore.getCategoryTagsList()"
+              :selectedItemIdList="currentArea.categoryTags"
+              :area="currentArea"
+              v-on:category-tags-changed="onCategoryTagsChanged"
+            ></CategorySelector>
           </v-form>
         </v-card-text>
 
@@ -310,7 +216,7 @@ export enum DialogMode {
       </v-card>
     </v-bottom-sheet>
 
-    <!-- CONFIRMATION dialog for discarding a recorded thing -->
+    <!-- * -------------------------------- Confirm dialog for discarding -->
     <ConfirmationDialog
       v-on:confirm-status-change="respondToConfirmDialog"
       :showDialog="showDiscardConfirmationDialog"
