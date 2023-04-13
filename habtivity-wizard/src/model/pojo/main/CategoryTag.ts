@@ -6,5 +6,7 @@ export default interface CategoryTag {
   // Display attributes
   title: string;
   icon?: string;
-  color?: string;
+
+  // Deprecated
+  // color?: string;
 }

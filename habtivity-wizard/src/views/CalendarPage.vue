@@ -1,5 +1,10 @@
 <template>
-  <div class="about">
-    <h1>Calendar page: placeholder</h1>
+  <div>
+    <v-btn @click="$router.go(-1)" fab plain>
+      <v-icon>mdi-arrow-left-thin</v-icon>
+      back
+    </v-btn>
+
+    <v-banner>(Work in progress)</v-banner>
   </div>
 </template>

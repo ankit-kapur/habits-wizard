@@ -27,7 +27,6 @@ export default class CategorySelector extends Vue {
   showCreateCategoryDialog = false;
   showDialogForConfirmDiscard = false;
   selectedItemIdList_local: string[] = [];
-  searchText = "";
   newCategoryTag: CategoryTag = defaultNewCategory;
 
   // ------------------------------------------------ Methods
@@ -53,7 +52,7 @@ export default class CategorySelector extends Vue {
     } else {
       this.showCreateCategoryDialog = false;
     }
-    this.searchText = searchWord;
+    this.newCategoryTag.title = searchWord;
   }
 
   // Update parent
@@ -73,7 +72,6 @@ export default class CategorySelector extends Vue {
   }
 
   saveNewCategory() {
-    // TODO: Call store
     console.log("Saving new category");
     this.categoryTagsStore.createCategoryTag(this.newCategoryTag);
     this.resetNewCategoryData();
@@ -121,7 +119,7 @@ export default class CategorySelector extends Vue {
                     [ ] Hook up the category store. -->
 
       <!-- * ------------------------ New category popup  -------------------------->
-      <v-card>
+      <v-card class="display:flex">
         <v-list>
           <v-list-item>
             <v-list-item-content>
@@ -139,14 +137,45 @@ export default class CategorySelector extends Vue {
 
         <v-divider></v-divider>
 
-        <v-list>
+        <!-- * ---------- Title text-field ---------- * -->
+        <v-container fluid>
+          <v-text-field
+            label="Name"
+            v-model="newCategoryTag.title"
+            class="shrink;display:flex;width=100px"
+            placeholder="New category"
+            hint="Something short and sweet."
+            counter="15"
+            clearable
+            autofocus
+          ></v-text-field>
+
+          <!-- * ---------- Icon text-field ---------- * -->
+          <!-- TODO p1 Build an IconPicker component -->
+          <v-text-field
+            label="Icon"
+            placeholder="mdi-rocket"
+            v-model="newCategoryTag.icon"
+            class="mx-auto px-auto"
+            clearable
+          ></v-text-field>
+        </v-container>
+
+        <!-- <v-list>
           <v-list-item>
             <v-list-item-title>Name</v-list-item-title>
             <v-list-item-action-text>
-              <v-text-field v-model="searchText"></v-text-field>
+              <v-text-field v-model="newCategoryTag.title"></v-text-field>
             </v-list-item-action-text>
           </v-list-item>
-        </v-list>
+
+          <v-list-item>
+            <v-list-item-title>Icon</v-list-item-title>
+            <v-list-item-action-text>
+              <v-text-field v-model="newCategoryTag.icon"></v-text-field>
+            </v-list-item-action-text>
+          </v-list-item>
+        </v-list> -->
 
         <v-card-actions>
           <v-spacer></v-spacer>

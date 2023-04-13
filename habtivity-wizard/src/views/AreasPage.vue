@@ -59,31 +59,37 @@ export default class AreasPage extends Vue {
 
 <!------------- Template  --------------->
 <template>
-  <v-container>
-    <h1 align="center">Areas</h1>
-
-    <!------------------- Area cards -------------------->
-    <AreaCard
-      v-for="(area, index) in areasStore.getAreasList()"
-      v-bind:area="area"
-      v-bind:index="index"
-      v-bind:key="area.id"
-      v-on:edit-area="triggerEditMode"
-    ></AreaCard>
+  <v-container fluid>
+    <v-row dense>
+      <v-col>
+        <!------------------- Area cards -------------------->
+        <AreaCard
+          v-for="(area, index) in areasStore.getAreasList()"
+          v-bind:area="area"
+          v-bind:index="index"
+          v-bind:key="area.id"
+          v-on:edit-area="triggerEditMode"
+        ></AreaCard>
+      </v-col>
+    </v-row>
 
     <!----------------- (+) Add button ------------------>
-    <div class="pa-4 text-center">
-      <v-btn
-        fab
-        color="blue"
-        dark
-        variant="outlined"
-        elevation="4"
-        @click="showDialogForNewArea = true"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-    </div>
+    <v-row dense>
+      <v-col cols="12">
+        <div class="text-center">
+          <v-btn
+            fab
+            color="add_button"
+            dark
+            variant="outlined"
+            elevation="4"
+            @click="showDialogForNewArea = true"
+          >
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
 
     <!------------------- Dialogs -------------------->
     <!-- Create dialog -->

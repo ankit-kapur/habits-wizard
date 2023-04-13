@@ -24,7 +24,6 @@ export const useRecordedThingsStore = defineStore("RecordedThingsStore", {
       console.log("loaded recordedThings.json");
     },
     getRecordedThingsByDay(): RecordedThing[] {
-      // TODO: should take Date as argument.
       return this.recordedThingsList;
     },
   },

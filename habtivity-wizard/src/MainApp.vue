@@ -26,7 +26,6 @@ export default class MainApp extends Vue {
   ];
 
   // ------------------------------------------------ Methods
-
   openDrawer(): void {
     console.log("Opening drawer");
     this.isNavDrawerOpen = !this.isNavDrawerOpen;
@@ -51,12 +50,22 @@ export default class MainApp extends Vue {
 <template>
   <v-sheet id="app" class="d-flex">
     <v-app id="MainApp">
-      <v-app-bar app elevation="0">
+      <v-app-bar app elevation="5">
         <!-- Other props: shrink-on-scroll prominent -->
 
-        <v-app-bar-nav-icon @click="openDrawer"></v-app-bar-nav-icon>
-
-        <v-toolbar-title>Lizard Wizard</v-toolbar-title>
+        <v-toolbar-title>
+          <v-btn
+            @click="$router.go(-1)"
+            fab
+            plain
+            small
+            style="text-align: left"
+          >
+            <v-icon>mdi-arrow-left-thin</v-icon>
+          </v-btn>
+          <!-- <a href="$router.go(-1)"> ooo </a> -->
+          {{ $route.name }}
+        </v-toolbar-title>
 
         <!-- Spaces out so icons on the top-right stay far -->
         <v-spacer></v-spacer>
@@ -66,14 +75,10 @@ export default class MainApp extends Vue {
           <v-icon>mdi-cog-outline</v-icon>
         </v-btn>
 
-        <!-- TODO: Filter @click should show/hide filters component -->
-        <v-btn icon>
-          <v-icon>mdi-filter</v-icon>
-        </v-btn>
+        <v-app-bar-nav-icon @click="openDrawer"></v-app-bar-nav-icon>
       </v-app-bar>
 
       <v-navigation-drawer v-model="isNavDrawerOpen" temporary absolute>
-        <!-- Fancier options: mini-variant expand-on-hover-->
         <v-list nav dense>
           <v-list-item-group
             v-model="group"

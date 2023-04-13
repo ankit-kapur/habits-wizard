@@ -17,6 +17,9 @@ export default new Vuetify({
         warning: "#ffc107",
         info: "#795548",
         success: "#4caf50",
+
+        add_button: "#673ab7",
+        action_icon: "#795548",
       },
     },
   },

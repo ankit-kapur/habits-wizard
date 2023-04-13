@@ -67,7 +67,7 @@ export default class BottomNavBar extends Vue {
   <!-- TODO use color from the theme -->
   <v-bottom-navigation
     v-model="selectedPageNumber"
-    background-color="indigo"
+    background-color="secondary"
     mode="shift"
     :elevation="11"
     fixed
@@ -90,7 +90,7 @@ export default class BottomNavBar extends Vue {
     </v-btn>
 
     <v-btn ref="link" to="/configurationPage" min-width="38" min-height="30">
-      <span> Config </span>
+      <span> Profile </span>
       <v-icon> mdi-account-edit </v-icon>
     </v-btn>
 

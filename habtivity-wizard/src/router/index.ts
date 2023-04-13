@@ -11,27 +11,27 @@ Vue.use(VueRouter);
 const routes: Array<RouteConfig> = [
   {
     path: "/",
-    name: "homePage",
+    name: "Home",
     component: HomePage,
   },
   {
     path: "/calendarPage",
-    name: "calendarPage",
+    name: "Calendar",
     component: CalendarPage,
   },
   {
     path: "/progressPage",
-    name: "progressPage",
+    name: "Progress",
     component: ProgressPage,
   },
   {
     path: "/configurationPage",
-    name: "configurationPage",
+    name: "Preferences",
     component: ConfigurationPage,
   },
   {
     path: "/areasPage",
-    name: "areasPage",
+    name: "Areas",
     component: AreasPage,
   },
 ];

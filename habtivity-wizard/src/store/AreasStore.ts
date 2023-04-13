@@ -25,8 +25,11 @@ interface State {
   unsubscribeHooks: Unsubscribe[];
 }
 
-// TODO ---- Store timestamps as epoch.
+// TODO P0 ---- Store timestamps as epoch.
 //         ! Sorting isn't working because of Firestore's weird bug where it sometimes stores Timestamps as Maps.
+
+// TODO P0 ---- Hook up "CreateCategory" component to store (for save)
+//         ! Store for categories needs work. UUID, Timestamps.
 
 // Replace with Generics <T> across all stores.
 // See: https://medium.com/swlh/using-firestore-with-typescript-65bd2a602945
