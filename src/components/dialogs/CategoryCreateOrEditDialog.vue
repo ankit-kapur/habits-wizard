@@ -95,13 +95,15 @@ export default class CategoryCreateOrEditDialog extends Vue {
     <v-row center>
       <v-col>
         <v-bottom-sheet
+          max-width="450"
+          overlay-opacity="0.88"
           inset
           v-model="showDialog_local"
           persistent
           @keydown.esc="triggerCancellation"
           @keydown.enter="saveCategoryTag"
         >
-          <v-card class="" max-width="400">
+          <v-card>
             <v-list>
               <v-list-item>
                 <v-list-item-content>

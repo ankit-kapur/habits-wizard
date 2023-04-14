@@ -3,7 +3,7 @@ import { defaultNewCategory } from "@/constants/DefaultDataForForms";
 import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/main/CategoryTag";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
 import CategoryCreateOrEditDialog from "../dialogs/CategoryCreateOrEditDialog.vue";
 
@@ -21,6 +21,21 @@ export default class CategorySelector extends Vue {
   selectedItemIdList!: string[];
   @Prop()
   area!: Area;
+
+  /**
+   * Watches parent variable. Sync's its value to the child.
+   */
+  @Watch("selectedItemIdList")
+  @Watch("allItemsList")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onPropertyChanged(_newValue: string, _oldValue: string) {
+    this.selectedItemIdList_local = this.selectedItemIdList;
+
+    console.log(
+      "onPropertyChanged just happened inside @Watch. this.selectedItemIdList_local ===> " +
+        JSON.stringify(this.selectedItemIdList_local)
+    );
+  }
 
   // ------------------------------------------------ Stores
   categoryTagsStore = useCategoryTagsStore();
@@ -96,92 +111,98 @@ export default class CategorySelector extends Vue {
 
 <template>
   <div class="text-center">
-    <v-menu
-      v-model="showCreateCategoryDialog"
-      :close-on-content-click="false"
-      :close-on-click="false"
-      :nudge-top="240"
+    <!-- * ------------------------ Auto-complete for chips  -------------------------->
+    <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
+    <!-- removed fields: clearable -->
+    <v-autocomplete
+      loading
+      auto-select-first
+      chips
+      deletable-chips
+      label="Categories"
+      v-model="selectedItemIdList_local"
+      :items="allItemsList"
+      item-text="title"
+      item-value="id"
+      multiple
+      hint="Select a tag or create a new one."
+      color="blue-grey-lighten-2"
+      hide-selected
+      :hide-no-data="showCreateCategoryDialog"
+      @input="searchInput = ''"
+      :search-input.sync="searchInput"
+      @keydown.enter="promptForNewCategory"
+      @keydown.enter.native.prevent
+      @change="onTagSelectionChange"
+      :menu-props="{
+        closeOnContentClick: false,
+        closeOnClick: true,
+        openOnClick: false,
+      }"
+      :disabled="showEditCategoryDialog"
     >
-      <template v-slot:activator="{ props }">
-        <!-- * ------------------------ Chips auto-complete  -------------------------->
-        <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
-        <!-- removed fields: clearable -->
-        <v-autocomplete
-          v-bind="props"
-          loading
-          auto-select-first
-          chips
-          deletable-chips
-          label="Categories"
-          v-model="selectedItemIdList_local"
-          :items="allItemsList"
-          item-text="title"
-          item-value="id"
-          multiple
-          hint="Select a tag or create a new one."
-          color="blue-grey-lighten-2"
-          variant="solo"
-          hide-selected
-          @input="searchInput = ''"
-          @keydown.enter="promptForNewCategory"
-          @keydown.enter.native.prevent
-          :search-input.sync="searchInput"
-          @change="onTagSelectionChange"
-        >
-          <!-- Notes about the modifiers above in <v-autocomplete> -->
-          <!-- @update:search-input="promptForNewCategory" -->
+      <!-- Notes about the modifiers above in <v-autocomplete> -->
+      <!--      @input will reset the text-input to '' once tag is selected -->
+      <!--      search-input.sync will bind the text-input to our variable -->
+      <!--      (unused) @update:search-input="callFunc" will call our func when text-input changes -->
+      <!--      hide-no-data will make the prompy for 'no-data' disappear when Create box is active -->
 
-          <!-- * ------------ When no tags match ------------ * -->
-          <template v-slot:no-data>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title>
-                  Press <code>enter</code> to create.
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-
-          <!-- * ------------ Chip ------------ * -->
-          <template v-slot:selection="data">
-            <v-chip
-              v-bind="data.attrs"
-              close
-              @click="triggerEditDialog(data.item)"
-              @click:close="removeCategoryTagFromArea(data.item)"
-            >
-              <v-icon class="mr-2">{{ data.item.icon }}</v-icon>
-              {{ data.item.title }}
-            </v-chip>
-          </template>
-
-          <!-- TODO --- Prepend icon -->
-          <!-- <template v-slot:no-data=""></template>
-          </template> -->
-
-          <!-- * ------------ List item in dropdown ------------ * -->
-          <!-- <template v-slot:item="{}"></template> -->
-
-          <!-- <template v-slot:item="{ props, item }">
-            <v-list-item
-              v-bind="props"
-              :prepend-avatar="item?.raw?.avatar"
-              :title="item?.raw?.name"
-              :subtitle="item?.raw?.group"
-            ></v-list-item>
-          </template> -->
-
-          <!-- * ------------ (+) icon ------------ * -->
-          <!-- eslint-disable vue/no-v-text-v-html-on-component -->
-          <template v-slot:append-outer>
-            <v-icon
-              @click="showCreateCategoryDialog = true"
-              v-text="'mdi-plus-circle-outline'"
-            ></v-icon>
-          </template>
-        </v-autocomplete>
+      <!-- * ------------ When no tags match ------------ * -->
+      <template v-slot:no-data>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title>
+              Press <code>enter</code> to create.
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </template>
-    </v-menu>
+
+      <!-- * ------------ Chip ------------ * -->
+      <template v-slot:selection="data">
+        <v-chip
+          v-bind="data.attrs"
+          close
+          @click="triggerEditDialog(data.item)"
+          @click:close="removeCategoryTagFromArea(data.item)"
+        >
+          <v-icon class="mr-2">{{ data.item.icon }}</v-icon>
+          {{ data.item.title }}
+        </v-chip>
+      </template>
+
+      <!-- * ------------ List item in dropdown ------------ * -->
+      <!-- eslint-disable vue/no-unused-vars -->
+      <!-- eslint-disable vue/no-v-text-v-html-on-component -->
+      <template v-slot:item="{ item, attrs, on }">
+        <v-list-item v-on="on" v-bind="attrs" #default="{ active }">
+          <!-- <v-list-item-avatar>
+            <img :src="area.imageUrl" />
+          </v-list-item-avatar> -->
+          <v-list-item-content>
+            <v-list-item-title>
+              <v-row no-gutters align="center">
+                <v-icon class="pr-4">{{ item.icon }}</v-icon>
+                <span>{{ item.title }}</span>
+                <v-spacer></v-spacer>
+                <!-- <v-btn icon>
+                      <v-icon small class="">mdi-pencil</v-icon>
+                    </v-btn> -->
+              </v-row>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </template>
+
+      <!-- * ------------ (+) icon ------------ * -->
+      <!-- eslint-disable vue/no-v-text-v-html-on-component -->
+      <template v-slot:append-outer>
+        <v-icon
+          @click="showCreateCategoryDialog = true"
+          v-text="'mdi-plus-circle-outline'"
+        ></v-icon>
+      </template>
+    </v-autocomplete>
 
     <!-- * ------------------------ New category popup  -------------------------->
     <CategoryCreateOrEditDialog

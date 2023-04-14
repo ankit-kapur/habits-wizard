@@ -9,6 +9,10 @@ import { defaultNewArea } from "@/constants/DefaultDataForForms";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import CategorySelector from "../chips/CategorySelector.vue";
 
+// TODO --- Use ColorThief to pick a color-palette from the image.
+//          Currently failing because npm can't install canvas.
+// import ColorThief from "colorthief";
+
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
@@ -47,6 +51,7 @@ export default class AreaCreateOrEditDialog extends Vue {
   showThisDialog = false;
   showDiscardConfirmationDialog = false;
   showCreateCategoryDialog = false;
+  showImageEditDialog = false;
   showColorPicker = false;
   areCategoriesLoaded = false;
 
@@ -78,6 +83,11 @@ export default class AreaCreateOrEditDialog extends Vue {
     this.areCategoriesLoaded = true;
     this.resetToDefaultState();
     console.log("🐪 🐪 🐪  Mounted AreaCreateOrEditDialog");
+
+    // TODO --- testing for now
+    // https://github.com/null2/color-thief
+    // const img = resolve(process.cwd(), 'rainbow.png');
+    // ColorThief.getColor();
   }
 
   // ------------------------------------------------ Methods
@@ -140,31 +150,55 @@ export enum DialogMode {
   <div class="">
     <!-- * ------------------------------------------------ Bottom sheet -->
     <v-bottom-sheet
+      max-width="600"
+      inset
       v-model="showThisDialog"
       persistent
+      overlay-opacity="0.88"
       @keydown.esc="triggerCancellation"
     >
       <v-card>
-        <v-card-title>
+        <!--------------------- Image ----------------------->
+        <v-img
+          :src="currentArea.imageUrl"
+          height="180"
+          @click="showImageEditDialog = true"
+        ></v-img>
+
+        <!-- <v-card-text>
+          <v-text-field
+            v-model="currentArea.imageUrl"
+            label="Image URL"
+            @click="showImageEditDialog = false"
+          ></v-text-field
+        ></v-card-text> -->
+
+        <!-- <v-card-title>
           <span class="text-h4">{{ currentArea.title }}</span>
           <v-spacer></v-spacer>
           <v-btn icon
             ><v-icon @click="triggerCancellation">mdi-close</v-icon></v-btn
           >
-        </v-card-title>
+        </v-card-title> -->
+
         <v-card-text>
           <v-form ref="areaForm" v-model="valid" lazy-validation>
             <v-text-field
+              outlined
               v-model="currentArea.title"
               :rules="areaNameRules"
-              label="Title"
+              label="Area"
               required
+              autofocus
+              clearable
+              style="font-size: 22px"
+              class="mt-6"
             ></v-text-field>
 
             <v-text-field
               v-model="currentArea.description"
               label="Description"
-              required
+              counter="200"
             ></v-text-field>
 
             <v-color-picker
@@ -216,5 +250,14 @@ export enum DialogMode {
       :showDialog="showDiscardConfirmationDialog"
       messageToDisplay="Sure you want to discard this?"
     />
+
+    <!-- TODO --- Make an image-lookup component -->
+    <!-- <v-bottom-sheet v-model="showImageEditDialog" hide-overlay persistent>
+      <v-text-field
+        v-model="currentArea.imageUrl"
+        label="Image URL"
+        @click="showImageEditDialog = false"
+      ></v-text-field
+    ></v-bottom-sheet> -->
   </div>
 </template>
