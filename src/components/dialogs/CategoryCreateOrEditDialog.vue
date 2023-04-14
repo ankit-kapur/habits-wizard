@@ -133,7 +133,6 @@ export default class CategoryCreateOrEditDialog extends Vue {
                 hint="Something short and sweet."
                 counter="15"
                 clearable
-                autofocus
               ></v-text-field>
 
               <!-- * ---------- Icon text-field ---------- * -->

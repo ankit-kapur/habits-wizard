@@ -189,7 +189,6 @@ export enum DialogMode {
               :rules="areaNameRules"
               label="Area"
               required
-              autofocus
               clearable
               style="font-size: 22px"
               class="mt-6"
