@@ -88,9 +88,10 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
     },
 
     // -------------------------------------------- Create
-    createCategoryTag(categoryTag: CategoryTag) {
+    createCategoryTag(categoryTag: CategoryTag): string {
       console.log("Creating categoryTag: " + JSON.stringify(categoryTag));
       addDoc(firestoreCollection, categoryTag);
+      return ""; // TODO: return UUID
     },
 
     // -------------------------------------------- Update

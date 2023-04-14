@@ -76,7 +76,7 @@ export default class AreasPage extends Vue {
     <!----------------- (+) Add button ------------------>
     <v-row dense>
       <v-col cols="12">
-        <div class="text-center">
+        <div class="text-center mb-15">
           <v-btn
             fab
             color="add_button"

@@ -185,7 +185,8 @@ export default class AreaCard extends Vue {
         >
       </v-btn>
     </v-card-actions>
-    <v-divider></v-divider>
+
+    <v-divider class="mx-4 mb-1"></v-divider>
 
     <v-expand-transition mode="in-out">
       >
@@ -198,7 +199,7 @@ export default class AreaCard extends Vue {
           {{ area.description }}
         </v-card-text>
 
-        <v-divider></v-divider>
+        <v-divider class="mx-4 mb-1"></v-divider>
 
         <v-card-text>
           Created at: {{ getPrettyTimestamp(area.createdAt) }} <br />
@@ -213,7 +214,7 @@ export default class AreaCard extends Vue {
                      *  calc totalDuration = (endTime - startTime - all paused durations)  -->
 
         <div v-if="getCategoriesForArea().length > 0">
-          <v-divider></v-divider>
+          <v-divider class="mx-4 mb-1"></v-divider>
           <v-card-text class="pt-3 mb-0 pb-0">Categories</v-card-text>
 
           <!-- Category chips -->

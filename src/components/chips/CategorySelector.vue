@@ -73,9 +73,18 @@ export default class CategorySelector extends Vue {
 
   saveNewCategory() {
     console.log("Saving new category");
-    this.categoryTagsStore.createCategoryTag(this.newCategoryTag);
+    const newId: string = this.categoryTagsStore.createCategoryTag(
+      this.newCategoryTag
+    );
+    this.selectedItemIdList_local.push(newId);
+    // Reset dialog box
     this.resetNewCategoryData();
     this.showCreateCategoryDialog = false;
+  }
+
+  removeCategoryTagFromArea(category: CategoryTag) {
+    const index = this.selectedItemIdList_local.indexOf(category.id);
+    if (index >= 0) this.selectedItemIdList_local.splice(index, 1);
   }
 }
 </script>
@@ -96,7 +105,6 @@ export default class CategorySelector extends Vue {
           loading
           auto-select-first
           chips
-          closable-chips
           deletable-chips
           clearable
           label="Categories"
@@ -111,12 +119,40 @@ export default class CategorySelector extends Vue {
           @update:search-input="promptForNewCategory"
           @change="onTagSelectionChange"
         >
+          <template v-slot:selection="data">
+            <v-chip
+              v-bind="data.attrs"
+              close
+              @click="data.select"
+              @click:close="removeCategoryTagFromArea(data.item)"
+            >
+              <v-icon class="mr-2">{{ data.item.icon }}</v-icon>
+              {{ data.item.title }}
+            </v-chip>
+          </template>
+
+          <!-- <template v-slot:item="data">
+            <template v-if="typeof data.item !== 'object'">
+              <v-list-item-content
+                v-text="data.item.title"
+              ></v-list-item-content>
+            </template>
+            <template v-else>
+              <v-list-item-avatar>
+                <img :src="data.item.avatar" />
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title v-html="data.item.title"></v-list-item-title>
+                <v-list-item-subtitle
+                  v-html="data.item.group"
+                ></v-list-item-subtitle>
+              </v-list-item-content>
+            </template>
+          </template> -->
+
           <!-- ? TODO --- P2 --- Text should disappear after chip is selected -->
         </v-autocomplete>
       </template>
-
-      <!-- TODO --- Make the popup below work. 
-                    [ ] Hook up the category store. -->
 
       <!-- * ------------------------ New category popup  -------------------------->
       <v-card class="display:flex">
@@ -160,22 +196,6 @@ export default class CategorySelector extends Vue {
             clearable
           ></v-text-field>
         </v-container>
-
-        <!-- <v-list>
-          <v-list-item>
-            <v-list-item-title>Name</v-list-item-title>
-            <v-list-item-action-text>
-              <v-text-field v-model="newCategoryTag.title"></v-text-field>
-            </v-list-item-action-text>
-          </v-list-item>
-
-          <v-list-item>
-            <v-list-item-title>Icon</v-list-item-title>
-            <v-list-item-action-text>
-              <v-text-field v-model="newCategoryTag.icon"></v-text-field>
-            </v-list-item-action-text>
-          </v-list-item>
-        </v-list> -->
 
         <v-card-actions>
           <v-spacer></v-spacer>

@@ -76,11 +76,8 @@ export default class AreaDialogToEditOrCreate extends Vue {
     console.log("🐪 🐪 🐪  Loading categories");
     this.categoryStore.subscribeToStore();
     this.areCategoriesLoaded = true;
-    console.log("🐪 🐪 🐪  Mounted AreaDialogToEditOrCreate");
-  }
-  // Maybe don't need this?
-  beforeMount() {
     this.resetToDefaultState();
+    console.log("🐪 🐪 🐪  Mounted AreaDialogToEditOrCreate");
   }
 
   // ------------------------------------------------ Methods
@@ -140,12 +137,16 @@ export enum DialogMode {
 </script>
 
 <template>
-  <div class="" v-if="showThisDialog">
+  <div class="">
     <!-- * ------------------------------------------------ Bottom sheet -->
     <v-bottom-sheet v-model="showThisDialog" persistent>
       <v-card>
         <v-card-title>
           <span class="text-h4">{{ currentArea.title }}</span>
+          <v-spacer></v-spacer>
+          <v-btn icon
+            ><v-icon @click="confirmDiscardAction">mdi-close</v-icon></v-btn
+          >
         </v-card-title>
         <v-card-text>
           <v-form ref="areaForm" v-model="valid" lazy-validation>
