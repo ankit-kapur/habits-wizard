@@ -15,7 +15,7 @@ import CategorySelector from "../chips/CategorySelector.vue";
     CategorySelector: CategorySelector,
   },
 })
-export default class AreaDialogToEditOrCreate extends Vue {
+export default class AreaCreateOrEditDialog extends Vue {
   // ------------------------------------------------ Props
   @Prop()
   providedArea!: Area;
@@ -31,9 +31,9 @@ export default class AreaDialogToEditOrCreate extends Vue {
   @Watch("providedArea")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
+    this.showThisDialog = this.showDialog;
     if (this.providedArea != null)
       this.currentArea = deepCopy(this.providedArea);
-    this.showThisDialog = this.showDialog;
   }
 
   // Store
@@ -77,7 +77,7 @@ export default class AreaDialogToEditOrCreate extends Vue {
     this.categoryStore.subscribeToStore();
     this.areCategoriesLoaded = true;
     this.resetToDefaultState();
-    console.log("🐪 🐪 🐪  Mounted AreaDialogToEditOrCreate");
+    console.log("🐪 🐪 🐪  Mounted AreaCreateOrEditDialog");
   }
 
   // ------------------------------------------------ Methods
@@ -106,7 +106,7 @@ export default class AreaDialogToEditOrCreate extends Vue {
     this.showColorPicker = false;
   }
 
-  confirmDiscardAction() {
+  triggerCancellation() {
     // If nothing's changed, discard without confirmation
     if (
       JSON.stringify(this.providedArea) == JSON.stringify(this.currentArea) ||
@@ -132,20 +132,24 @@ export default class AreaDialogToEditOrCreate extends Vue {
 
 export enum DialogMode {
   CREATE = "CREATE",
-  UPDATE = "UPDATE",
+  EDIT = "EDIT",
 }
 </script>
 
 <template>
   <div class="">
     <!-- * ------------------------------------------------ Bottom sheet -->
-    <v-bottom-sheet v-model="showThisDialog" persistent>
+    <v-bottom-sheet
+      v-model="showThisDialog"
+      persistent
+      @keydown.esc="triggerCancellation"
+    >
       <v-card>
         <v-card-title>
           <span class="text-h4">{{ currentArea.title }}</span>
           <v-spacer></v-spacer>
           <v-btn icon
-            ><v-icon @click="confirmDiscardAction">mdi-close</v-icon></v-btn
+            ><v-icon @click="triggerCancellation">mdi-close</v-icon></v-btn
           >
         </v-card-title>
         <v-card-text>
@@ -198,19 +202,8 @@ export enum DialogMode {
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            class="discard-button white--text"
-            text
-            @click="confirmDiscardAction"
-          >
-            Discard
-          </v-btn>
-          <v-btn
-            class="confirm-button white--text"
-            text
-            :disabled="!valid"
-            @click="saveArea"
-          >
+          <v-btn text class="pr-6" @click="triggerCancellation"> Cancel </v-btn>
+          <v-btn text color="primary" :disabled="!valid" @click="saveArea">
             Save
           </v-btn>
         </v-card-actions>

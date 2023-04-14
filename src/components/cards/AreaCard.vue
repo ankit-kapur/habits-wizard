@@ -4,13 +4,13 @@ import CategoryTag from "@/model/pojo/main/CategoryTag";
 import { useAreasStore } from "@/store/AreasStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
-import AreaDialogToEditOrCreate from "@/components/dialogs/AreaDialogToEditOrCreate.vue";
+import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { Timestamp } from "firebase/firestore";
 
 @Component({
   components: {
-    AreaDialogToEditOrCreate: AreaDialogToEditOrCreate,
+    AreaCreateOrEditDialog: AreaCreateOrEditDialog,
     ConfirmationDialog: ConfirmationDialog,
   },
 })

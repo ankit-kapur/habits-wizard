@@ -1,11 +1,11 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import AreaDialogToEditOrCreate from "@/components/dialogs/AreaDialogToEditOrCreate.vue";
+import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 
 @Component({
   components: {
-    AreaDialogToEditOrCreate: AreaDialogToEditOrCreate,
+    AreaCreateOrEditDialog: AreaCreateOrEditDialog,
     ConfirmationDialog: ConfirmationDialog,
   },
 })

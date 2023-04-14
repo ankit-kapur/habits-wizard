@@ -51,18 +51,11 @@ export default class MainApp extends Vue {
   <v-sheet id="app" class="d-flex">
     <v-app id="MainApp">
       <v-app-bar app elevation="5">
-        <!-- Other props: shrink-on-scroll prominent -->
-
+        <!-- Other props: prominent shrink-on-scroll -->
+        <v-app-bar-nav-icon @click="$router.go(-1)"
+          ><v-icon>mdi-chevron-left</v-icon></v-app-bar-nav-icon
+        >
         <v-toolbar-title>
-          <v-btn
-            @click="$router.go(-1)"
-            fab
-            plain
-            small
-            style="text-align: left"
-          >
-            <v-icon>mdi-arrow-left-thin</v-icon>
-          </v-btn>
           <!-- <a href="$router.go(-1)"> ooo </a> -->
           {{ $route.name }}
         </v-toolbar-title>
@@ -105,7 +98,7 @@ export default class MainApp extends Vue {
       <!-- Sizes your content based upon application components -->
       <v-main>
         <!-- Provides the application the proper gutter -->
-        <v-container>
+        <v-container class="pt-0">
           <!-- Show the ACTUAL CONTENT on the current view -->
           <router-view />
         </v-container>

@@ -13,7 +13,7 @@ export const defaultNewArea: Area = {
 
 export const defaultNewCategory: CategoryTag = {
   id: "",
-  title: "New category",
-  icon: "mdi-rocket",
-  userId: "userId",
+  title: "",
+  icon: "",
+  userId: "testuser",
 };
