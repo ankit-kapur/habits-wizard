@@ -1,10 +1,13 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import HomePage from "@/views/HomePage.vue";
+import LoginPage from "@/views/LoginPage.vue";
 import AreasPage from "@/views/AreasPage.vue";
 import ProgressPage from "@/views/ProgressPage.vue";
 import CalendarPage from "@/views/CalendarPage.vue";
 import ConfigurationPage from "@/views/ConfigurationPage.vue";
+import { getAuth } from "firebase/auth";
+import { authStatus } from "@/utils/auth/GoogleAuthUtils";
 
 Vue.use(VueRouter);
 
@@ -34,10 +37,25 @@ const routes: Array<RouteConfig> = [
     name: "Areas",
     component: AreasPage,
   },
+  {
+    path: "/login",
+    name: "Login",
+    component: LoginPage,
+  },
 ];
 
 const router = new VueRouter({
   routes,
+});
+
+/*
+ * * ------------ Force redirect to login-page, if not authenticated.
+ */
+const googleAuth = getAuth();
+router.beforeEach(async (to, from, next) => {
+  await authStatus;
+  if (!googleAuth.currentUser && to.name !== "Login") next("/login");
+  else next();
 });
 
 export default router;

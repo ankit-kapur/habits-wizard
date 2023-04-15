@@ -1,10 +1,37 @@
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
+import { getAuth, signOut } from "firebase/auth";
+import { routerPush } from "@/utils/nav/NavigationUtils";
+
+@Component
+export default class CategoryCreateOrEditDialog extends Vue {
+  // ------------------------------------------------ Methods
+  signout() {
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+        console.log("Signout successful. Redirecting.");
+        // Redirect to login page.
+        routerPush("/login");
+      })
+      .catch((error) => {
+        // An error happened.
+        console.log("🚨 🚨 🚨 ERROR ===> " + JSON.stringify(error));
+      });
+  }
+
+  routerPush = routerPush;
+}
+</script>
+
 <template>
   <div class="">
     <v-container fluid>
       <v-row dense>
         <v-col cols="12">
           <v-card
-            @click="$router.push({ path: '/areasPage' })"
+            @click="routerPush('/areasPage')"
             max-width="800"
             class="mb-4 mx-auto px-auto"
           >
@@ -27,7 +54,7 @@
         <!-- * ---------------- Habits ---------------- * -->
         <v-col cols="6">
           <v-card
-            @click="$router.push({ path: '/areasPage' })"
+            @click="routerPush('/areasPage')"
             max-width="385"
             class="mr-3 mx-auto px-auto"
           >
@@ -48,7 +75,7 @@
         <!-- * ---------------- Activities ---------------- * -->
         <v-col cols="6">
           <v-card
-            @click="$router.push({ path: '/areasPage' })"
+            @click="routerPush('/areasPage')"
             max-width="370"
             class="mx-auto"
           >
@@ -64,6 +91,13 @@
               >
             </v-img>
           </v-card>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col align="center">
+          <v-btn text @click="signout"
+            ><v-icon class="pr-2">mdi-exit-run</v-icon>Sign out</v-btn
+          >
         </v-col>
       </v-row>
     </v-container>

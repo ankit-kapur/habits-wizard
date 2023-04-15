@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import BottomNavBar from "@/components/nav/BottomNavBar.vue";
+import { routerPush } from "@/utils/nav/NavigationUtils";
 
 // See documentation on class-components:
 // 👉🏽 https://class-component.vuejs.org/guide/class-component.html#computed-properties
@@ -26,6 +27,7 @@ export default class MainApp extends Vue {
   ];
 
   // ------------------------------------------------ Methods
+  routerPush = routerPush;
   openDrawer(): void {
     console.log("Opening drawer");
     this.isNavDrawerOpen = !this.isNavDrawerOpen;
@@ -64,7 +66,7 @@ export default class MainApp extends Vue {
         <v-spacer></v-spacer>
 
         <!-- TOP-RIGHT icons -->
-        <v-btn icon @click="$router.push({ path: '/configurationPage' })">
+        <v-btn icon @click="routerPush('/configurationPage')">
           <v-icon>mdi-cog-outline</v-icon>
         </v-btn>
 
@@ -81,7 +83,7 @@ export default class MainApp extends Vue {
               v-for="route in recordingOptions"
               :key="route.name"
               link
-              @click="$router.push({ path: route.to })"
+              @click="routerPush(route.to)"
             >
               <v-list-item-icon>
                 <v-icon> {{ route.icon }} </v-icon>
