@@ -62,7 +62,6 @@ export default class AreaCreateOrEditDialog extends Vue {
 
   // Stepper
   currentStepperPos = 1;
-  furthestStepReached = 1;
   numberOfSteps = 3;
   previous_step_icon = "mdi-chevon-left";
   next_step_icon = "mdi-chevon-right";
@@ -131,7 +130,6 @@ export default class AreaCreateOrEditDialog extends Vue {
 
     // Stepper
     this.currentStepperPos = 1;
-    this.furthestStepReached = 1;
   }
 
   triggerCancellation() {
@@ -197,9 +195,10 @@ export enum DialogMode {
         <!-- * ------- Modifiers used -->
 
         <!-- ? ------- Stepper header -->
-        <!-- <v-stepper-header>
+        <v-stepper-header>
           <div v-for="i in numberOfSteps" :key="`${i}-step`">
-            ? -------Step definitions 
+            <!-- ? -------Step definitions  -->
+            <!-- :rules="firstStepValidations" -->
             <v-stepper-step
               :step="i"
               :complete="currentStepperPos > i"
@@ -209,53 +208,48 @@ export enum DialogMode {
             >
               <small>Step {{ i }}</small>
             </v-stepper-step>
+
+            <!-- <v-divider v-if="i !== numberOfSteps" :key="i"></v-divider> -->
           </div>
-        </v-stepper-header> -->
+        </v-stepper-header>
 
-        <!-- ? ---------------------------- Step 1 -->
-        <v-stepper-step
-          step="1"
-          :complete="currentStepperPos >= 3"
-          :editable="furthestStepReached >= 3"
-          edit-icon="mdi-check"
-        >
-          <small>This is step 1</small>
-        </v-stepper-step>
-        <v-stepper-content :step="1">
-          <v-card elevation="0">
-            <!-- ? ------------------- Title -->
-            <v-card-text class="ma-0 pa-0">
-              <v-text-field
-                label="Area"
-                v-model="currentArea.title"
-                :rules="areaNameRules"
-                outlined
-                required
-                counter="20"
-                clearable
-                style="font-size: 22px"
-                class="mt-4"
-              ></v-text-field>
-            </v-card-text>
+        <v-stepper-items>
+          <!-- ? ---------------------------- Step 1 -->
+          <v-stepper-content :step="1">
+            <v-card elevation="0">
+              <!-- ? ------------------- Title -->
+              <v-card-text class="ma-0 pa-0">
+                <v-text-field
+                  label="Area"
+                  v-model="currentArea.title"
+                  :rules="areaNameRules"
+                  outlined
+                  required
+                  counter="20"
+                  clearable
+                  style="font-size: 22px"
+                  class="mt-4"
+                ></v-text-field>
+              </v-card-text>
 
-            <!--------------------- Image ----------------------->
-            <v-card-text class="ma-0 pa-0">
-              <v-img
-                :src="currentArea.imageUrl"
-                height="180"
-                @click="showImageEditDialog = !showImageEditDialog"
-              ></v-img>
+              <!--------------------- Image ----------------------->
+              <v-card-text class="ma-0 pa-0">
+                <v-img
+                  :src="currentArea.imageUrl"
+                  height="180"
+                  @click="showImageEditDialog = !showImageEditDialog"
+                ></v-img>
 
-              <!-- ? Text-field for Image URL  -->
-              <v-text-field
-                v-model="currentArea.imageUrl"
-                label="Image URL"
-                v-show="showImageEditDialog"
-                @click="showImageEditDialog = false"
-              ></v-text-field
-            ></v-card-text>
+                <!-- ? Text-field for Image URL  -->
+                <v-text-field
+                  v-model="currentArea.imageUrl"
+                  label="Image URL"
+                  v-show="showImageEditDialog"
+                  @click="showImageEditDialog = false"
+                ></v-text-field
+              ></v-card-text>
 
-            <!-- <v-card-title>
+              <!-- <v-card-title>
                 <span class="text-h4">{{ currentArea.title }}</span>
                 <v-spacer></v-spacer>
                 <v-btn icon
@@ -263,202 +257,189 @@ export enum DialogMode {
                 >
               </v-card-title> -->
 
-            <v-card-text class="ma-0 pa-0">
-              <v-text-field
-                label="Description"
-                v-model="currentArea.description"
-                counter="200"
-                max-length="200"
-                clearable
-              ></v-text-field>
-            </v-card-text>
-
-            <!-- ? ---------- Buttons -->
-            <v-card-actions class="pt-6">
-              <!------------- Previous -->
-              <v-btn icon @click="moveToPreviousStep()">
-                <v-icon> </v-icon>
-              </v-btn>
-              <!--  -->
-              <v-spacer />
-
-              <!-- Cancel -->
-              <v-btn text class="pr-0" @click="triggerCancellation">
-                Cancel
-              </v-btn>
-
-              <v-spacer />
-
-              <!------------- Next -->
-              <v-btn
-                icon
-                color="primary"
-                :disabled="false"
-                @click="moveToNextStep()"
-              >
-                <v-icon> mdi-chevron-right </v-icon>
-              </v-btn>
-
-              <!--  -->
-            </v-card-actions>
-
-            <!--  -->
-          </v-card>
-        </v-stepper-content>
-
-        <!-- ? ---------------------------- Step 2 -->
-        <v-stepper-step
-          step="2"
-          :complete="currentStepperPos >= 3"
-          :editable="furthestStepReached >= 3"
-          edit-icon="mdi-check"
-        >
-          <small>This is step 2</small>
-        </v-stepper-step>
-        <v-stepper-content :step="2">
-          <v-card>
-            <v-card-text class="ma-0 pa-0">
-              <v-form ref="areaForm" v-model="valid" lazy-validation>
-                <v-color-picker
-                  v-show="showColorPicker"
-                  v-model="currentArea.color"
-                  dot-size="25"
-                  mode="hexa"
-                  hide-inputs
-                  :swatches="colorSwatches"
-                  swatches-max-height="100"
-                  show-swatches
-                ></v-color-picker>
-
-                Color:
-                <v-btn
-                  @click="showColorPicker = !showColorPicker"
-                  :color="currentArea.color"
-                ></v-btn>
-
+              <v-card-text class="ma-0 pa-0">
                 <v-text-field
-                  v-model="currentArea.imageUrl"
-                  label="Image URL"
-                  required
+                  label="Description"
+                  v-model="currentArea.description"
+                  counter="200"
+                  max-length="200"
+                  clearable
                 ></v-text-field>
+              </v-card-text>
 
-                <!-- * -------------------------------- Tag selector for category chips -->
-                <CategorySelector
-                  :allItemsList="categoryStore.getCategoryTagsList()"
-                  :selectedItemIdList="currentArea.categoryTags"
-                  :area="currentArea"
-                  v-on:category-tags-changed="onCategoryTagsChanged"
-                ></CategorySelector>
-              </v-form>
-            </v-card-text>
+              <!-- ? ---------- Buttons -->
+              <v-card-actions class="pt-6">
+                <!------------- Previous -->
+                <v-btn icon @click="moveToPreviousStep()">
+                  <v-icon> </v-icon>
+                </v-btn>
+                <!--  -->
+                <v-spacer />
 
-            <!-- ? -------------------- Buttons -->
-            <v-card-actions>
-              <!------------- Previous -->
-              <v-btn icon @click="moveToPreviousStep()">
-                <v-icon> mdi-chevron-left </v-icon>
-              </v-btn>
+                <!-- Cancel -->
+                <v-btn text class="pr-0" @click="triggerCancellation">
+                  Cancel
+                </v-btn>
 
-              <v-spacer />
+                <v-spacer />
 
-              <!------------- Cancel -->
-              <v-btn text class="pr-0" @click="triggerCancellation">
-                Cancel
-              </v-btn>
-
-              <v-spacer />
-
-              <!------------- Next -->
-              <v-btn
-                icon
-                color="primary"
-                :disabled="false"
-                @click="moveToNextStep()"
-              >
-                <v-icon> mdi-chevron-right </v-icon>
-              </v-btn>
-            </v-card-actions>
-
-            <!--  -->
-          </v-card>
-        </v-stepper-content>
-
-        <!-- ? ---------------------------- Step 3 -->
-        <v-stepper-step
-          step="3"
-          :complete="currentStepperPos >= 3"
-          :editable="furthestStepReached >= 3"
-          edit-icon="mdi-check"
-        >
-          <small>This is step 3</small>
-        </v-stepper-step>
-        <v-stepper-content :step="3">
-          <v-card>
-            <v-card-text class="ma-0 pa-0">
-              <v-form ref="areaForm" v-model="valid" lazy-validation>
-                <v-color-picker
-                  v-show="showColorPicker"
-                  v-model="currentArea.color"
-                  dot-size="25"
-                  mode="hexa"
-                  hide-inputs
-                  :swatches="colorSwatches"
-                  swatches-max-height="100"
-                  show-swatches
-                ></v-color-picker>
-
-                Color:
+                <!------------- Next -->
                 <v-btn
-                  @click="showColorPicker = !showColorPicker"
-                  :color="currentArea.color"
-                ></v-btn>
+                  icon
+                  color="primary"
+                  :disabled="false"
+                  @click="moveToNextStep()"
+                >
+                  <v-icon> mdi-chevron-right </v-icon>
+                </v-btn>
 
-                <v-text-field
-                  v-model="currentArea.imageUrl"
-                  label="Image URL"
-                  required
-                ></v-text-field>
+                <!--  -->
+              </v-card-actions>
 
-                <!-- * -------------------------------- Tag selector for category chips -->
-                <CategorySelector
-                  :allItemsList="categoryStore.getCategoryTagsList()"
-                  :selectedItemIdList="currentArea.categoryTags"
-                  :area="currentArea"
-                  v-on:category-tags-changed="onCategoryTagsChanged"
-                ></CategorySelector>
-              </v-form>
-            </v-card-text>
+              <!--  -->
+            </v-card>
+          </v-stepper-content>
 
-            <!-- ? -------------------------------- Buttons -->
-            <v-card-actions>
-              <!------------- Previous -->
-              <v-btn icon @click="moveToPreviousStep()">
-                <v-icon> mdi-chevron-left </v-icon>
-              </v-btn>
+          <!-- ? ---------------------------- Step 2 -->
+          <v-stepper-content :step="2">
+            <v-card>
+              <v-card-text class="ma-0 pa-0">
+                <v-form ref="areaForm" v-model="valid" lazy-validation>
+                  <v-color-picker
+                    v-show="showColorPicker"
+                    v-model="currentArea.color"
+                    dot-size="25"
+                    mode="hexa"
+                    hide-inputs
+                    :swatches="colorSwatches"
+                    swatches-max-height="100"
+                    show-swatches
+                  ></v-color-picker>
 
-              <v-spacer />
+                  Color:
+                  <v-btn
+                    @click="showColorPicker = !showColorPicker"
+                    :color="currentArea.color"
+                  ></v-btn>
 
-              <!------------- Cancel -->
-              <v-btn text class="pr-0" @click="triggerCancellation">
-                Cancel
-              </v-btn>
+                  <v-text-field
+                    v-model="currentArea.imageUrl"
+                    label="Image URL"
+                    required
+                  ></v-text-field>
 
-              <v-spacer />
+                  <!-- * -------------------------------- Tag selector for category chips -->
+                  <CategorySelector
+                    :allItemsList="categoryStore.getCategoryTagsList()"
+                    :selectedItemIdList="currentArea.categoryTags"
+                    :area="currentArea"
+                    v-on:category-tags-changed="onCategoryTagsChanged"
+                  ></CategorySelector>
+                </v-form>
+              </v-card-text>
 
-              <!------------- Previous -->
-              <v-btn icon :disabled="false" @click="moveToPreviousStep()">
-                <v-icon>{{ previous_step_icon }}</v-icon>
-              </v-btn>
+              <!-- ? -------------------- Buttons -->
+              <v-card-actions>
+                <!------------- Previous -->
+                <v-btn icon @click="moveToPreviousStep()">
+                  <v-icon> mdi-chevron-left </v-icon>
+                </v-btn>
 
-              <!------------- Save -->
-              <v-btn icon :disabled="false" @click="saveArea">
-                <v-icon>{{ save_icon }}</v-icon>
-              </v-btn>
-            </v-card-actions>
+                <v-spacer />
 
-            <!--  -->
-          </v-card>
-        </v-stepper-content>
+                <!------------- Cancel -->
+                <v-btn text class="pr-0" @click="triggerCancellation">
+                  Cancel
+                </v-btn>
+
+                <v-spacer />
+
+                <!------------- Next -->
+                <v-btn
+                  icon
+                  color="primary"
+                  :disabled="false"
+                  @click="moveToNextStep()"
+                >
+                  <v-icon> mdi-chevron-right </v-icon>
+                </v-btn>
+              </v-card-actions>
+
+              <!--  -->
+            </v-card>
+          </v-stepper-content>
+
+          <!-- ? ---------------------------- Step 3 -->
+          <v-stepper-content :step="3">
+            <v-card>
+              <v-card-text class="ma-0 pa-0">
+                <v-form ref="areaForm" v-model="valid" lazy-validation>
+                  <v-color-picker
+                    v-show="showColorPicker"
+                    v-model="currentArea.color"
+                    dot-size="25"
+                    mode="hexa"
+                    hide-inputs
+                    :swatches="colorSwatches"
+                    swatches-max-height="100"
+                    show-swatches
+                  ></v-color-picker>
+
+                  Color:
+                  <v-btn
+                    @click="showColorPicker = !showColorPicker"
+                    :color="currentArea.color"
+                  ></v-btn>
+
+                  <v-text-field
+                    v-model="currentArea.imageUrl"
+                    label="Image URL"
+                    required
+                  ></v-text-field>
+
+                  <!-- * -------------------------------- Tag selector for category chips -->
+                  <CategorySelector
+                    :allItemsList="categoryStore.getCategoryTagsList()"
+                    :selectedItemIdList="currentArea.categoryTags"
+                    :area="currentArea"
+                    v-on:category-tags-changed="onCategoryTagsChanged"
+                  ></CategorySelector>
+                </v-form>
+              </v-card-text>
+
+              <!-- ? -------------------------------- Buttons -->
+              <v-card-actions>
+                <!------------- Previous -->
+                <v-btn icon @click="moveToPreviousStep()">
+                  <v-icon> mdi-chevron-left </v-icon>
+                </v-btn>
+
+                <v-spacer />
+
+                <!------------- Cancel -->
+                <v-btn text class="pr-0" @click="triggerCancellation">
+                  Cancel
+                </v-btn>
+
+                <v-spacer />
+
+                <!------------- Previous -->
+                <v-btn icon :disabled="false" @click="moveToPreviousStep()">
+                  <v-icon>{{ previous_step_icon }}</v-icon>
+                </v-btn>
+
+                <!------------- Save -->
+                <v-btn icon :disabled="false" @click="saveArea">
+                  <v-icon>{{ save_icon }}</v-icon>
+                </v-btn>
+              </v-card-actions>
+
+              <!--  -->
+            </v-card>
+          </v-stepper-content>
+
+          <!--  -->
+        </v-stepper-items>
       </v-stepper>
     </v-bottom-sheet>
 
