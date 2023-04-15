@@ -8,6 +8,10 @@ export default class ConfirmationDialog extends Vue {
   showDialog!: boolean;
   @Prop()
   messageToDisplay!: string;
+  @Prop()
+  yesButtonText!: string;
+  @Prop()
+  noButtonText!: string;
 
   /**
    * Watches parent variable. Sync's its value to the child.
@@ -48,8 +52,11 @@ export default class ConfirmationDialog extends Vue {
         <v-spacer></v-spacer>
       </v-card-title>
       <v-card-actions>
-        <v-btn text @click="noClicked"> No </v-btn>
-        <v-btn color="primary" text @click="yesClicked"> Yes </v-btn>
+        <v-spacer />
+        <v-btn text @click="noClicked"> {{ noButtonText }} </v-btn>
+        <v-btn color="primary" text @click="yesClicked">
+          {{ yesButtonText }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

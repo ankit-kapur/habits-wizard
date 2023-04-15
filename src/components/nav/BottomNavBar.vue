@@ -1,12 +1,10 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.vue";
-import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 
 @Component({
   components: {
     AreaCreateOrEditDialog: AreaCreateOrEditDialog,
-    ConfirmationDialog: ConfirmationDialog,
   },
 })
 export default class BottomNavBar extends Vue {

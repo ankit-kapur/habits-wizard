@@ -240,7 +240,9 @@ export default class AreaCard extends Vue {
     <ConfirmationDialog
       v-on:confirm-status-change="respondToConfirmDeleteDialog"
       :showDialog="showDialogForConfirmDelete"
-      messageToDisplay="Sure you want to delete this?"
+      messageToDisplay="Are you sure you want to delete this?"
+      yesButtonText="Delete"
+      noButtonText="Cancel"
     />
   </v-card>
 </template>

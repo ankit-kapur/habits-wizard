@@ -4,12 +4,10 @@ import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/main/CategoryTag";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
 import CategoryCreateOrEditDialog from "../dialogs/CategoryCreateOrEditDialog.vue";
 
 @Component({
   components: {
-    ConfirmationDialog: ConfirmationDialog,
     CategoryCreateOrEditDialog: CategoryCreateOrEditDialog,
   },
 })

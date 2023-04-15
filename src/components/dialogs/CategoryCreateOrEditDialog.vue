@@ -95,7 +95,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
     <v-row center>
       <v-col>
         <v-bottom-sheet
-          max-width="450"
+          max-width="300"
           overlay-opacity="0.88"
           inset
           v-model="showDialog_local"
@@ -161,6 +161,8 @@ export default class CategoryCreateOrEditDialog extends Vue {
             v-on:confirm-status-change="respondToConfirmDiscardDialog"
             :showDialog="showDialogForConfirmDiscard"
             messageToDisplay="Sure you want to discard this?"
+            yesButtonText="Discard"
+            noButtonText="Cancel"
           />
         </v-bottom-sheet>
       </v-col>
