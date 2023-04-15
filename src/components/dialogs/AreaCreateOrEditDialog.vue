@@ -195,7 +195,7 @@ export enum DialogMode {
         <!-- * ------- Modifiers used -->
 
         <!-- ? ------- Stepper header -->
-        <v-stepper-header>
+        <v-stepper-header class="ma-0" :elevation="0">
           <div v-for="i in numberOfSteps" :key="`${i}-step`">
             <!-- ? -------Step definitions  -->
             <!-- :rules="firstStepValidations" -->
@@ -205,18 +205,17 @@ export enum DialogMode {
               editable
               edit-icon="mdi-check"
               color="accent"
+              class="ma-0"
             >
               <small>Step {{ i }}</small>
             </v-stepper-step>
-
-            <!-- <v-divider v-if="i !== numberOfSteps" :key="i"></v-divider> -->
           </div>
         </v-stepper-header>
 
         <v-stepper-items>
           <!-- ? ---------------------------- Step 1 -->
           <v-stepper-content :step="1">
-            <v-card elevation="0">
+            <v-card elevation="0" style="border-radius: 8px">
               <!-- ? ------------------- Title -->
               <v-card-text class="ma-0 pa-0">
                 <v-text-field
@@ -302,7 +301,7 @@ export enum DialogMode {
 
           <!-- ? ---------------------------- Step 2 -->
           <v-stepper-content :step="2">
-            <v-card>
+            <v-card elevation="0" style="border-radius: 8px">
               <v-card-text class="ma-0 pa-0">
                 <v-form ref="areaForm" v-model="valid" lazy-validation>
                   <v-color-picker
@@ -371,7 +370,7 @@ export enum DialogMode {
 
           <!-- ? ---------------------------- Step 3 -->
           <v-stepper-content :step="3">
-            <v-card>
+            <v-card elevation="0" style="border-radius: 8px">
               <v-card-text class="ma-0 pa-0">
                 <v-form ref="areaForm" v-model="valid" lazy-validation>
                   <v-color-picker
