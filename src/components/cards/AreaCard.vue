@@ -1,12 +1,12 @@
 <script lang="ts">
 import { Area } from "@/model/pojo/definitions/Area";
-import CategoryTag from "@/model/pojo/main/CategoryTag";
+import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useAreasStore } from "@/store/AreasStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
-import { Timestamp } from "firebase/firestore";
+import { getPrettyTimestamp } from "@/utils/time/TimestampConversionUtils";
 
 @Component({
   components: {
@@ -28,6 +28,9 @@ export default class AreaCard extends Vue {
   showEditButton = false;
   showDeleteButton = false;
   showDialogForConfirmDelete = false;
+
+  // ------------------------------------------------ Method imports
+  getPrettyTimestamp = getPrettyTimestamp;
 
   // ------------------------------------------------ Mounted
   mounted() {
@@ -85,18 +88,6 @@ export default class AreaCard extends Vue {
   // Categories
   getCategoriesForArea(): CategoryTag[] {
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
-  }
-
-  getPrettyTimestamp(firestoreTimestamp?: Timestamp): string {
-    if (!firestoreTimestamp) return "";
-    return firestoreTimestamp.toDate().toLocaleString("en-US", {
-      // weekday: "short",
-      // year: "numeric",
-      // month: "2-digit",
-      // day: "2-digit",
-      timeStyle: "short",
-      dateStyle: "long",
-    });
   }
 }
 </script>

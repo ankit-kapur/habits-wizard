@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { FirestoreConstants } from "@/constants/FirestoreConstants";
 import { firestoreDatabase as firestoreDB } from "@/firebase";
-import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import { Activity } from "@/model/pojo/definitions/Activity";
 import { getDocReference } from "@/utils/firebase/FirestoreUtils";
 import { getCurrentUserId } from "@/utils/firebase/GoogleAuthUtils";
 import {
@@ -10,6 +10,7 @@ import {
   doc,
   FirestoreDataConverter,
   onSnapshot,
+  orderBy,
   query,
   QueryDocumentSnapshot,
   QuerySnapshot,
@@ -22,32 +23,31 @@ import { defineStore } from "pinia";
 import { v4 as uuid } from "uuid";
 
 interface State {
-  allDocs: CategoryTag[];
+  allDocs: Activity[];
   unsubscribeHooks: Unsubscribe[];
-  userId: string;
 }
 
 // Replace with Generics <T> across all stores.
 // See: https://medium.com/swlh/using-firestore-with-typescript-65bd2a602945
-const firestoreConvertor: FirestoreDataConverter<CategoryTag> = {
-  toFirestore: (data: CategoryTag) => data,
+const firestoreConvertor: FirestoreDataConverter<Activity> = {
+  toFirestore: (data: Activity) => data,
   fromFirestore: (snapshot: QueryDocumentSnapshot) =>
-    snapshot.data() as CategoryTag,
+    snapshot.data() as Activity,
 };
 
-const collectionName = FirestoreConstants.CATEGORY_TAGS_COLLECTION_NAME;
+const collectionName = FirestoreConstants.ACTIVITIES_COLLECTION_NAME;
+
 const firestoreCollection = collection(
   firestoreDB,
   collectionName
 ).withConverter(firestoreConvertor);
 
-export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
+export const useActivitiesStore = defineStore("ActivitiesStore", {
   // Initial state.
   state: (): State => {
     return {
       allDocs: [],
       unsubscribeHooks: [],
-      userId: getCurrentUserId()!,
     };
   },
   // Getters
@@ -58,16 +58,15 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
       console.log("🔥 🔥 🔥 LOADING CATEGORY TAGS list from FireStore.");
       const queryToLoad = query(
         firestoreCollection,
-        where(FirestoreConstants.USER_ID_ATTRIBUTE, "==", this.userId)
-        // TODO: Move ordering logic to the get function here.
-        // orderBy(
-        //   FirestoreConstants.CREATED_AT_ATTRIBUTE, // Most recent on top
-        //   FirestoreConstants.DESCENDING
-        // )
+        orderBy(
+          FirestoreConstants.CREATED_AT_ATTRIBUTE, // Most recent on top
+          FirestoreConstants.DESCENDING
+        ),
+        where(FirestoreConstants.USER_ID_ATTRIBUTE, "==", getCurrentUserId + "")
       );
       const unsubscribe: Unsubscribe = onSnapshot(
         queryToLoad,
-        (snapshot: QuerySnapshot<CategoryTag>) => {
+        (snapshot: QuerySnapshot<Activity>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
           console.log(
             "🔥 🔥 🔥 Snapshot updated. Refreshed category tags: " +
@@ -83,44 +82,42 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
     },
 
     // -------------------------------------------- Queries
-    getCategoryTagsList(): CategoryTag[] {
+    getAllDocs(): Activity[] {
       return this.allDocs;
     },
 
-    getCategoryById(categoryTagId: string): CategoryTag {
-      return this.allDocs.find(
-        (categoryTag) => categoryTag.id === categoryTagId
-      )!;
+    getDocById(activityId: string): Activity {
+      return this.allDocs.find((activity) => activity.id === activityId)!;
     },
 
-    getCategoriesByIDs(categoryIDs: string[]): CategoryTag[] {
-      return this.allDocs.filter((categoryTag) =>
-        categoryIDs.includes(categoryTag.id)
+    getDocsById(categoryIDs: string[]): Activity[] {
+      return this.allDocs.filter((activity) =>
+        categoryIDs.includes(activity.id)
       );
     },
 
     // -------------------------------------------- Create
-    createCategoryTag(categoryTag: CategoryTag): string {
+    createActivity(activity: Activity): string {
+      console.log("Creating activity: " + JSON.stringify(activity));
       const newID: string = uuid();
-      categoryTag.id = newID;
-      categoryTag.userId = getCurrentUserId()!;
-      console.log("Creating categoryTag: " + JSON.stringify(categoryTag));
+      activity.id = newID;
+      activity.userId = getCurrentUserId()!;
 
       // Save to Firestore
-      setDoc(getDocReference(newID, collectionName, firestoreDB), categoryTag);
+      setDoc(getDocReference(newID, collectionName, firestoreDB), activity);
       return newID;
     },
 
     // -------------------------------------------- Update
-    async updateCategoryTag(categoryTag: CategoryTag) {
-      console.log("Updating categoryTag: " + JSON.stringify(categoryTag));
-      updateDoc(doc(firestoreCollection, categoryTag.id), categoryTag);
+    async updateActivity(activity: Activity) {
+      console.log("Updating activity: " + JSON.stringify(activity));
+      updateDoc(doc(firestoreCollection, activity.id), activity);
     },
 
     // -------------------------------------------- Delete
-    deleteCategoryTag(categoryTag: CategoryTag) {
-      console.log("Deleting categoryTag: " + JSON.stringify(categoryTag));
-      deleteDoc(doc(firestoreCollection, categoryTag.id));
+    deleteActivity(activity: Activity) {
+      console.log("Deleting activity: " + JSON.stringify(activity));
+      deleteDoc(doc(firestoreCollection, activity.id));
     },
   },
 });

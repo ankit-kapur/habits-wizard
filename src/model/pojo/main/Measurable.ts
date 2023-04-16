@@ -1,15 +1,20 @@
+import { MeasurableType } from "@/model/enum/MeasurableType";
+
 export default interface Measurable {
   // Identifiers
   id: string;
+  userId: string;
+
+  // Display
   title: string;
 
   // Types
-  dataType: string; // TODO: type = MeasurableType
+  type: MeasurableType;
 
-  // TODO: Change to 'unitId'. Unit definition should exist in Area.
-  // Note: Units are only used for display, not calculations.
-  unit?: string;
+  // Units are only used for display, not calculations.
+  unitTitle: string;
+  unitEmoji: string; // Default to 🔵 or something in the application.
 
-  // Future fields
+  // -------------------------------- Future fields
   // isRequired: boolean; // (when recording) default = false
 }

@@ -7,7 +7,7 @@ import ProgressPage from "@/views/ProgressPage.vue";
 import CalendarPage from "@/views/CalendarPage.vue";
 import ConfigurationPage from "@/views/ConfigurationPage.vue";
 import { getAuth } from "firebase/auth";
-import { authStatus } from "@/utils/auth/GoogleAuthUtils";
+import { authStatus } from "@/utils/firebase/GoogleAuthUtils";
 
 Vue.use(VueRouter);
 

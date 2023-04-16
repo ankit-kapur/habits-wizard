@@ -3,10 +3,12 @@ export default interface CategoryTag {
   id: string;
   userId: string;
 
-  // Display attributes
+  // Display
   title: string;
-  icon?: string;
 
-  // Deprecated
-  // color?: string;
+  // TODO: Introduce
+  color?: string;
+
+  // TODO: Deprecate
+  icon: string;
 }

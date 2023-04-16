@@ -20,3 +20,7 @@ export const authStatus = new Promise<void>((resolve, reject) => {
     resolve();
   });
 });
+
+export function getCurrentUserId() {
+  return googleAuth.currentUser?.uid;
+}

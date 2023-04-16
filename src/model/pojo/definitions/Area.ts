@@ -1,13 +1,11 @@
-import { Timestamp } from "firebase/firestore";
-
 export interface Area {
   // Identifiers
   id?: string;
   userId: string;
 
-  // Time-related
-  createdAt?: Timestamp;
-  lastUpdatedAt?: Timestamp;
+  // Timestamps
+  createdAt?: number;
+  lastUpdatedAt?: number;
 
   // Display attributes
   title: string;
@@ -17,8 +15,11 @@ export interface Area {
 
   // TODO --- Add timestamp attributes. Created on. Last modified on.
 
-  // Allow-list of tags that can used in Things under this Area.
+  // Associated entities (only IDs here)
   categoryTags: string[];
+  activities: string[];
+  habits: string[];
+  // TODO --- Habits
 
   // ------------------ Future attributes ------------------ //
 

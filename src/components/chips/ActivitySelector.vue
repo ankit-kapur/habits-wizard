@@ -1,8 +1,8 @@
 <script lang="ts">
-import { defaultNewCategory } from "@/constants/DefaultDataForForms";
+import { defaultNewActivity } from "@/constants/DefaultDataForForms";
+import { Activity } from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
-import CategoryTag from "@/model/pojo/definitions/CategoryTag";
-import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import CategoryCreateOrEditDialog from "../dialogs/CategoryCreateOrEditDialog.vue";
 
@@ -11,10 +11,10 @@ import CategoryCreateOrEditDialog from "../dialogs/CategoryCreateOrEditDialog.vu
     CategoryCreateOrEditDialog: CategoryCreateOrEditDialog,
   },
 })
-export default class CategorySelector extends Vue {
+export default class ActivitySelector extends Vue {
   // ------------------------------------------------ Props
   @Prop()
-  allItemsList!: CategoryTag[];
+  allItemsList!: Activity[];
   @Prop()
   selectedItemIdList!: string[];
   @Prop()
@@ -36,14 +36,14 @@ export default class CategorySelector extends Vue {
   }
 
   // ------------------------------------------------ Stores
-  categoryTagsStore = useCategoryTagsStore();
+  activitiesStore = useActivitiesStore();
 
   // ------------------------------------------------ Data
   showCreateCategoryDialog = false;
   showEditCategoryDialog = false;
-  selectedCategoryTag: CategoryTag | null = null;
+  selectedActivity: Activity | null = null;
   selectedItemIdList_local: string[] = [];
-  newCategoryTag: CategoryTag = defaultNewCategory;
+  newActivity: Activity = defaultNewActivity;
   searchInput = "";
 
   // ------------------------------------------------ Methods
@@ -57,7 +57,7 @@ export default class CategorySelector extends Vue {
       this.allItemsList.filter((e) => e.title.startsWith(this.searchInput))
         .length == 0
     ) {
-      this.newCategoryTag.title = this.searchInput;
+      this.newActivity.title = this.searchInput;
       this.showCreateCategoryDialog = true;
     }
   }
@@ -67,26 +67,25 @@ export default class CategorySelector extends Vue {
     this.$emit("category-tags-changed", this.selectedItemIdList_local);
   }
 
-  createNewCategory(newCategoryTag: CategoryTag) {
+  createNewCategory(newActivity: Activity) {
     console.log("Saving new category");
-    const newId: string =
-      this.categoryTagsStore.createCategoryTag(newCategoryTag);
+    const newId: string = this.activitiesStore.createActivity(newActivity);
     this.selectedItemIdList_local.push(newId);
     this.showCreateCategoryDialog = false;
   }
 
-  triggerEditDialog(categoryTag: CategoryTag) {
+  triggerEditDialog(categoryTag: Activity) {
     console.log("triggerEditDialog");
-    this.selectedCategoryTag = categoryTag;
+    this.selectedActivity = categoryTag;
     this.showEditCategoryDialog = true;
   }
 
-  saveExistingCategory(updatedCategoryTag: CategoryTag) {
+  saveExistingCategory(updatedActivity: Activity) {
     console.log("Saving new category");
-    this.categoryTagsStore.updateCategoryTag(updatedCategoryTag);
+    this.activitiesStore.updateActivity(updatedActivity);
     // Reset things.
     this.showEditCategoryDialog = false;
-    this.selectedCategoryTag = null;
+    this.selectedActivity = null;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -100,7 +99,7 @@ export default class CategorySelector extends Vue {
    * Trigger when the (x) button is clicked on a chip
    * @param category
    */
-  removeCategoryTagFromArea(category: CategoryTag) {
+  removeActivityFromArea(category: Activity) {
     const index = this.selectedItemIdList_local.indexOf(category.id);
     if (index >= 0) this.selectedItemIdList_local.splice(index, 1);
   }
@@ -163,7 +162,7 @@ export default class CategorySelector extends Vue {
           v-bind="data.attrs"
           close
           @click="triggerEditDialog(data.item)"
-          @click:close="removeCategoryTagFromArea(data.item)"
+          @click:close="removeActivityFromArea(data.item)"
         >
           <v-icon class="mr-2">{{ data.item.icon }}</v-icon>
           {{ data.item.title }}
@@ -203,9 +202,10 @@ export default class CategorySelector extends Vue {
       </template>
     </v-autocomplete>
 
-    <!-- * ------------------------ New category popup  -------------------------->
+    <!-- TODO ----- Make this new component -->
+    <!-- * ------------------------ New Activity popup  -------------------------->
     <CategoryCreateOrEditDialog
-      :categoryTag="newCategoryTag"
+      :categoryTag="newActivity"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateCategoryDialog"
       v-on:save-confirmed="createNewCategory"
@@ -213,7 +213,7 @@ export default class CategorySelector extends Vue {
     ></CategoryCreateOrEditDialog>
 
     <CategoryCreateOrEditDialog
-      :categoryTag="selectedCategoryTag"
+      :categoryTag="selectedActivity"
       :dialog-mode="`EDIT`"
       :showDialog="showEditCategoryDialog"
       v-on:save-confirmed="saveExistingCategory"

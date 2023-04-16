@@ -18,14 +18,15 @@ export const useThingsStore = defineStore("ThingsStore", {
   getters: {},
   actions: {
     async loadData() {
-      const thingsList: Activity[] = (
-        await import("@/assets/dummydata/things.json")
-      ).default;
-      console.log("loaded things.json");
+      // const thingsList: Activity[] = (
+      //   await import("@/assets/dummydata/things.json")
+      // ).default;
+      // console.log("loaded things.json");
 
-      for (const thing of thingsList) {
-        this.things[thing.id] = thing;
-      }
+      // for (const thing of thingsList) {
+      //   this.things[thing.id] = thing;
+      // }
+      return {};
     },
     getThingById(thingId: string): Activity {
       return this.things[thingId];

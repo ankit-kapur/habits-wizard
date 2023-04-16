@@ -1,7 +1,35 @@
-import { Habtivity } from "./Habtivity";
+// ? Find a solution for using ENUMS in pojo, without needed the "as Type" thing in .json
+export interface Activity {
+  // Identification
+  id: string;
+  userId: string;
 
-export interface Activity extends Habtivity {
-  // Activity specific properties should live here.
+  // Association
+  areaId: string; // ? --- do I need this?
 
-  removeMe?: string; // temporary
+  // Display
+  title: string;
+  icon: string;
+
+  // Tracking
+  //    Default measurables for Activities ---- startTime, endTime, duration.
+  //    Only IDs here. Definitions live in UserConfig
+  measurables: string[];
+
+  // ? --------------- Future fields
+  // // typically just 1 per day. List for Things done multiple times a day.
+  // weeklySchedule?: WeekSchedule;
+
+  // // Goals
+  // dayGoal?: DayGoal;
+  // weekGoal?: WeekGoal | null;
+
+  // // Archived
+  // isArchived?: boolean | null; // should default to false
+  // archivedDayGoals?: DayGoal[] | null; // Ordered by date.
+  // archivedWeekGoals?: WeekGoal[] | null;
+
+  // // Future-fields
+  // priority: Priority;
+  // // defaultTags?: defaultTags[]; // Nah. Templates would work better.
 }

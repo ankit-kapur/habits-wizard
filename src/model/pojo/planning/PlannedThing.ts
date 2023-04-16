@@ -1,4 +1,4 @@
-import CategoryTag from "../main/CategoryTag";
+import CategoryTag from "../definitions/CategoryTag";
 
 export interface PlannedThing {
   // Identifiers

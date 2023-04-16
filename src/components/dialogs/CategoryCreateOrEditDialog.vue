@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defaultNewCategory } from "@/constants/DefaultDataForForms";
-import CategoryTag from "@/model/pojo/main/CategoryTag";
+import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { DialogMode } from "./AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
@@ -18,6 +18,9 @@ export default class CategoryCreateOrEditDialog extends Vue {
   showDialog!: boolean;
   @Prop()
   dialogMode!: DialogMode;
+
+  // TODO ------
+  // https://physicsworld.com/wp-content/uploads/2020/07/Black-hole-merger.jpg
 
   /**
    * Watches parent variable. Sync's its value to the child.

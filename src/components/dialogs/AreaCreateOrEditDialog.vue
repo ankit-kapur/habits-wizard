@@ -8,6 +8,7 @@ import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { defaultNewArea } from "@/constants/DefaultDataForForms";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import CategorySelector from "../chips/CategorySelector.vue";
+import ActivitySelector from "../chips/ActivitySelector.vue";
 
 // TODO --- Use ColorThief to pick a color-palette from the image.
 //          Currently failing because npm can't install canvas.
@@ -17,6 +18,7 @@ import CategorySelector from "../chips/CategorySelector.vue";
   components: {
     ConfirmationDialog: ConfirmationDialog,
     CategorySelector: CategorySelector,
+    ActivitySelector: ActivitySelector,
   },
 })
 export default class AreaCreateOrEditDialog extends Vue {
@@ -244,7 +246,6 @@ export enum DialogMode {
                   v-model="currentArea.imageUrl"
                   label="Image URL"
                   v-show="showImageEditDialog"
-                  @click="showImageEditDialog = false"
                 ></v-text-field
               ></v-card-text>
 
@@ -304,6 +305,8 @@ export enum DialogMode {
             <v-card elevation="0" style="border-radius: 8px">
               <v-card-text class="ma-0 pa-0">
                 <v-form ref="areaForm" v-model="valid" lazy-validation>
+                  <!--  -->
+
                   <v-color-picker
                     v-show="showColorPicker"
                     v-model="currentArea.color"
@@ -321,12 +324,6 @@ export enum DialogMode {
                     :color="currentArea.color"
                   ></v-btn>
 
-                  <v-text-field
-                    v-model="currentArea.imageUrl"
-                    label="Image URL"
-                    required
-                  ></v-text-field>
-
                   <!-- * -------------------------------- Tag selector for category chips -->
                   <CategorySelector
                     :allItemsList="categoryStore.getCategoryTagsList()"
@@ -334,6 +331,8 @@ export enum DialogMode {
                     :area="currentArea"
                     v-on:category-tags-changed="onCategoryTagsChanged"
                   ></CategorySelector>
+
+                  <!--  -->
                 </v-form>
               </v-card-text>
 
@@ -372,38 +371,14 @@ export enum DialogMode {
           <v-stepper-content :step="3">
             <v-card elevation="0" style="border-radius: 8px">
               <v-card-text class="ma-0 pa-0">
-                <v-form ref="areaForm" v-model="valid" lazy-validation>
-                  <v-color-picker
-                    v-show="showColorPicker"
-                    v-model="currentArea.color"
-                    dot-size="25"
-                    mode="hexa"
-                    hide-inputs
-                    :swatches="colorSwatches"
-                    swatches-max-height="100"
-                    show-swatches
-                  ></v-color-picker>
+                <!--  -->
 
-                  Color:
-                  <v-btn
-                    @click="showColorPicker = !showColorPicker"
-                    :color="currentArea.color"
-                  ></v-btn>
-
-                  <v-text-field
-                    v-model="currentArea.imageUrl"
-                    label="Image URL"
-                    required
-                  ></v-text-field>
-
-                  <!-- * -------------------------------- Tag selector for category chips -->
-                  <CategorySelector
-                    :allItemsList="categoryStore.getCategoryTagsList()"
-                    :selectedItemIdList="currentArea.categoryTags"
-                    :area="currentArea"
-                    v-on:category-tags-changed="onCategoryTagsChanged"
-                  ></CategorySelector>
-                </v-form>
+                <!-- ? -------------------------------- Activities -->
+                <ActivitySelector
+                  :area="currentArea"
+                  :selectedItemIdList="currentArea.activities"
+                >
+                </ActivitySelector>
               </v-card-text>
 
               <!-- ? -------------------------------- Buttons -->

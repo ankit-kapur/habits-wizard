@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { FirestoreConstants } from "@/constants/FirestoreConstants";
-import { firestoreDatabase } from "@/firebase";
+import { firestoreDatabase as firestoreDB } from "@/firebase";
 import { Area } from "@/model/pojo/definitions/Area";
 import {
   collection,
@@ -8,28 +8,24 @@ import {
   doc,
   FirestoreDataConverter,
   onSnapshot,
-  orderBy,
   query,
   QueryDocumentSnapshot,
   QuerySnapshot,
   setDoc,
-  Timestamp,
   Unsubscribe,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { defineStore } from "pinia";
 import { v4 as uuid } from "uuid";
+import { getDocReference } from "@/utils/firebase/FirestoreUtils";
+import { getCurrentUserId } from "@/utils/firebase/GoogleAuthUtils";
 
 interface State {
-  areasList: Area[];
+  allDocs: Area[];
   unsubscribeHooks: Unsubscribe[];
+  userId: string;
 }
-
-// TODO P0 ---- Store timestamps as epoch.
-//         ! Sorting isn't working because of Firestore's weird bug where it sometimes stores Timestamps as Maps.
-
-// TODO P0 ---- Hook up "CreateCategory" component to store (for save)
-//         ! Store for categories needs work. UUID, Timestamps.
 
 // Replace with Generics <T> across all stores.
 // See: https://medium.com/swlh/using-firestore-with-typescript-65bd2a602945
@@ -38,17 +34,19 @@ const firestoreConvertor: FirestoreDataConverter<Area> = {
   fromFirestore: (snapshot: QueryDocumentSnapshot) => snapshot.data() as Area,
 };
 
+const collectionName = FirestoreConstants.AREA_COLLECTION_NAME;
 const firestoreCollection = collection(
-  firestoreDatabase,
-  FirestoreConstants.AREA_COLLECTION_NAME
+  firestoreDB,
+  collectionName
 ).withConverter(firestoreConvertor);
 
 export const useAreasStore = defineStore("AreasStore", {
   // Initial state.
   state: (): State => {
     return {
-      areasList: [],
+      allDocs: [],
       unsubscribeHooks: [],
+      userId: getCurrentUserId()!,
     };
   },
   // Getters
@@ -62,28 +60,25 @@ export const useAreasStore = defineStore("AreasStore", {
 
       const queryToLoadAreas = query(
         firestoreCollection,
-        orderBy(
-          FirestoreConstants.CREATED_AT_ATTRIBUTE,
-          FirestoreConstants.DESCENDING
-        ) // Most recent on top
+        where(FirestoreConstants.USER_ID_ATTRIBUTE, "==", this.userId)
+
+        // TODO: Move ordering logic to the get function here.
+        // orderBy(
+        //   FirestoreConstants.CREATED_AT_ATTRIBUTE, // Most recent on top
+        //   FirestoreConstants.DESCENDING
+        // )
       );
       const unsubscribe: Unsubscribe = onSnapshot(
         queryToLoadAreas,
-        (querySnapshot: QuerySnapshot<Area>) => {
-          this.areasList = querySnapshot.docs.map((document) => {
-            const area: Area = document.data();
-            area.createdAt = this.convertFirestoreTimestamp(area.createdAt);
-            return area;
-          });
+        (snapshot: QuerySnapshot<Area>) => {
+          this.allDocs = snapshot.docs.map((doc) => doc.data());
           console.log("🔥 🔥 🔥 Snapshot updated. Refreshing areasList");
         }
       );
       this.unsubscribeHooks.push(unsubscribe);
     },
 
-    /**
-     * Detaches all listeners.
-     */
+    /* Detaches all listeners. */
     unsubscribeAll() {
       this.unsubscribeHooks.forEach((unsubscribeHook) => unsubscribeHook());
     },
@@ -95,7 +90,7 @@ export const useAreasStore = defineStore("AreasStore", {
      * @returns
      */
     getAreaById(areaId: string): Area {
-      const area: Area = this.areasList.find((area) => area.id === areaId)!;
+      const area: Area = this.allDocs.find((area) => area.id === areaId)!;
       return area;
     },
 
@@ -104,8 +99,13 @@ export const useAreasStore = defineStore("AreasStore", {
      * @returns list of Areas
      */
     getAreasList(): Area[] {
-      console.log("🔥 🔥 🔥 Getting Areas list from FireStore.");
-      return this.areasList;
+      console.log(
+        "🔥 🔥 🔥 Getting Areas list from FireStore for userId: " +
+          this.userId +
+          " ===> " +
+          JSON.stringify(this.allDocs)
+      );
+      return this.allDocs;
     },
 
     /**
@@ -115,15 +115,17 @@ export const useAreasStore = defineStore("AreasStore", {
     createArea(area: Area) {
       console.log("Creating NEW area in store: " + JSON.stringify(area));
       const newID: string = uuid();
-      const currentTimestamp: Timestamp = Timestamp.now();
+      const currentTimestamp: number = Date.now().valueOf();
 
       // Set new fields.
       area.id = newID;
+      area.userId = this.userId;
       area.createdAt = currentTimestamp;
       area.lastUpdatedAt = currentTimestamp;
 
       // Save to Firestore
-      setDoc(this.getDocReference(newID), area);
+      setDoc(getDocReference(newID, collectionName, firestoreDB), area);
+      return newID;
     },
 
     /**
@@ -133,7 +135,7 @@ export const useAreasStore = defineStore("AreasStore", {
     async updateArea(area: Area) {
       console.log("Updating area in store: " + JSON.stringify(area));
       // Update timestamp
-      area.lastUpdatedAt = Timestamp.now();
+      area.lastUpdatedAt = Date.now().valueOf();
       // delete area.createdAt;
       // Save
       updateDoc(doc(firestoreCollection, area.id), area);
@@ -149,51 +151,5 @@ export const useAreasStore = defineStore("AreasStore", {
     },
 
     // * -------------------------------------------- Private functions
-    /**
-     * Makes a Firestore reference for the given doc ID
-     * @param docID
-     * @returns DocumentReference<T>
-     */
-    getDocReference(docID: string) {
-      return doc(
-        firestoreDatabase,
-        FirestoreConstants.AREA_COLLECTION_NAME,
-        docID
-      );
-    },
-
-    /**
-     * TODO: Move to a FirestoreUtils class.
-     * Hack for dealing with Firestore's bug.
-     * They occasionally store the timestamp as a Map for some reason.
-     * @param givenTimestamp Timestamp from Firebase
-     * @returns Timestamp
-     */
-    convertFirestoreTimestamp(givenTimestamp: unknown) {
-      console.log(
-        "🐞 🐞 🐞 🐞 🐞 TRYING TO CONVERT: " + JSON.stringify(givenTimestamp)
-      );
-      console.log("🐞 🐞 🐞 🐞 🐞 TYPE ====> " + typeof givenTimestamp);
-      let convertedTimestamp: Timestamp;
-      if (givenTimestamp instanceof Timestamp) {
-        convertedTimestamp = givenTimestamp;
-      } else if (givenTimestamp instanceof Object) {
-        convertedTimestamp = new Timestamp(
-          Object(givenTimestamp)["seconds"],
-          Object(givenTimestamp)["nanoseconds"]
-        );
-      } else {
-        console.log(
-          "☠️ 💀 ☠️ 💀 ☠️ 💀 Unable to parse Timestamp given" +
-            JSON.stringify(givenTimestamp)
-        );
-        return undefined;
-      }
-      console.log(
-        "🐛 🐛 🐛 🐛 🐛 AFTER CONVERTING: " + JSON.stringify(convertedTimestamp)
-      );
-      console.log("🐛 🐛 🐛 🐛 🐛 TYPE ====> " + typeof convertedTimestamp);
-      return convertedTimestamp;
-    },
   },
 });

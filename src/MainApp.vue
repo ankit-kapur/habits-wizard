@@ -26,8 +26,10 @@ export default class MainApp extends Vue {
     { name: "Start activity", to: "/third", icon: "mdi-play-outline" },
   ];
 
-  // ------------------------------------------------ Methods
+  // ------------------------------------------------ Method imports
   routerPush = routerPush;
+
+  // ------------------------------------------------ Methods
   openDrawer(): void {
     console.log("Opening drawer");
     this.isNavDrawerOpen = !this.isNavDrawerOpen;
