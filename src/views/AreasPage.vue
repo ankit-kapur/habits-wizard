@@ -56,53 +56,6 @@ export default class AreasPage extends Vue {
   closeEditAreaDialog(showEditAreaDialog: boolean): void {
     this.showDialogForEditArea = showEditAreaDialog;
   }
-
-  /**
-   * ! -------- Fix these bugs.
-   *    (a) Fix changeAreaCardWidth function below. It doesn't get added to the set.
-   *    (b) Expansion should push card on the left/right downwards.
-   *
-   * Updates state of cards, when a card is expanded or unexpanded.
-   * @param isExpanded
-   * @param areaId
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  changeAreaCardWidth(isExpanded: boolean, areaId?: string) {
-    // // Disabling expansion logic for now.
-    // console.log("HASSSSS = " + this.expandedCardIndices.has(areaId!));
-    // if (this.expandedCardIndices.has(areaId!)) {
-    //   this.expandedCardIndices.delete(areaId!);
-    // } else {
-    //   console.log("ADDDDDINGGG = " + areaId);
-    //   /* ! ------------------------------ "add" below doesn't work. list is still empty.   */
-    //   this.expandedCardIndices.add(areaId!);
-    //   console.log("AFTER = " + JSON.stringify(this.expandedCardIndices));
-    // }
-    // console.log("Poking = " + this.expandedCardIndices.has(areaId!));
-    // console.log(
-    //   "🐶 ------ this.expandedCardIndices = " +
-    //     JSON.stringify(this.expandedCardIndices) +
-    //     ", areaID = " +
-    //     areaId
-    // );
-  }
-
-  /**
-   * Get width in cols for this card.
-   * @param areaId
-   * @return no. of cols to use for this card.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getCardWidth(areaId?: string) {
-    return 12;
-
-    // // Disabling expansion logic for now.
-
-    // console.log(
-    //   "🐶 getCardWidth ----- " + this.expandedCardIndices.has(areaId!) ? 12 : 6
-    // );
-    // return this.expandedCardIndices.has(areaId!) ? 12 : 6;
-  }
 }
 </script>
 
@@ -114,7 +67,7 @@ export default class AreasPage extends Vue {
         class="pl-2 pr-2"
         v-for="(area, index) in areasStore.getAreasList()"
         v-bind:key="area.id"
-        :cols="getCardWidth(area.id)"
+        :cols="12"
       >
         <!------------------- Area cards -------------------->
 
@@ -123,7 +76,6 @@ export default class AreasPage extends Vue {
           v-bind:index="index"
           v-bind:key="area.id"
           v-on:edit-area="triggerEditMode"
-          v-on:card-expanded="changeAreaCardWidth($event, area.id)"
         ></AreaCard>
       </v-col>
     </v-row>

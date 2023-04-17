@@ -32,7 +32,7 @@ export default class AreaCard extends Vue {
   showDialogForConfirmDelete = false;
 
   MAX_WIDTH_CARD = 400;
-  IMAGE_HEIGHT = 110;
+  IMAGE_HEIGHT = 120;
   IMAGE_COLUMNS = 4;
   DESCRIPTION_MAX_LINES = 3;
 
@@ -57,8 +57,6 @@ export default class AreaCard extends Vue {
     this.isCardExpanded = isExpanded;
     this.showDeleteButton = isExpanded;
     this.showEditButton = isExpanded;
-    this.$emit("card-expanded", isExpanded);
-    console.log("expandAreaClicked ----- " + isExpanded);
   }
 
   // Edits
@@ -126,23 +124,18 @@ export default class AreaCard extends Vue {
       <v-row>
         <!--  -->
         <!-- ? ------------------- Image ----------------------->
-        <v-col :cols="IMAGE_COLUMNS" class="mr-2">
-          <v-card
-            rounded="lg"
-            class="ma-1 mb-2 mr-2 pr-0"
-            :height="IMAGE_HEIGHT"
+        <v-col :cols="IMAGE_COLUMNS" class="ma-2 mr-0 pa-0">
+          <v-img
+            class="ma-0 pa-0"
+            style="border-radius: 6px"
+            :src="area.imageUrl"
             :width="IMAGE_HEIGHT"
-          >
-            <v-img
-              :src="area.imageUrl"
-              :width="IMAGE_HEIGHT"
-              :height="IMAGE_HEIGHT"
-              @click="expandAreaClicked"
-            ></v-img>
-          </v-card>
+            :height="IMAGE_HEIGHT"
+            @click="expandAreaClicked"
+          ></v-img>
         </v-col>
 
-        <v-col class="pl-0 mr-2">
+        <v-col class="pl-2 ma-0">
           <!--  -->
           <!-- ? ------------------- Color indicater ----------------------->
           <!-- <v-icon
@@ -156,7 +149,7 @@ export default class AreaCard extends Vue {
           <v-container @click="expandAreaClicked">
             <!-- ? ------------------- Title ----------------------->
             <v-row>
-              <v-col class="pa-0 pt-2 pb-2">
+              <v-col class="pa-0 pb-1 pl-0">
                 <!--  -->
 
                 <!-- * ------------ V-CLAMP -------------->
