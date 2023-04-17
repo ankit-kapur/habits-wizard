@@ -5,10 +5,29 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { DialogMode } from "./AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 
+import { iconNames as fontAwesomeIconNames } from "@/assets/icons/font_awesome-icons";
+
+// import { IconName } from "@fortawesome/fontawesome-common-types";
+// import { IconName } from "@fortawesome/fontawesome-svg-core";
+
+import "@fortawesome/fontawesome-svg-core/styles.css";
+// // import { findIconDefinition, icon } from "@fortawesome/fontawesome-free";
+// // eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
+// import { findIconDefinition, Icon, icon } from "@fortawesome/fontawesome-svg-core";
+// eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
+import { library } from '@fortawesome/fontawesome-svg-core'
+// eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
+import { fas } from '@fortawesome/free-solid-svg-icons'
+// eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
+import { far } from '@fortawesome/free-regular-svg-icons'
+// eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
+import { fab } from '@fortawesome/free-brands-svg-icons'
+
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
   },
+  methods: {},
 })
 export default class CategoryCreateOrEditDialog extends Vue {
   // ------------------------------------------------ Props
@@ -90,6 +109,29 @@ export default class CategoryCreateOrEditDialog extends Vue {
       this.showDialogForConfirmDiscard = true;
     }
   }
+
+  /**
+   * ! ---------* ---- WIP: Lookup box for font awesome SVGs.
+   */
+
+  /* ? ---- 'IconName' has the full list of icons. */
+  fontAwesomeResponse = "";
+  searchForIcon(prefix: string) {
+    const matches: string[] = fontAwesomeIconNames.filter((iconName) =>
+      iconName.startsWith(prefix)
+    );
+    console.log("results = " + matches);
+
+    // <!-- Add all icons to the library so you can use it in your page -->
+    // library.add(fas, far, fab)
+    // const iconLookup: IconLookup = {
+    //   prefix: "fas",
+    //   iconName: prefix,
+    // };
+    // const glasses = findIconDefinition(iconLookup);
+    // const foundIcon: Icon = icon(glasses);
+    this.fontAwesomeResponse = "fas fa-" + matches[0];
+  }
 }
 </script>
 
@@ -138,7 +180,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
                 clearable
               ></v-text-field>
 
-              <!-- * ---------- Icon text-field ---------- * -->
+              <!-- ? -------------- Icon text-field -------------- * -->
               <!-- TODO p1 Build an IconPicker component -->
               <v-icon>{{ categoryTag_local.icon }}</v-icon>
               <v-text-field
@@ -148,6 +190,16 @@ export default class CategoryCreateOrEditDialog extends Vue {
                 class="mx-auto px-auto pt-4"
                 clearable
               ></v-text-field>
+
+              <!-- ! Experimenting -->
+              <v-text-field label="FA input" @input="searchForIcon">
+              </v-text-field>
+
+              <v-btn icon>
+                <v-icon>{{ fontAwesomeResponse }}</v-icon>
+              </v-btn>
+
+              <!--  -->
             </v-container>
 
             <v-card-actions>
