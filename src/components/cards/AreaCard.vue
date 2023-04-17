@@ -7,11 +7,13 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { getPrettyTimestamp } from "@/utils/time/TimestampConversionUtils";
+import VClamp from "vue-clamp";
 
 @Component({
   components: {
     AreaCreateOrEditDialog: AreaCreateOrEditDialog,
     ConfirmationDialog: ConfirmationDialog,
+    VClamp: VClamp,
   },
 })
 export default class AreaCard extends Vue {
@@ -24,10 +26,15 @@ export default class AreaCard extends Vue {
   categoryTagsStore = useCategoryTagsStore();
 
   // ------------------------------------------------ Data
-  isAreaCardExpanded = false;
+  isCardExpanded = false;
   showEditButton = false;
   showDeleteButton = false;
   showDialogForConfirmDelete = false;
+
+  MAX_WIDTH_CARD = 400;
+  IMAGE_HEIGHT = 110;
+  IMAGE_COLUMNS = 4;
+  DESCRIPTION_MAX_LINES = 3;
 
   // ------------------------------------------------ Method imports
   getPrettyTimestamp = getPrettyTimestamp;
@@ -46,9 +53,12 @@ export default class AreaCard extends Vue {
 
   // ------------------------------------------------ Methods
   expandAreaClicked() {
-    this.isAreaCardExpanded = !this.isAreaCardExpanded;
-    this.showDeleteButton = this.isAreaCardExpanded;
-    this.showEditButton = this.isAreaCardExpanded;
+    const isExpanded = !this.isCardExpanded;
+    this.isCardExpanded = isExpanded;
+    this.showDeleteButton = isExpanded;
+    this.showEditButton = isExpanded;
+    this.$emit("card-expanded", isExpanded);
+    console.log("expandAreaClicked ----- " + isExpanded);
   }
 
   // Edits
@@ -94,10 +104,10 @@ export default class AreaCard extends Vue {
 
 <template>
   <v-card
-    class="mb-6 mx-auto px-auto"
+    class="mt-4 mx-auto px-auto"
     style="border-radius: 8px"
-    max-width="600"
-    elevation="20"
+    :max-width="MAX_WIDTH_CARD"
+    elevation="5"
     :ripple="false"
     v-touch="{
       left: () => deleteMode,
@@ -112,86 +122,111 @@ export default class AreaCard extends Vue {
       ></v-progress-linear>
     </template>
 
-    <!--------------------- Image ----------------------->
-    <v-img
-      :src="area.imageUrl"
-      height="180"
-      @click="isAreaCardExpanded = !isAreaCardExpanded"
-    ></v-img>
+    <v-container>
+      <v-row>
+        <!--  -->
+        <!-- ? ------------------- Image ----------------------->
+        <v-col :cols="IMAGE_COLUMNS" class="mr-2">
+          <v-card
+            rounded="lg"
+            class="ma-1 mb-2 mr-2 pr-0"
+            :height="IMAGE_HEIGHT"
+            :width="IMAGE_HEIGHT"
+          >
+            <v-img
+              :src="area.imageUrl"
+              :width="IMAGE_HEIGHT"
+              :height="IMAGE_HEIGHT"
+              @click="expandAreaClicked"
+            ></v-img>
+          </v-card>
+        </v-col>
 
-    <!-- <v-card-title>
-      <v-spacer></v-spacer>
-      <v-btn icon class="mr-2" x-large
-        ><v-icon start :color="area.color">mdi-pine-tree-variant</v-icon>
-      </v-btn>
-    </v-card-title> -->
+        <v-col class="pl-0 mr-2">
+          <!--  -->
+          <!-- ? ------------------- Color indicater ----------------------->
+          <!-- <v-icon
+            start
+            :color="area.color"
+            class="mx-auto px-auto ma-2 ml-1 mr-2 pl-0"
+            @click="expandAreaClicked"
+            >mdi-circle</v-icon
+          > -->
 
-    <v-card-actions class="mx-auto px-auto ma-1 ml-1 mr-1">
-      <!-- <v-col cols="6" justify="center"> -->
+          <v-container @click="expandAreaClicked">
+            <!-- ? ------------------- Title ----------------------->
+            <v-row>
+              <v-col class="pa-0 pt-2 pb-2">
+                <!--  -->
 
-      <!-- style="-webkit-text-stroke: 0.4px black" -->
-      <!-- </v-col> -->
-      <v-icon
-        start
-        :color="area.color"
-        class="mx-auto px-auto ma-2 ml-1 mr-2"
-        @click="isAreaCardExpanded = !isAreaCardExpanded"
-        >mdi-circle</v-icon
-      >
+                <!-- * ------------ V-CLAMP -------------->
+                <!-- See docs: https://vue-clamp.vercel.app/ -->
+                <v-clamp
+                  autoresize
+                  :max-lines="1"
+                  class="text-h5 font-weight-light"
+                >
+                  {{ area.title }}
+                </v-clamp>
+              </v-col>
+            </v-row>
 
-      <span
-        left
-        class="text-h5 font-weight-light"
-        :color="area.color"
-        @click="isAreaCardExpanded = !isAreaCardExpanded"
-      >
-        {{ area.title }}
-      </span>
+            <!-- ? ------------------- Description ----------------------->
+            <v-row class="">
+              <v-col class="pa-0">
+                <!--  -->
+                <v-clamp
+                  autoresize
+                  :max-lines="DESCRIPTION_MAX_LINES"
+                  class="text-subtitle-2 font-weight-light"
+                >
+                  {{ area.description }}
+                </v-clamp>
 
-      <v-spacer></v-spacer>
-      <!----------------- Edit & Delete icons ------------------->
-      <v-btn
-        color="action_icon"
-        v-if="isAreaCardExpanded"
-        icon
-        @click="showEditDialog"
-      >
-        <v-icon> {{ `mdi-lead-pencil` }}</v-icon>
-      </v-btn>
-
-      <v-btn
-        color="action_icon"
-        v-if="isAreaCardExpanded"
-        icon
-        @click="confirmDelete"
-      >
-        <v-icon> {{ `mdi-delete` }}</v-icon>
-      </v-btn>
-
-      <v-btn color="action_icon" icon @click="expandAreaClicked">
-        <v-icon>
-          {{
-            isAreaCardExpanded ? `mdi-chevron-up` : `mdi-chevron-down`
-          }}</v-icon
-        >
-      </v-btn>
-    </v-card-actions>
-
-    <v-divider class="mx-4 mb-1"></v-divider>
+                <!--  -->
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-col>
+      </v-row>
+    </v-container>
 
     <v-expand-transition mode="in-out">
       >
-      <div v-if="isAreaCardExpanded">
-        <!-- <v-card
-          class="transition-fast-in-fast-out v-card--reveal"
-          style="height: 100%"
-        > -->
-        <v-card-text>
-          {{ area.description }}
-        </v-card-text>
+      <div v-if="isCardExpanded">
+        <!--  -->
+        <v-card-actions class="mx-auto px-auto ma-1 ml-1 mr-1 pt-0 pb-0 pl-0">
+          <!--  -->
+          <v-spacer></v-spacer>
+
+          <!-- ? ------------------- Edit & Delete buttons ----------------------->
+          <v-btn color="action_icon" icon @click="showEditDialog">
+            <v-icon class="pr-2 ml-5"> {{ `mdi-lead-pencil` }}</v-icon>
+            Edit
+          </v-btn>
+
+          <v-spacer></v-spacer>
+
+          <v-btn color="action_icon" icon @click="confirmDelete">
+            <v-icon class="pr-2 ml-5"> {{ `mdi-delete` }}</v-icon>
+            Delete
+          </v-btn>
+
+          <v-spacer></v-spacer>
+
+          <!-- ? ------------------- ^ button to collapse ----------------------->
+          <v-btn color="action_icon" icon @click="expandAreaClicked">
+            <v-icon>
+              {{
+                isCardExpanded ? `mdi-chevron-up` : `mdi-chevron-down`
+              }}</v-icon
+            >
+          </v-btn>
+        </v-card-actions>
 
         <v-divider class="mx-4 mb-1"></v-divider>
 
+        <!-- ? ------------------- Timestamps ----------------------->
         <v-card-text>
           Created at: {{ getPrettyTimestamp(area.createdAt) }} <br />
           Last updated at: {{ getPrettyTimestamp(area.lastUpdatedAt) }}
