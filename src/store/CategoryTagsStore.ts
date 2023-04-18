@@ -55,7 +55,7 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
   actions: {
     // -------------------------------------------- Subscribe & Unsubscribe
     subscribeToStore() {
-      console.log("🔥 🔥 🔥 LOADING CATEGORY TAGS list from FireStore.");
+      console.log("💾 Subscribing to CATEGORY TAGS list from FireStore.");
       const queryToLoad = query(
         firestoreCollection,
         where(FirestoreConstants.USER_ID_ATTRIBUTE, "==", this.userId)
@@ -69,10 +69,7 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
         queryToLoad,
         (snapshot: QuerySnapshot<CategoryTag>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
-          console.log(
-            "🔥 🔥 🔥 Snapshot updated. Refreshed category tags: " +
-              JSON.stringify(this.allDocs)
-          );
+          console.log("💾 Snapshot updated. Refreshed category tags.");
         }
       );
       this.unsubscribeHooks.push(unsubscribe);

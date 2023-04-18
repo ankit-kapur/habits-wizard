@@ -99,12 +99,6 @@ export const useAreasStore = defineStore("AreasStore", {
      * @returns list of Areas
      */
     getAreasList(): Area[] {
-      console.log(
-        "🔥 🔥 🔥 Getting Areas list from FireStore for userId: " +
-          this.userId +
-          " ===> " +
-          JSON.stringify(this.allDocs)
-      );
       return this.allDocs;
     },
 

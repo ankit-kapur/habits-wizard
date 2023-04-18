@@ -3,6 +3,7 @@ import { defaultNewActivity } from "@/constants/DefaultDataForForms";
 import { Activity } from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
+import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import CategoryCreateOrEditDialog from "../dialogs/CategoryCreateOrEditDialog.vue";
 
@@ -30,7 +31,7 @@ export default class ActivitySelector extends Vue {
     this.selectedItemIdList_local = this.selectedItemIdList;
 
     console.log(
-      "onPropertyChanged just happened inside @Watch. this.selectedItemIdList_local ===> " +
+      "@Watch triggered in ActivitySelector. this.selectedItemIdList_local ===> " +
         JSON.stringify(this.selectedItemIdList_local)
     );
   }
@@ -43,7 +44,7 @@ export default class ActivitySelector extends Vue {
   showEditCategoryDialog = false;
   selectedActivity: Activity | null = null;
   selectedItemIdList_local: string[] = [];
-  newActivity: Activity = defaultNewActivity;
+  newActivity: Activity = deepCopy(defaultNewActivity);
   searchInput = "";
 
   // ------------------------------------------------ Methods

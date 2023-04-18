@@ -38,7 +38,6 @@ export default class AreaCreateOrEditDialog extends Vue {
   @Watch("numberOfSteps")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
-    this.showThisDialog = this.showDialog;
     if (this.providedArea != null)
       this.currentArea = deepCopy(this.providedArea);
     // Stop stepper from overflowing
@@ -55,7 +54,6 @@ export default class AreaCreateOrEditDialog extends Vue {
   currentArea: Area = deepCopy(defaultNewArea);
 
   // Toggles for displays
-  showThisDialog = false;
   showDiscardConfirmationDialog = false;
   showCreateCategoryDialog = false;
   showImageEditDialog = false;
@@ -187,7 +185,7 @@ export enum DialogMode {
     <v-bottom-sheet
       max-width="500"
       inset
-      v-model="showThisDialog"
+      v-model="showDialog"
       persistent
       overlay-opacity="0.88"
       @keydown.esc="triggerCancellation"
@@ -215,10 +213,12 @@ export enum DialogMode {
         </v-stepper-header>
 
         <v-stepper-items>
-          <!-- ? ---------------------------- Step 1 -->
+          <!--  -->
+
+          <!-- ? --------------------------------------------- Step 1 -->
           <v-stepper-content :step="1">
             <v-card elevation="0" style="border-radius: 8px">
-              <!-- ? ------------------- Title -->
+              <!-- ? ------------------------------ Title -->
               <v-card-text class="ma-0 pa-0">
                 <v-text-field
                   label="Area"
@@ -233,7 +233,7 @@ export enum DialogMode {
                 ></v-text-field>
               </v-card-text>
 
-              <!--------------------- Image ----------------------->
+              <!-- ? ------------------------------ Image -->
               <v-card-text class="ma-0 pa-0">
                 <v-img
                   :src="currentArea.imageUrl"
@@ -273,12 +273,32 @@ export enum DialogMode {
                 <v-btn icon @click="moveToPreviousStep()">
                   <v-icon> </v-icon>
                 </v-btn>
-                <!--  -->
+
                 <v-spacer />
 
-                <!-- Cancel -->
-                <v-btn text class="pr-0" @click="triggerCancellation">
+                <!------------- Cancel -->
+                <v-btn
+                  @click="triggerCancellation"
+                  rounded
+                  density="comfortable"
+                  class="text-body-2 font-weight-light px-auto"
+                >
                   Cancel
+                </v-btn>
+
+                <v-spacer />
+
+                <!------------- Save -->
+                <v-btn
+                  @click="saveArea"
+                  rounded
+                  density="comfortable"
+                  :disabled="false"
+                  class="px-auto"
+                  color="primary"
+                  min-width="90"
+                >
+                  Save
                 </v-btn>
 
                 <v-spacer />
@@ -350,6 +370,11 @@ export enum DialogMode {
                   Cancel
                 </v-btn>
 
+                <!------------- Save -->
+                <v-btn icon :disabled="false" @click="saveArea">
+                  <v-icon>{{ save_icon }}</v-icon>
+                </v-btn>
+
                 <v-spacer />
 
                 <!------------- Next -->
@@ -395,17 +420,13 @@ export enum DialogMode {
                   Cancel
                 </v-btn>
 
-                <v-spacer />
-
-                <!------------- Previous -->
-                <v-btn icon :disabled="false" @click="moveToPreviousStep()">
-                  <v-icon>{{ previous_step_icon }}</v-icon>
-                </v-btn>
-
                 <!------------- Save -->
                 <v-btn icon :disabled="false" @click="saveArea">
                   <v-icon>{{ save_icon }}</v-icon>
                 </v-btn>
+
+                <v-spacer />
+                <!--  -->
               </v-card-actions>
 
               <!--  -->

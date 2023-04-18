@@ -4,28 +4,15 @@ import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { DialogMode } from "./AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
-
-import { iconNames as fontAwesomeIconNames } from "@/assets/icons/font_awesome-icons";
-
-// import { IconName } from "@fortawesome/fontawesome-common-types";
-// import { IconName } from "@fortawesome/fontawesome-svg-core";
-
-import "@fortawesome/fontawesome-svg-core/styles.css";
-// // import { findIconDefinition, icon } from "@fortawesome/fontawesome-free";
-// // eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
-// import { findIconDefinition, Icon, icon } from "@fortawesome/fontawesome-svg-core";
-// eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
-import { library } from '@fortawesome/fontawesome-svg-core'
-// eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
-import { fas } from '@fortawesome/free-solid-svg-icons'
-// eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
-import { far } from '@fortawesome/free-regular-svg-icons'
-// eslint-disable-next-line prettier-vue/prettier, @typescript-eslint/no-unused-vars
-import { fab } from '@fortawesome/free-brands-svg-icons'
+import { useIconsStore } from "@/store/IconsStore";
+import IconPicker from "@/components/dialogs/IconPicker.vue";
+import { deepCopy } from "deep-copy-ts";
+import { Ref } from "vue-property-decorator";
 
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
+    IconPicker: IconPicker,
   },
   methods: {},
 })
@@ -45,30 +32,54 @@ export default class CategoryCreateOrEditDialog extends Vue {
    * Watches parent variable. Sync's its value to the child.
    */
   @Watch("showDialog")
-  @Watch("categoryTag")
+  // @Watch("categoryTag")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
-    this.showDialog_local = this.showDialog;
-    if (this.categoryTag === null) {
-      this.categoryTag_local = defaultNewCategory;
-    } else {
-      this.categoryTag_local = this.categoryTag;
+    console.log(
+      "🚨 🚨 🚨 @Watch for CategoryCreateOrEditDialog. _newValue = " + _newValue
+    );
+    const isDialogOpen = !!_newValue;
+
+    if (isDialogOpen === true) {
+      if (DialogMode[this.dialogMode] === DialogMode.CREATE) {
+        console.log(
+          "🌹 🌹 🌹 CREATE MODE ---- this.categoryTag_local = " +
+            JSON.stringify(this.categoryTag_local)
+        );
+        this.categoryTag_local = deepCopy(defaultNewCategory); // Reset
+      } else {
+        console.log("🌹 🌹 🌹 EDIT");
+        this.categoryTag_local = deepCopy(this.categoryTag);
+      }
     }
 
     console.log(
-      "onPropertyChanged just happened inside @Watch. this.categoryTag_local ===> " +
-        JSON.stringify(this.categoryTag_local)
+      "🐞 🐞 🐞 @Watch triggered in CategoryCreateOrEdit. showDialog ===> " +
+        this.showDialog +
+        ", categoryTag_local ===> " +
+        JSON.stringify(this.categoryTag_local) +
+        ", dialogMode = " +
+        this.dialogMode
     );
   }
 
-  // Toggle for displaying this box
-  categoryTag_local = defaultNewCategory;
-  showDialog_local = false;
+  // ------------------------------------------------ Stores
+  iconsStore = useIconsStore();
+
+  mounted() {
+    this.iconsStore.loadIcons();
+  }
+
+  // ------------------------------------------------ Data
+  categoryTag_local = deepCopy(defaultNewCategory);
   showDialogForConfirmDiscard = false;
+  showIconPicker = false;
+
+  @Ref() readonly titleTextBox!: HTMLInputElement;
 
   // ------------------------------------------------ Methods
   resetNewCategoryData() {
-    this.categoryTag_local = defaultNewCategory;
+    this.categoryTag_local = deepCopy(defaultNewCategory);
   }
 
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
@@ -89,6 +100,10 @@ export default class CategoryCreateOrEditDialog extends Vue {
   saveCategoryTag() {
     // Reset dialog box
     // Ask the parent to update.
+    console.log(
+      "!!!!!! ------- this.categoryTag_local = " +
+        JSON.stringify(this.categoryTag_local)
+    );
     this.$emit("save-confirmed", this.categoryTag_local);
 
     this.resetNewCategoryData();
@@ -110,27 +125,19 @@ export default class CategoryCreateOrEditDialog extends Vue {
     }
   }
 
-  /**
-   * ! ---------* ---- WIP: Lookup box for font awesome SVGs.
-   */
+  newIconSelected(newIcon: string) {
+    console.log("---- newIconSelected (PARENT) = " + newIcon);
+    this.categoryTag_local.icon = newIcon;
+    this.closeIconPicker(true);
+  }
 
-  /* ? ---- 'IconName' has the full list of icons. */
-  fontAwesomeResponse = "";
-  searchForIcon(prefix: string) {
-    const matches: string[] = fontAwesomeIconNames.filter((iconName) =>
-      iconName.startsWith(prefix)
-    );
-    console.log("results = " + matches);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  closeIconPicker(state: boolean) {
+    console.log("XXXXXXX ---- CLOSING ICON PICKER.");
+    this.showIconPicker = false;
 
-    // <!-- Add all icons to the library so you can use it in your page -->
-    // library.add(fas, far, fab)
-    // const iconLookup: IconLookup = {
-    //   prefix: "fas",
-    //   iconName: prefix,
-    // };
-    // const glasses = findIconDefinition(iconLookup);
-    // const foundIcon: Icon = icon(glasses);
-    this.fontAwesomeResponse = "fas fa-" + matches[0];
+    // TODO --- Would be nice to focus on the text-field after closing the icon picker.
+    // this.titleTextBox.focus();
   }
 }
 </script>
@@ -143,7 +150,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
           max-width="300"
           overlay-opacity="0.88"
           inset
-          v-model="showDialog_local"
+          v-model="showDialog"
           persistent
           @keydown.esc="triggerCancellation"
           @keydown.enter="saveCategoryTag"
@@ -151,13 +158,15 @@ export default class CategoryCreateOrEditDialog extends Vue {
           <v-card>
             <v-list>
               <v-list-item>
+                <!-- ? ----------------- Box heading ---------------- * -->
                 <v-list-item-content>
-                  <v-list-item-title>New Category</v-list-item-title>
+                  <v-list-item-title>Category</v-list-item-title>
                   <v-list-item-subtitle
                     >Click save to create</v-list-item-subtitle
                   >
                 </v-list-item-content>
 
+                <!-- ? -------------- (x) Close button -------------- * -->
                 <v-list-item-action>
                   <v-btn icon>
                     <v-icon @click="triggerCancellation">mdi-close</v-icon>
@@ -170,38 +179,44 @@ export default class CategoryCreateOrEditDialog extends Vue {
 
             <!-- * ---------- Title text-field ---------- * -->
             <v-container fluid>
-              <v-text-field
-                label="Name"
-                v-model="categoryTag_local.title"
-                class="shrink;display:flex;width=100px"
-                placeholder="New category"
-                hint="Something short and sweet."
-                counter="15"
-                clearable
-              ></v-text-field>
+              <!--  -->
+              <v-row>
+                <!-- ? -------------- Icon button -------------- * -->
+                <v-col cols="2">
+                  <!-- <v-btn
+                    icon
+                    @click="showIconPicker = !showIconPicker"
+                    class="px-auto pt-4"
+                  > -->
+                  <v-icon
+                    @click="showIconPicker = true"
+                    large
+                    class="px-auto pt-4 mr-20"
+                    >{{ categoryTag_local.icon }}</v-icon
+                  >
+                  <!-- </v-btn> -->
+                </v-col>
 
-              <!-- ? -------------- Icon text-field -------------- * -->
-              <!-- TODO p1 Build an IconPicker component -->
-              <v-icon>{{ categoryTag_local.icon }}</v-icon>
-              <v-text-field
-                label="Icon"
-                placeholder="mdi-rocket"
-                v-model="categoryTag_local.icon"
-                class="mx-auto px-auto pt-4"
-                clearable
-              ></v-text-field>
-
-              <!-- ! Experimenting -->
-              <v-text-field label="FA input" @input="searchForIcon">
-              </v-text-field>
-
-              <v-btn icon>
-                <v-icon>{{ fontAwesomeResponse }}</v-icon>
-              </v-btn>
+                <!-- ? ------------------ Name ---------------- * -->
+                <v-col>
+                  <v-text-field
+                    label="Name"
+                    v-model="categoryTag_local.title"
+                    class="shrink;display:flex;width=100px"
+                    placeholder="New category"
+                    hint="Something short and sweet."
+                    counter="15"
+                    clearable
+                    autofocus
+                    ref="titleTextBox"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
 
               <!--  -->
             </v-container>
 
+            <!-- ? ------------------ Save / Cancel ---------------- * -->
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn text @click="triggerCancellation"> Cancel </v-btn>
@@ -219,6 +234,13 @@ export default class CategoryCreateOrEditDialog extends Vue {
             yesButtonText="Discard"
             noButtonText="Cancel"
           />
+
+          <IconPicker
+            :showDialog="showIconPicker"
+            :initialSearchPrefix="categoryTag_local.title"
+            v-on:icon-selected="newIconSelected"
+            v-on:icon-picker-cancelled="closeIconPicker"
+          ></IconPicker>
         </v-bottom-sheet>
       </v-col>
     </v-row>

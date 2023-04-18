@@ -30,7 +30,7 @@ export default class CategorySelector extends Vue {
     this.selectedItemIdList_local = this.selectedItemIdList;
 
     console.log(
-      "onPropertyChanged just happened inside @Watch. this.selectedItemIdList_local ===> " +
+      "@Watch triggered in CategorySelector. this.selectedItemIdList_local ===> " +
         JSON.stringify(this.selectedItemIdList_local)
     );
   }
