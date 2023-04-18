@@ -9,16 +9,14 @@ import { defaultNewArea } from "@/constants/DefaultDataForForms";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import CategorySelector from "../chips/CategorySelector.vue";
 import ActivitySelector from "../chips/ActivitySelector.vue";
-
-// TODO --- Use ColorThief to pick a color-palette from the image.
-//          Currently failing because npm can't install canvas.
-// import ColorThief from "colorthief";
+import ColorThief from "colorthief";
 
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
     CategorySelector: CategorySelector,
     ActivitySelector: ActivitySelector,
+    ColorThief: ColorThief,
   },
 })
 export default class AreaCreateOrEditDialog extends Vue {
@@ -171,6 +169,40 @@ export default class AreaCreateOrEditDialog extends Vue {
   moveToPreviousStep(): void {
     this.moveToStep(this.currentStepperPos - 1);
   }
+
+  /**
+   * ? -------------- Color thief
+   */
+  imageChanged() {
+    console.log("--------- IMAGE CHANGED");
+
+    const colorThief = new ColorThief();
+
+    // Make a temporary HTML element for the image.
+    const imageElement = new Image();
+    // Hack to prevent CORS errors. We use a proxy server to redirect.
+    let imageURL = this.currentArea.imageUrl;
+    let googleProxyURL =
+      "https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=";
+
+    imageElement.src = googleProxyURL + encodeURIComponent(imageURL);
+
+    // Prevent CORS errors.
+    imageElement.crossOrigin = "Anonymous";
+
+    imageElement.addEventListener("load", function () {
+      /**
+       * * ------- Make color-thief do its thiefing.
+       */
+      const dominantColor = colorThief.getColor(imageElement);
+      console.log("🎨 🎨 🎨 🎨 Dominant color -----> " + dominantColor);
+      const palette = colorThief.getPalette(imageElement);
+      console.log("🎨 🎨 🎨 🎨 Palette -----> " + palette);
+    });
+
+    // Destroy
+    imageElement.remove();
+  }
 }
 
 export enum DialogMode {
@@ -229,16 +261,13 @@ export enum DialogMode {
                     v-model="currentArea.imageUrl"
                     label="Image URL"
                     v-show="showImageEditDialog"
+                    @keydown.enter="imageChanged()"
                   ></v-text-field
                 ></v-card-text>
 
-                <!-- <v-card-title>
-                <span class="text-h4">{{ currentArea.title }}</span>
-                <v-spacer></v-spacer>
-                <v-btn icon
-                  ><v-icon @click="triggerCancellation">mdi-close</v-icon></v-btn
-                >
-              </v-card-title> -->
+                <!-- ! --------- imageChanged() ----- needs to be called in a better place.  -->
+
+                <!-- TODO --------- Update palette and set Area color  -->
 
                 <v-card-text class="ma-0 pa-0">
                   <v-text-field

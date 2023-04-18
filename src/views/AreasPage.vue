@@ -64,7 +64,7 @@ export default class AreasPage extends Vue {
   <v-container fluid class="pl-0 pr-0">
     <v-row dense>
       <v-col
-        class="pl-2 pr-2"
+        class="pl-2 pr-2 pb-0 pt-0"
         v-for="(area, index) in areasStore.getAreasList()"
         v-bind:key="area.id"
         :cols="12"

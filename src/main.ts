@@ -4,6 +4,7 @@ import router from "./router";
 import vuetify from "./plugins/vuetify";
 import MainApp from "./MainApp.vue";
 import VClamp from "vue-clamp";
+import ColorThief from "colorthief";
 
 Vue.config.productionTip = false;
 
@@ -13,6 +14,9 @@ const pinia = createPinia();
 
 // Clamp for restricting text from overflowing.
 Vue.use(VClamp);
+
+// Color thief
+Vue.use(ColorThief);
 
 const app: Vue = new Vue({
   router,

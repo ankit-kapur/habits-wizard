@@ -32,7 +32,7 @@ export default class AreaCard extends Vue {
   showDialogForConfirmDelete = false;
 
   MAX_WIDTH_CARD = 400;
-  IMAGE_HEIGHT = 120;
+  IMAGE_HEIGHT = 110;
   IMAGE_COLUMNS = 4;
   DESCRIPTION_MAX_LINES = 3;
 
@@ -121,7 +121,7 @@ export default class AreaCard extends Vue {
     </template>
 
     <v-container>
-      <v-row>
+      <v-row @click="expandAreaClicked">
         <!--  -->
         <!-- ? ------------------- Image ----------------------->
         <v-col :cols="IMAGE_COLUMNS" class="ma-2 mr-0 pa-0">
@@ -131,11 +131,10 @@ export default class AreaCard extends Vue {
             :src="area.imageUrl"
             :width="IMAGE_HEIGHT"
             :height="IMAGE_HEIGHT"
-            @click="expandAreaClicked"
           ></v-img>
         </v-col>
 
-        <v-col class="pl-2 ma-0">
+        <v-col class="pt-1 pl-2 ma-0">
           <!--  -->
           <!-- ? ------------------- Color indicater ----------------------->
           <!-- <v-icon
@@ -146,10 +145,10 @@ export default class AreaCard extends Vue {
             >mdi-circle</v-icon
           > -->
 
-          <v-container @click="expandAreaClicked">
+          <v-container>
             <!-- ? ------------------- Title ----------------------->
             <v-row>
-              <v-col class="pa-0 pb-1 pl-0">
+              <v-col class="pa-0 pb-1 pl-0 pt-2">
                 <!--  -->
 
                 <!-- * ------------ V-CLAMP -------------->
@@ -188,27 +187,39 @@ export default class AreaCard extends Vue {
       >
       <div v-if="isCardExpanded">
         <!--  -->
-        <v-card-actions class="mx-auto px-auto ma-1 ml-1 mr-1 pt-0 pb-0 pl-0">
+        <v-card-actions class="mx-auto px-auto pt-0 pb-2">
           <!--  -->
           <v-spacer></v-spacer>
 
           <!-- ? ------------------- Edit & Delete buttons ----------------------->
-          <v-btn color="action_icon" icon @click="showEditDialog">
-            <v-icon class="pr-2 ml-5"> {{ `mdi-lead-pencil` }}</v-icon>
-            Edit
+          <v-btn
+            x-small
+            outlined
+            @click="showEditDialog"
+            color="edit_button"
+            style="border-radius: 12px; border-width: 1"
+            min-height="25"
+            class="ml-10 mr-2"
+          >
+            <v-icon small class="mr-2"> {{ `mdi-lead-pencil` }}</v-icon> Edit
           </v-btn>
 
-          <v-spacer></v-spacer>
-
-          <v-btn color="action_icon" icon @click="confirmDelete">
-            <v-icon class="pr-2 ml-5"> {{ `mdi-delete` }}</v-icon>
-            Delete
+          <v-btn
+            x-small
+            outlined
+            @click="confirmDelete"
+            color="delete_button"
+            style="border-radius: 12px; border-width: 1"
+            min-height="25"
+            class=""
+          >
+            <v-icon small class="mr-2"> {{ `mdi-delete` }}</v-icon> Delete
           </v-btn>
 
           <v-spacer></v-spacer>
 
           <!-- ? ------------------- ^ button to collapse ----------------------->
-          <v-btn color="action_icon" icon @click="expandAreaClicked">
+          <v-btn icon @click="expandAreaClicked">
             <v-icon>
               {{
                 isCardExpanded ? `mdi-chevron-up` : `mdi-chevron-down`
@@ -220,9 +231,18 @@ export default class AreaCard extends Vue {
         <v-divider class="mx-4 mb-1"></v-divider>
 
         <!-- ? ------------------- Timestamps ----------------------->
-        <v-card-text>
-          Created at: {{ getPrettyTimestamp(area.createdAt) }} <br />
-          Last updated at: {{ getPrettyTimestamp(area.lastUpdatedAt) }}
+        <v-card-text align="left">
+          Created
+          <span :style="{ color: '#9a9fab' }" class="font-weight-bold">
+            {{ getPrettyTimestamp(area.createdAt) }}
+          </span>
+          <br />
+
+          Last updated
+          <span :style="{ color: '#9a9fab' }" class="font-weight-bold">
+            {{ getPrettyTimestamp(area.lastUpdatedAt) }}
+          </span>
+          <!-- Other colors: #888a89 (medium-gray) -->
         </v-card-text>
 
         <!-- TODO P0 --- New component for "CategoryChip". Props: CategoryTag[] -->
