@@ -62,12 +62,11 @@ export default class AreasPage extends Vue {
 <!------------- Template  --------------->
 <template>
   <v-container fluid class="pl-0 pr-0">
-    <v-row dense>
+    <v-row dense align="start">
       <v-col
         class="pl-2 pr-2 pb-0 pt-0"
         v-for="(area, index) in areasStore.getAreasList()"
         v-bind:key="area.id"
-        :cols="12"
       >
         <!------------------- Area cards -------------------->
 
@@ -89,7 +88,7 @@ export default class AreasPage extends Vue {
             color="add_button"
             dark
             variant="outlined"
-            elevation="4"
+            elevation="10"
             @click="showDialogForNewArea = true"
           >
             <v-icon>mdi-plus</v-icon>

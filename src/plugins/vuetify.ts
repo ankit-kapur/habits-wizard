@@ -18,7 +18,7 @@ export default new Vuetify({
         info: "#795548",
         success: "#238a17",
 
-        add_button: "#673ab7",
+        add_button: "#8573a6",
         edit_button: "#8573a6",
         delete_button: "#b6837f",
         action_icon: "#673ab7",

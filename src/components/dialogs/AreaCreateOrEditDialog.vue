@@ -268,6 +268,7 @@ export enum DialogMode {
                 <!-- ! --------- imageChanged() ----- needs to be called in a better place.  -->
 
                 <!-- TODO --------- Update palette and set Area color  -->
+                <!-- TODO --------- Write the palette into the Area. So it doesn't need to be reconstructed every time. -->
 
                 <v-card-text class="ma-0 pa-0">
                   <v-text-field

@@ -31,7 +31,8 @@ export default class AreaCard extends Vue {
   showDeleteButton = false;
   showDialogForConfirmDelete = false;
 
-  MAX_WIDTH_CARD = 400;
+  MIN_WIDTH_CARD = 330;
+  MAX_WIDTH_CARD = 330;
   IMAGE_HEIGHT = 110;
   IMAGE_COLUMNS = 4;
   DESCRIPTION_MAX_LINES = 3;
@@ -104,6 +105,7 @@ export default class AreaCard extends Vue {
   <v-card
     class="mt-4 mx-auto px-auto"
     style="border-radius: 8px"
+    :min-width="MIN_WIDTH_CARD"
     :max-width="MAX_WIDTH_CARD"
     elevation="5"
     :ripple="false"
@@ -232,22 +234,20 @@ export default class AreaCard extends Vue {
 
         <!-- ? ------------------- Timestamps ----------------------->
         <v-card-text align="left">
-          Created
-          <span :style="{ color: '#9a9fab' }" class="font-weight-bold">
+          Created:
+          <span :style="{ color: '#8e9199' }" class="font-weight-medium">
             {{ getPrettyTimestamp(area.createdAt) }}
           </span>
           <br />
 
-          Last updated
-          <span :style="{ color: '#9a9fab' }" class="font-weight-bold">
+          Last updated:
+          <span :style="{ color: '#8e9199' }" class="font-weight-medium">
             {{ getPrettyTimestamp(area.lastUpdatedAt) }}
           </span>
           <!-- Other colors: #888a89 (medium-gray) -->
         </v-card-text>
 
         <!-- TODO P0 --- New component for "CategoryChip". Props: CategoryTag[] -->
-
-        <!-- TODO P1 --- Icon's not showing up on the chip. Outline not working. -->
 
         <!-- TODO --- (random idea, move to Notion) allow ongoing activities to be paused and resumed. 
                      *  calc totalDuration = (endTime - startTime - all paused durations)  -->
