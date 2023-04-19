@@ -1,4 +1,6 @@
 <template>
+  <!-- TODO --- allow ongoing activities to be paused and resumed. 
+                *  calc totalDuration = (endTime - startTime - all paused durations)  -->
   <v-card
     :color="area.color"
     class="mt-3 mx-auto px-auto"

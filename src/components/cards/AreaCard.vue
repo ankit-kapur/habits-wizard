@@ -244,11 +244,6 @@ export default class AreaCard extends Vue {
           </v-btn>
         </v-card-actions>
 
-        <!-- TODO P0 --- New component for "CategoryChip". Props: CategoryTag[] -->
-
-        <!-- TODO --- (random idea, move to Notion) allow ongoing activities to be paused and resumed. 
-                     *  calc totalDuration = (endTime - startTime - all paused durations)  -->
-
         <!-- ? ------------------- Categories section ----------------------->
         <v-divider class=""></v-divider>
         <v-card-text
@@ -260,6 +255,11 @@ export default class AreaCard extends Vue {
 
         <!-- ? -------------------- Category chips ----------------------->
         <v-card-text v-if="categories.length > 0" class="pt-1 pb-2">
+          <!--  -->
+
+          <!-- TODO P0 ------ Make a new component: "CategoryChips" -->
+          <!-- "27" below is a magic-number for opacity. Put it in a constant. -->
+
           <!-- Category chips -->
           <v-chip-group column multiple>
             <v-chip
@@ -269,10 +269,20 @@ export default class AreaCard extends Vue {
               v-bind:key="categoryTag.id"
               :model-value="true"
               :prepend-icon="categoryTag.icon"
+              :style="`border: 1px solid${categoryTag.color}; border-radius: 20px`"
+              :color="
+                categoryTag.color?.substring(0, categoryTag.color?.length - 2) +
+                `27`
+              "
             >
-              <!-- TODO P0 ---- Use colored circle icon here instead of Icon -->
-
-              <v-icon :color="categoryTag.color" small class="ml-0 mr-2">
+              <!-- darkslategray -->
+              <v-icon
+                x-large
+                :color="categoryTag.color"
+                small
+                class="ml-0 mr-2"
+                style="border: 1px dotted darkslategray; border-radius: 20px"
+              >
                 mdi-circle
               </v-icon>
               {{ categoryTag.title }}
@@ -290,6 +300,8 @@ export default class AreaCard extends Vue {
 
           <!-- ? -------------------- Activity chips ----------------------->
           <v-card-text class="pt-1 pb-2">
+            <!--  -->
+            <!-- TODO P0 ------ Make a new component: "CategoryChips" -->
             <!-- TODO P0 ---- Reminder to use the FILTER feature of the TODO extension plugin here. -->
             <!-- TODO P0 ---- Use color from 'categories' computed prop to set border-color -->
 
@@ -303,8 +315,10 @@ export default class AreaCard extends Vue {
                 v-bind:key="activity.id"
                 :model-value="true"
                 :prepend-icon="activity.icon"
+                :style="`border-radius: 8px`"
                 color="purple"
               >
+                <!-- TODO ---- Make the icon bigger -->
                 <v-icon small class="ml-0 mr-2">{{ activity.icon }}</v-icon>
                 {{ activity.title }}
               </v-chip>
