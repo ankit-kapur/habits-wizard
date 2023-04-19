@@ -1,4 +1,4 @@
-import { Activity } from "@/model/pojo/definitions/Activity";
+import Activity from "@/model/pojo/definitions/Activity";
 import { defineStore } from "pinia";
 
 interface State {

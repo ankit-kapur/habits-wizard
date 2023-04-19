@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts">
-import { Activity } from "@/model/pojo/definitions/Activity";
+import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import { RecordedThing } from "@/model/pojo/main/RecordedThing";
 import { Component, Prop, Vue } from "vue-property-decorator";

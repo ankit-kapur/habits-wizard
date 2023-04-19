@@ -1,76 +1,85 @@
 <script lang="ts">
 import { defaultNewActivity } from "@/constants/DefaultDataForForms";
-import { Activity } from "@/model/pojo/definitions/Activity";
+import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import CategoryCreateOrEditDialog from "../dialogs/CategoryCreateOrEditDialog.vue";
+import ActivityCreateOrEditDialog from "../dialogs/ActivityCreateOrEditDialog.vue";
 
 @Component({
   components: {
-    CategoryCreateOrEditDialog: CategoryCreateOrEditDialog,
+    ActivityCreateOrEditDialog: ActivityCreateOrEditDialog,
   },
 })
 export default class ActivitySelector extends Vue {
   // ------------------------------------------------ Props
   @Prop()
-  allItemsList!: Activity[];
-  @Prop()
-  selectedItemIdList!: string[];
-  @Prop()
   area!: Area;
+  @Prop()
+  isDisplayed!: boolean;
 
   /**
    * Watches parent variable. Sync's its value to the child.
    */
-  @Watch("selectedItemIdList")
-  @Watch("allItemsList")
+  @Watch("isDisplayed")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
-    this.selectedItemIdList_local = this.selectedItemIdList;
-
+    const isDialogOpen = !!_newValue;
     console.log(
-      "@Watch triggered in ActivitySelector. this.selectedItemIdList_local ===> " +
-        JSON.stringify(this.selectedItemIdList_local)
+      "👀 @Watch in ActivitySelector. isDialogOpen ===> " + isDialogOpen
     );
+    if (isDialogOpen) {
+      this.onShow();
+    } else {
+      this.onHide();
+    }
   }
 
   // ------------------------------------------------ Stores
   activitiesStore = useActivitiesStore();
 
-  /**
-   * TODO ---- hook these up.
-   */
-  onShow() {
-    this.activitiesStore.subscribeToStore();
-  }
-
-  onHide() {
-    this.activitiesStore.unsubscribe();
-  }
-
   // ------------------------------------------------ Data
-  showCreateCategoryDialog = false;
-  showEditCategoryDialog = false;
+  activitiesList!: Activity[];
+  showCreateActivityDialog = false;
+  showEditActivityDialog = false;
   selectedActivity: Activity | null = null;
   selectedItemIdList_local: string[] = [];
   newActivity: Activity = deepCopy(defaultNewActivity);
   searchInput = "";
 
-  // ------------------------------------------------ Methods
-  mounted() {
-    this.selectedItemIdList_local = this.selectedItemIdList;
+  // ------------------------------------------------ Computer props
+  get allItemsList() {
+    return this.activitiesStore.getActivitiesByArea(this.area.id);
   }
 
-  promptForNewCategory() {
+  mounted() {
+    this.onShow();
+    console.log("🐪 🐪 🐪 Mounted ---- ActivitySelector");
+  }
+
+  unmounted() {
+    this.activitiesStore.unsubscribe();
+    console.log("🐪 🐪 🐪 🐪 🐪 🐪 UNMOUNTED ---- ActivitySelector");
+  }
+
+  // ------------------------------------------------ Methods
+  onShow() {
+    this.activitiesStore.subscribeToStore(); // Subscribe to store
+  }
+
+  onHide() {
+    this.activitiesStore.unsubscribe(); // Unsubscribe from store
+  }
+
+  promptForNewActivity() {
     // Checks if the searchInput text matches something from the dropdown.
     if (
       this.allItemsList.filter((e) => e.title.startsWith(this.searchInput))
         .length == 0
     ) {
       this.newActivity.title = this.searchInput;
-      this.showCreateCategoryDialog = true;
+      this.showCreateActivityDialog = true;
     }
   }
 
@@ -79,32 +88,41 @@ export default class ActivitySelector extends Vue {
     this.$emit("category-tags-changed", this.selectedItemIdList_local);
   }
 
-  createNewCategory(newActivity: Activity) {
+  createNewActivity(newActivity: Activity) {
     console.log("Saving new category");
-    const newId: string = this.activitiesStore.createActivity(newActivity);
+
+    // TODO P0 -------- Get Category ID here for Create.
+
+    const categoryId = "";
+
+    const newId: string = this.activitiesStore.createActivity(
+      newActivity,
+      this.area.id,
+      categoryId
+    );
     this.selectedItemIdList_local.push(newId);
-    this.showCreateCategoryDialog = false;
+    this.showCreateActivityDialog = false;
   }
 
   triggerEditDialog(categoryTag: Activity) {
     console.log("triggerEditDialog");
     this.selectedActivity = categoryTag;
-    this.showEditCategoryDialog = true;
+    this.showEditActivityDialog = true;
   }
 
-  saveExistingCategory(updatedActivity: Activity) {
+  saveExistingActivity(updatedActivity: Activity) {
     console.log("Saving new category");
     this.activitiesStore.updateActivity(updatedActivity);
     // Reset things.
-    this.showEditCategoryDialog = false;
+    this.showEditActivityDialog = false;
     this.selectedActivity = null;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  discardCategoryChange(irrelevantValue: boolean) {
-    console.log("Discardddding");
-    this.showCreateCategoryDialog = false;
-    this.showEditCategoryDialog = false;
+  discardActivityChange(irrelevantValue: boolean) {
+    console.log("Discarding");
+    this.showCreateActivityDialog = false;
+    this.showEditActivityDialog = false;
   }
 
   /**
@@ -128,7 +146,7 @@ export default class ActivitySelector extends Vue {
       auto-select-first
       chips
       deletable-chips
-      label="Categories"
+      label="Activities"
       v-model="selectedItemIdList_local"
       :items="allItemsList"
       item-text="title"
@@ -137,10 +155,10 @@ export default class ActivitySelector extends Vue {
       hint="Select a tag or create a new one."
       color="blue-grey-lighten-2"
       hide-selected
-      :hide-no-data="showCreateCategoryDialog"
+      :hide-no-data="showCreateActivityDialog"
       @input="searchInput = ''"
       :search-input.sync="searchInput"
-      @keydown.enter="promptForNewCategory"
+      @keydown.enter="promptForNewActivity"
       @keydown.enter.native.prevent
       @change="onTagSelectionChange"
       :menu-props="{
@@ -148,7 +166,7 @@ export default class ActivitySelector extends Vue {
         closeOnClick: true,
         openOnClick: false,
       }"
-      :disabled="showEditCategoryDialog"
+      :disabled="showEditActivityDialog"
       class="pt-6"
     >
       <!-- Notes about the modifiers above in <v-autocomplete> -->
@@ -208,7 +226,7 @@ export default class ActivitySelector extends Vue {
       <!-- eslint-disable vue/no-v-text-v-html-on-component -->
       <template v-slot:append-outer>
         <v-icon
-          @click="showCreateCategoryDialog = true"
+          @click="showCreateActivityDialog = true"
           v-text="'mdi-plus-circle-outline'"
         ></v-icon>
       </template>
@@ -216,20 +234,20 @@ export default class ActivitySelector extends Vue {
 
     <!-- TODO ----- Make this new component -->
     <!-- * ------------------------ New Activity popup  -------------------------->
-    <CategoryCreateOrEditDialog
-      :categoryTag="newActivity"
+    <ActivityCreateOrEditDialog
+      :activity="newActivity"
       :dialog-mode="`CREATE`"
-      :showDialog="showCreateCategoryDialog"
-      v-on:save-confirmed="createNewCategory"
-      v-on:discard="discardCategoryChange"
-    ></CategoryCreateOrEditDialog>
+      :showDialog="showCreateActivityDialog"
+      v-on:save-confirmed="createNewActivity"
+      v-on:discard="discardActivityChange"
+    ></ActivityCreateOrEditDialog>
 
-    <CategoryCreateOrEditDialog
-      :categoryTag="selectedActivity"
+    <ActivityCreateOrEditDialog
+      :activity="selectedActivity"
       :dialog-mode="`EDIT`"
-      :showDialog="showEditCategoryDialog"
-      v-on:save-confirmed="saveExistingCategory"
-      v-on:discard="discardCategoryChange"
-    ></CategoryCreateOrEditDialog>
+      :showDialog="showEditActivityDialog"
+      v-on:save-confirmed="saveExistingActivity"
+      v-on:discard="discardActivityChange"
+    ></ActivityCreateOrEditDialog>
   </div>
 </template>

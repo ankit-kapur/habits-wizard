@@ -1,17 +1,19 @@
 export default interface CategoryTag {
-  // Identifiers
+  // ? --------------- Identifiers
   id: string;
 
-  // Association
+  // ? --------------- Association
   userId: string;
   areaId?: string;
 
-  // Display
+  // ? --------------- Display
   title: string;
-
-  // TODO: Introduce
   color?: string;
 
   // TODO: Deprecate
   icon: string;
+
+  // ? --------------- Timestamps
+  createdAt?: number;
+  lastUpdatedAt?: number;
 }

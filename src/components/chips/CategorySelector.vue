@@ -14,11 +14,13 @@ import CategoryCreateOrEditDialog from "../dialogs/CategoryCreateOrEditDialog.vu
 export default class CategorySelector extends Vue {
   // ------------------------------------------------ Props
   @Prop()
+  area!: Area;
+  @Prop()
   allItemsList!: CategoryTag[];
   @Prop()
   selectedItemIdList!: string[];
   @Prop()
-  area!: Area;
+  isDisplayed!: boolean;
 
   /**
    * Watches parent variable. Sync's its value to the child.
@@ -26,13 +28,27 @@ export default class CategorySelector extends Vue {
   @Watch("selectedItemIdList")
   @Watch("allItemsList")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onPropertyChanged(_newValue: string, _oldValue: string) {
+  onListsChange(_newValue: string, _oldValue: string) {
     this.selectedItemIdList_local = this.selectedItemIdList;
 
     console.log(
       "@Watch triggered in CategorySelector. this.selectedItemIdList_local ===> " +
         JSON.stringify(this.selectedItemIdList_local)
     );
+  }
+
+  @Watch("isDisplayed")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onDisplayStateChange(_newValue: string, _oldValue: string) {
+    const isDialogOpen = !!_newValue;
+    console.log(
+      "👀 @Watch in CategorySelector. isDialogOpen ===> " + isDialogOpen
+    );
+    if (isDialogOpen) {
+      this.onShow();
+    } else {
+      this.onHide();
+    }
   }
 
   // ------------------------------------------------ Stores
@@ -47,8 +63,17 @@ export default class CategorySelector extends Vue {
   searchInput = "";
 
   // ------------------------------------------------ Methods
+  onShow() {
+    this.categoryTagsStore.subscribeToStore(); // Subscribe to store
+  }
+
+  onHide() {
+    this.categoryTagsStore.unsubscribe(); // Unsubscribe from store
+  }
+
   mounted() {
     this.selectedItemIdList_local = this.selectedItemIdList;
+    this.onShow();
   }
 
   promptForNewCategory() {

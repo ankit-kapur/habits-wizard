@@ -1,25 +1,28 @@
 // ? Find a solution for using ENUMS in pojo, without needed the "as Type" thing in .json
-export interface Activity {
-  // Identification
+export default interface Activity {
+  // ? --------------- Identification
   id: string;
   userId: string;
 
-  // Association
+  // ? --------------- Association
   areaId: string;
   categoryId: string;
 
-  // Display
+  // ? --------------- Display
   title: string;
   icon: string;
 
+  // ? --------------- Timestamps
+  createdAt?: number;
+  lastUpdatedAt?: number;
+
+  // ? --------------- Tracking
   // * Whether this is an Activity or a Task.
   //      If true, default measurables to be added: ---- startTime, endTime, duration.
   //      Else, default measurables to be added: ---- endTime (i.e. completed at time).
   hasTimeTracking: boolean;
 
-  // Tracking
-  //    Only IDs here. Definitions live in UserConfig
-  measurables: string[];
+  measurables: string[]; // Only IDs here. Definitions live in UserConfig
 
   // ? --------------- Future fields
   // // typically just 1 per day. List for Things done multiple times a day.

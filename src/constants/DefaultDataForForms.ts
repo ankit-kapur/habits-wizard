@@ -1,4 +1,4 @@
-import { Activity } from "@/model/pojo/definitions/Activity";
+import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 

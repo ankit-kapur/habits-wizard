@@ -20,9 +20,9 @@ export const useIconsStore = defineStore("IconsStore", {
     async loadIcons(): Promise<void> {
       this.allIcons = (await import("@/assets/icons/mdi_icons.json")).default;
       // Sort by name
-      this.allIcons.sort((icon1, icon2) =>
-        icon1.name.localeCompare(icon2.name)
-      );
+      this.allIcons
+        .slice()
+        .sort((icon1, icon2) => icon1.name.localeCompare(icon2.name));
     },
 
     // -------------------------------------------- Search

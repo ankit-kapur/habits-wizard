@@ -32,10 +32,11 @@ export default class AreaCreateOrEditDialog extends Vue {
    * Watches parent variable, and sync's its value to the child variable.
    */
   @Watch("showDialog")
-  @Watch("providedArea")
-  @Watch("numberOfSteps")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
+    console.log(
+      "👀 @Watch in AreaCreateOrEditDialog. _newValue = " + _newValue
+    );
     if (this.providedArea != null)
       this.currentArea = deepCopy(this.providedArea);
     // Stop stepper from overflowing
@@ -44,10 +45,11 @@ export default class AreaCreateOrEditDialog extends Vue {
     }
   }
 
-  // Store
+  // ------------------------------------------------ Stores
   areasStore = useAreasStore();
   categoryStore = useCategoryTagsStore();
 
+  // ------------------------------------------------ Data
   // State
   currentArea: Area = deepCopy(defaultNewArea);
 
@@ -67,7 +69,6 @@ export default class AreaCreateOrEditDialog extends Vue {
 
   mdiIcons = import("@/assets/icons/mdi_icons.json");
 
-  // ------------------------------------------------ Data
   valid = true;
 
   areaNameRules = [
@@ -87,6 +88,8 @@ export default class AreaCreateOrEditDialog extends Vue {
     ["#0000FF", "#0000AA", "#000055"],
   ];
 
+  // ------------------------------------------------ Computed
+
   // ------------------------------------------------ Mounted
   mounted() {
     console.log("🐪 🐪 🐪  Loading categories");
@@ -94,11 +97,6 @@ export default class AreaCreateOrEditDialog extends Vue {
     this.areCategoriesLoaded = true;
     this.resetToDefaultState();
     console.log("🐪 🐪 🐪  Mounted AreaCreateOrEditDialog");
-
-    // TODO --- testing for now
-    // https://github.com/null2/color-thief
-    // const img = resolve(process.cwd(), 'rainbow.png');
-    // ColorThief.getColor();
   }
 
   // ------------------------------------------------ Methods
@@ -284,7 +282,8 @@ export enum DialogMode {
               </v-card>
             </v-window-item>
 
-            <!-- ? ---------------------------- Step 2 -->
+            <!-- * ---------------------------- Step 2 ------ Categories -->
+
             <v-window-item :step="2">
               <v-card elevation="0" style="border-radius: 8px">
                 <v-card-text class="ma-0 pa-0">
@@ -308,11 +307,12 @@ export enum DialogMode {
                       :color="currentArea.color"
                     ></v-btn>
 
-                    <!-- * -------------------------------- Tag selector for category chips -->
+                    <!-- * ---------------- Tag selector for category chips -->
                     <CategorySelector
+                      :area="currentArea"
                       :allItemsList="categoryStore.getCategoryTagsList()"
                       :selectedItemIdList="currentArea.categoryTags"
-                      :area="currentArea"
+                      :isDisplayed="showDialog"
                       v-on:category-tags-changed="onCategoryTagsChanged"
                     ></CategorySelector>
 
@@ -324,16 +324,19 @@ export enum DialogMode {
               </v-card>
             </v-window-item>
 
-            <!-- ? ---------------------------- Step 3 -->
+            <!-- * ---------------------------- Step 3 ----- Activities -->
+
             <v-window-item :step="3">
               <v-card elevation="0" style="border-radius: 8px">
                 <v-card-text class="ma-0 pa-0">
                   <!--  -->
 
-                  <!-- TODO --------- ActivitySelector needs to be built.  -->
-
-                  <!-- ? -------------------------------- Activities -->
-                  <ActivitySelector :area="currentArea"> </ActivitySelector>
+                  <!-- ? -------- Activities selector -->
+                  <ActivitySelector
+                    :area="currentArea"
+                    :isDisplayed="showDialog"
+                  >
+                  </ActivitySelector>
                 </v-card-text>
 
                 <!--  -->
@@ -431,7 +434,7 @@ export enum DialogMode {
       noButtonText="Cancel"
     />
 
-    <!-- TODO --- Make an image-lookup component -->
+    <!-- Minor TODO --- Make an image-lookup component -->
     <!-- <v-bottom-sheet v-model="showImageEditDialog" hide-overlay persistent>
       <v-text-field
         v-model="currentArea.imageUrl"

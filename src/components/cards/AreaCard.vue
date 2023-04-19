@@ -8,6 +8,7 @@ import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { getPrettyTimestamp } from "@/utils/time/TimestampConversionUtils";
 import VClamp from "vue-clamp";
+import { useActivitiesStore } from "@/store/ActivitiesStore";
 
 @Component({
   components: {
@@ -24,6 +25,7 @@ export default class AreaCard extends Vue {
   // ------------------------------------------------ Stores
   areasStore = useAreasStore();
   categoryTagsStore = useCategoryTagsStore();
+  activitiesStore = useActivitiesStore();
 
   // ------------------------------------------------ Data
   isCardExpanded = false;
@@ -31,8 +33,8 @@ export default class AreaCard extends Vue {
   showDeleteButton = false;
   showDialogForConfirmDelete = false;
 
-  MIN_WIDTH_CARD = 330;
-  MAX_WIDTH_CARD = 330;
+  MIN_WIDTH_CARD = 320;
+  MAX_WIDTH_CARD = 350;
   IMAGE_HEIGHT = 110;
   IMAGE_COLUMNS = 4;
   DESCRIPTION_MAX_LINES = 3;
@@ -52,12 +54,24 @@ export default class AreaCard extends Vue {
     console.log("🐪 🐪 🐪  UN-mounted AreaCard");
   }
 
+  // ------------------------------------------------ Computer props
+  get activitiesList() {
+    return this.activitiesStore.getActivitiesByArea(this.area.id);
+  }
+
   // ------------------------------------------------ Methods
   expandAreaClicked() {
     const isExpanded = !this.isCardExpanded;
     this.isCardExpanded = isExpanded;
+
+    // Whether the buttons show.
     this.showDeleteButton = isExpanded;
     this.showEditButton = isExpanded;
+
+    // Subscribe to stores here
+    if (isExpanded)
+      this.activitiesStore.subscribeToStore(); // Subscribe to store
+    else this.activitiesStore.unsubscribe();
   }
 
   // Edits
@@ -95,7 +109,7 @@ export default class AreaCard extends Vue {
   }
 
   // Categories
-  getCategoriesForArea(): CategoryTag[] {
+  get categories(): CategoryTag[] {
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
   }
 }
@@ -238,26 +252,63 @@ export default class AreaCard extends Vue {
         <!-- ? ------------------- Categories section ----------------------->
         <v-divider class=""></v-divider>
         <v-card-text
-          v-if="getCategoriesForArea().length > 0"
+          v-if="categories.length > 0"
           class="font-weight-light mb-0 pb-0"
         >
           Categories
         </v-card-text>
 
         <!-- ? -------------------- Category chips ----------------------->
-        <v-card-text v-if="getCategoriesForArea().length > 0" class="pt-1 pb-2">
+        <v-card-text v-if="categories.length > 0" class="pt-1 pb-2">
           <!-- Category chips -->
           <v-chip-group column multiple>
             <v-chip
-              v-for="(categoryTag, index) in getCategoriesForArea()"
+              v-for="(categoryTag, index) in categories"
               v-bind:categoryTag="categoryTag"
               v-bind:index="index"
               v-bind:key="categoryTag.id"
               :model-value="true"
               :prepend-icon="categoryTag.icon"
             >
-              <v-icon small class="ml-0 mr-2">{{ categoryTag.icon }}</v-icon>
+              <!-- TODO P0 ---- Use colored circle icon here instead of Icon -->
+
+              <v-icon color="primary" small class="ml-0 mr-2"
+                >mdi-circle</v-icon
+              >
               {{ categoryTag.title }}
+            </v-chip>
+          </v-chip-group>
+        </v-card-text>
+
+        <v-divider class="mx-4 mb-1"></v-divider>
+
+        <!-- ? ------------------- Activities section ----------------------->
+        <v-card-text
+          v-if="activitiesList.length > 0"
+          class="font-weight-light mb-0 pb-0"
+        >
+          Activities
+        </v-card-text>
+
+        <!-- ? -------------------- Activity chips ----------------------->
+        <v-card-text v-if="activitiesList.length > 0" class="pt-1 pb-2">
+          <!-- TODO P0 ---- Reminder to use the FILTER feature of the TODO extension plugin here. -->
+          <!-- TODO P0 ---- Use color from 'categories' computed prop to set border-color -->
+
+          <!-- Activity chips -->
+          <v-chip-group column multiple>
+            <v-chip
+              outlined
+              v-for="(activity, index) in activitiesList"
+              v-bind:activity="activity"
+              v-bind:index="index"
+              v-bind:key="activity.id"
+              :model-value="true"
+              :prepend-icon="activity.icon"
+              color="purple"
+            >
+              <v-icon small class="ml-0 mr-2">{{ activity.icon }}</v-icon>
+              {{ activity.title }}
             </v-chip>
           </v-chip-group>
         </v-card-text>
@@ -291,7 +342,7 @@ export default class AreaCard extends Vue {
     <ConfirmationDialog
       v-on:confirm-status-change="respondToConfirmDeleteDialog"
       :showDialog="showDialogForConfirmDelete"
-      messageToDisplay="Are you sure you want to delete this?"
+      messageToDisplay="Sure you want to delete this?"
       yesButtonText="Delete"
       noButtonText="Cancel"
     />

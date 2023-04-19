@@ -3,6 +3,8 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { useIconsStore } from "@/store/IconsStore";
 
+// Minor TODO ------ Height of the box should be fixed. Keeps changing based on no. of results.
+
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
@@ -115,7 +117,7 @@ export default class IconPicker extends Vue {
                 class="shrink;display:flex;width=100px pt-6"
                 placeholder=""
                 hint="Start typing to search"
-                autofocus
+                autofocus="false"
                 @input="searchForIcon"
               ></v-text-field>
             </v-card-text>

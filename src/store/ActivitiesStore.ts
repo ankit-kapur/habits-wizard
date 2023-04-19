@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { FirestoreConstants } from "@/constants/FirestoreConstants";
 import { firestoreDatabase as firestoreDB } from "@/firebase";
-import { Activity } from "@/model/pojo/definitions/Activity";
+import Activity from "@/model/pojo/definitions/Activity";
 import { getDocReference } from "@/utils/firebase/FirestoreUtils";
 import { getCurrentUserId } from "@/utils/firebase/GoogleAuthUtils";
 import {
@@ -10,7 +10,6 @@ import {
   doc,
   FirestoreDataConverter,
   onSnapshot,
-  orderBy,
   query,
   QueryDocumentSnapshot,
   QuerySnapshot,
@@ -25,6 +24,7 @@ import { v4 as uuid } from "uuid";
 interface State {
   allDocs: Activity[];
   unsubscribeHooks: Unsubscribe[];
+  userId: string;
 }
 
 // Replace with Generics <T> across all stores.
@@ -48,28 +48,25 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
     return {
       allDocs: [],
       unsubscribeHooks: [],
+      userId: getCurrentUserId()!,
     };
   },
   // Getters
   getters: {},
   actions: {
-    // -------------------------------------------- Subscribe & Unsubscribe
+    // ? ---------------------------------- Subscribe & Unsubscribe ----------------------------------------
     subscribeToStore() {
-      console.log("🔥 🔥 🔥 LOADING CATEGORY TAGS list from FireStore.");
+      console.log("🗞️ Subscribing to ACTIVITIES store.");
       const queryToLoad = query(
         firestoreCollection,
-        orderBy(
-          FirestoreConstants.CREATED_AT_ATTRIBUTE, // Most recent on top
-          FirestoreConstants.DESCENDING
-        ),
-        where(FirestoreConstants.USER_ID_ATTRIBUTE, "==", getCurrentUserId + "")
+        where(FirestoreConstants.USER_ID_ATTRIBUTE, "==", this.userId)
       );
       const unsubscribe: Unsubscribe = onSnapshot(
         queryToLoad,
         (snapshot: QuerySnapshot<Activity>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
           console.log(
-            "🔥 🔥 🔥 Snapshot updated. Refreshed category tags: " +
+            "🔥 🔥 🔥 Snapshot updated. Refreshed ACTIVITIES list: " +
               JSON.stringify(this.allDocs)
           );
         }
@@ -78,43 +75,67 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
     },
 
     unsubscribe() {
+      console.log("Unsubscribing from the ActivitiesStore");
       this.unsubscribeHooks.forEach((unsubscribeHook) => unsubscribeHook());
     },
 
-    // -------------------------------------------- Queries
+    // ? -------------------------------------------- Queries --------------------------------------------
     getAllDocs(): Activity[] {
+      // Sort by Title.
+      this.allDocs.slice().sort((a, b) => a.title.localeCompare(b.title));
       return this.allDocs;
+    },
+
+    getActivitiesByArea(areaId: string): Activity[] {
+      console.log(
+        "🧪 🧪 🧪 Before filtering. getActivitiesByArea for areaId: " +
+          areaId +
+          ", list = " +
+          JSON.stringify(this.getAllDocs())
+      );
+      return this.getAllDocs().filter((activity) => activity.areaId === areaId);
     },
 
     getDocById(activityId: string): Activity {
       return this.allDocs.find((activity) => activity.id === activityId)!;
     },
 
-    getDocsById(categoryIDs: string[]): Activity[] {
-      return this.allDocs.filter((activity) =>
-        categoryIDs.includes(activity.id)
-      );
-    },
-
-    // -------------------------------------------- Create
-    createActivity(activity: Activity): string {
-      console.log("Creating activity: " + JSON.stringify(activity));
+    // ? -------------------------------------------- Create --------------------------------------------
+    createActivity(
+      activity: Activity,
+      areaId: string,
+      categoryId: string
+    ): string {
+      // Generate doc ID
       const newID: string = uuid();
       activity.id = newID;
+
+      // Set user ID
       activity.userId = getCurrentUserId()!;
+
+      // Set Area ID
+      activity.areaId = areaId;
+      activity.categoryId = categoryId;
+
+      // Set timestamps
+      const currentTimestamp: number = Date.now().valueOf();
+      activity.createdAt = currentTimestamp;
+      activity.lastUpdatedAt = currentTimestamp;
+
+      console.log("Creating activity: " + JSON.stringify(activity));
 
       // Save to Firestore
       setDoc(getDocReference(newID, collectionName, firestoreDB), activity);
       return newID;
     },
 
-    // -------------------------------------------- Update
+    // ? -------------------------------------------- Update --------------------------------------------
     async updateActivity(activity: Activity) {
       console.log("Updating activity: " + JSON.stringify(activity));
       updateDoc(doc(firestoreCollection, activity.id), activity);
     },
 
-    // -------------------------------------------- Delete
+    // ? -------------------------------------------- Delete --------------------------------------------
     deleteActivity(activity: Activity) {
       console.log("Deleting activity: " + JSON.stringify(activity));
       deleteDoc(doc(firestoreCollection, activity.id));

@@ -55,32 +55,30 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
   actions: {
     // -------------------------------------------- Subscribe & Unsubscribe
     subscribeToStore() {
-      console.log("💾 Subscribing to CATEGORY TAGS list from FireStore.");
+      console.log("🗞️ Subscribing to CATEGORIES store.");
       const queryToLoad = query(
         firestoreCollection,
         where(FirestoreConstants.USER_ID_ATTRIBUTE, "==", this.userId)
-        // TODO: Move ordering logic to the get function here.
-        // orderBy(
-        //   FirestoreConstants.CREATED_AT_ATTRIBUTE, // Most recent on top
-        //   FirestoreConstants.DESCENDING
-        // )
       );
       const unsubscribe: Unsubscribe = onSnapshot(
         queryToLoad,
         (snapshot: QuerySnapshot<CategoryTag>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
-          console.log("💾 Snapshot updated. Refreshed category tags.");
+          console.log("💾 💾 💾 Snapshot updated. Refreshed category tags.");
         }
       );
       this.unsubscribeHooks.push(unsubscribe);
     },
 
     unsubscribe() {
+      console.log("Unsubscribing from the Categories store.");
       this.unsubscribeHooks.forEach((unsubscribeHook) => unsubscribeHook());
     },
 
     // -------------------------------------------- Queries
     getCategoryTagsList(): CategoryTag[] {
+      // Sort by Title.
+      this.allDocs.slice().sort((a, b) => a.title.localeCompare(b.title));
       return this.allDocs;
     },
 
@@ -98,9 +96,18 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
 
     // -------------------------------------------- Create
     createCategoryTag(categoryTag: CategoryTag): string {
+      // Generate doc ID
       const newID: string = uuid();
       categoryTag.id = newID;
+
+      // Set user ID
       categoryTag.userId = getCurrentUserId()!;
+
+      // Set timestamps
+      const currentTimestamp: number = Date.now().valueOf();
+      categoryTag.createdAt = currentTimestamp;
+      categoryTag.lastUpdatedAt = currentTimestamp;
+
       console.log("Creating categoryTag: " + JSON.stringify(categoryTag));
 
       // Save to Firestore

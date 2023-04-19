@@ -56,17 +56,11 @@ export const useAreasStore = defineStore("AreasStore", {
      * Subscribes a listener to load ALL areas by query.
      */
     subscribeToLoadAllQuery() {
-      console.log("🔥 🔥 🔥 LOADING Areas list from FireStore.");
+      console.log("🗞️ Subscribing to AREAS store.");
 
       const queryToLoadAreas = query(
         firestoreCollection,
         where(FirestoreConstants.USER_ID_ATTRIBUTE, "==", this.userId)
-
-        // TODO: Move ordering logic to the get function here.
-        // orderBy(
-        //   FirestoreConstants.CREATED_AT_ATTRIBUTE, // Most recent on top
-        //   FirestoreConstants.DESCENDING
-        // )
       );
       const unsubscribe: Unsubscribe = onSnapshot(
         queryToLoadAreas,
@@ -99,6 +93,8 @@ export const useAreasStore = defineStore("AreasStore", {
      * @returns list of Areas
      */
     getAreasList(): Area[] {
+      // Sort by Title.
+      this.allDocs.slice().sort((a, b) => a.title.localeCompare(b.title));
       return this.allDocs;
     },
 
@@ -107,15 +103,19 @@ export const useAreasStore = defineStore("AreasStore", {
      * @param area
      */
     createArea(area: Area) {
-      console.log("Creating NEW area in store: " + JSON.stringify(area));
+      // Generate doc ID
       const newID: string = uuid();
-      const currentTimestamp: number = Date.now().valueOf();
-
-      // Set new fields.
       area.id = newID;
+
+      // Set user ID
       area.userId = this.userId;
+
+      // Set timestamps
+      const currentTimestamp: number = Date.now().valueOf();
       area.createdAt = currentTimestamp;
       area.lastUpdatedAt = currentTimestamp;
+
+      console.log("Creating NEW area in store: " + JSON.stringify(area));
 
       // Save to Firestore
       setDoc(getDocReference(newID, collectionName, firestoreDB), area);
@@ -144,6 +144,6 @@ export const useAreasStore = defineStore("AreasStore", {
       deleteDoc(doc(firestoreCollection, area.id));
     },
 
-    // * -------------------------------------------- Private functions
+    // -------------------------------------------- Private functions
   },
 });

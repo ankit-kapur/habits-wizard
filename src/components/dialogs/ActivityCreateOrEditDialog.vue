@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defaultNewCategory } from "@/constants/DefaultDataForForms";
-import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import { defaultNewActivity } from "@/constants/DefaultDataForForms";
+import Activity from "@/model/pojo/definitions/Activity";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { DialogMode } from "./AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
@@ -16,10 +16,10 @@ import { Ref } from "vue-property-decorator";
   },
   methods: {},
 })
-export default class CategoryCreateOrEditDialog extends Vue {
+export default class ActivityCreateOrEditDialog extends Vue {
   // ------------------------------------------------ Props
   @Prop()
-  categoryTag!: CategoryTag;
+  activity!: Activity;
   @Prop()
   showDialog!: boolean;
   @Prop()
@@ -29,32 +29,32 @@ export default class CategoryCreateOrEditDialog extends Vue {
    * Watches parent variable. Sync's its value to the child.
    */
   @Watch("showDialog")
-  // @Watch("categoryTag")
+  // @Watch("activity")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
     console.log(
-      "🚨 🚨 🚨 @Watch for CategoryCreateOrEditDialog. _newValue = " + _newValue
+      "🚨 🚨 🚨 @Watch for ActivityCreateOrEditDialog. _newValue = " + _newValue
     );
     const isDialogOpen = !!_newValue;
 
     if (isDialogOpen === true) {
       if (DialogMode[this.dialogMode] === DialogMode.CREATE) {
         console.log(
-          "🌹 🌹 🌹 CREATE MODE ---- this.categoryTag_local = " +
-            JSON.stringify(this.categoryTag_local)
+          "🌹 🌹 🌹 CREATE MODE ---- this.activity_local = " +
+            JSON.stringify(this.activity_local)
         );
-        this.categoryTag_local = deepCopy(defaultNewCategory); // Reset
+        this.activity_local = deepCopy(defaultNewActivity); // Reset
       } else {
         console.log("🌹 🌹 🌹 EDIT");
-        this.categoryTag_local = deepCopy(this.categoryTag);
+        this.activity_local = deepCopy(this.activity);
       }
     }
 
     console.log(
-      "🐞 🐞 🐞 @Watch triggered in CategoryCreateOrEdit. showDialog ===> " +
+      "🐞 🐞 🐞 @Watch triggered in ActivityCreateOrEdit. showDialog ===> " +
         this.showDialog +
-        ", categoryTag_local ===> " +
-        JSON.stringify(this.categoryTag_local) +
+        ", activity_local ===> " +
+        JSON.stringify(this.activity_local) +
         ", dialogMode = " +
         this.dialogMode
     );
@@ -68,15 +68,15 @@ export default class CategoryCreateOrEditDialog extends Vue {
   }
 
   // ------------------------------------------------ Data
-  categoryTag_local = deepCopy(defaultNewCategory);
+  activity_local = deepCopy(defaultNewActivity);
   showDialogForConfirmDiscard = false;
   showIconPicker = false;
 
   @Ref() readonly titleTextBox!: HTMLInputElement;
 
   // ------------------------------------------------ Methods
-  resetNewCategoryData() {
-    this.categoryTag_local = deepCopy(defaultNewCategory);
+  resetNewActivityData() {
+    this.activity_local = deepCopy(defaultNewActivity);
   }
 
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
@@ -91,28 +91,26 @@ export default class CategoryCreateOrEditDialog extends Vue {
   discard() {
     console.log("DISCARDING");
     this.$emit("discard", true);
-    this.resetNewCategoryData();
+    this.resetNewActivityData();
   }
 
-  saveCategoryTag() {
+  saveActivity() {
     // Reset dialog box
     // Ask the parent to update.
     console.log(
-      "!!!!!! ------- this.categoryTag_local = " +
-        JSON.stringify(this.categoryTag_local)
+      "!!!!!! ------- this.activity_local = " +
+        JSON.stringify(this.activity_local)
     );
-    this.$emit("save-confirmed", this.categoryTag_local);
+    this.$emit("save-confirmed", this.activity_local);
 
-    this.resetNewCategoryData();
+    this.resetNewActivityData();
   }
 
   triggerCancellation() {
     // If nothing's changed, discard without confirmation
     if (
-      JSON.stringify(this.categoryTag_local) ===
-        JSON.stringify(this.categoryTag) ||
-      JSON.stringify(this.categoryTag_local) ===
-        JSON.stringify(defaultNewCategory)
+      JSON.stringify(this.activity_local) === JSON.stringify(this.activity) ||
+      JSON.stringify(this.activity_local) === JSON.stringify(defaultNewActivity)
     ) {
       console.log("🐞 discard");
       this.discard();
@@ -124,7 +122,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
 
   newIconSelected(newIcon: string) {
     console.log("---- newIconSelected (PARENT) = " + newIcon);
-    this.categoryTag_local.icon = newIcon;
+    this.activity_local.icon = newIcon;
     this.closeIconPicker(true);
   }
 
@@ -146,14 +144,14 @@ export default class CategoryCreateOrEditDialog extends Vue {
           v-model="showDialog"
           persistent
           @keydown.esc="triggerCancellation"
-          @keydown.enter="saveCategoryTag"
+          @keydown.enter="saveActivity"
         >
           <v-card>
             <v-list>
               <v-list-item>
                 <!-- ? ----------------- Box heading ---------------- * -->
                 <v-list-item-content>
-                  <v-list-item-title>Category</v-list-item-title>
+                  <v-list-item-title>Activity</v-list-item-title>
                   <v-list-item-subtitle
                     >Click save to create</v-list-item-subtitle
                   >
@@ -176,16 +174,11 @@ export default class CategoryCreateOrEditDialog extends Vue {
               <v-row>
                 <!-- ? -------------- Icon button -------------- * -->
                 <v-col cols="2">
-                  <!-- <v-btn
-                    icon
-                    @click="showIconPicker = !showIconPicker"
-                    class="px-auto pt-4"
-                  > -->
                   <v-icon
                     @click="showIconPicker = true"
                     large
                     class="px-auto pt-4 mr-20"
-                    >{{ categoryTag_local.icon }}</v-icon
+                    >{{ activity_local.icon }}</v-icon
                   >
                   <!-- </v-btn> -->
                 </v-col>
@@ -194,13 +187,13 @@ export default class CategoryCreateOrEditDialog extends Vue {
                 <v-col>
                   <v-text-field
                     label="Name"
-                    v-model="categoryTag_local.title"
+                    v-model="activity_local.title"
                     class="shrink;display:flex;width=100px"
-                    placeholder="New category"
+                    placeholder="New Activity"
                     hint="Something short and sweet."
                     counter="15"
                     clearable
-                    autofocus="false"
+                    :autofocus="false"
                     ref="titleTextBox"
                   ></v-text-field>
                 </v-col>
@@ -213,9 +206,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn text @click="triggerCancellation"> Cancel </v-btn>
-              <v-btn text color="primary" @click="saveCategoryTag">
-                Save
-              </v-btn>
+              <v-btn text color="primary" @click="saveActivity"> Save </v-btn>
             </v-card-actions>
           </v-card>
 
@@ -230,7 +221,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
 
           <IconPicker
             :showDialog="showIconPicker"
-            :initialSearchPrefix="categoryTag_local.title"
+            :initialSearchPrefix="activity_local.title"
             v-on:icon-selected="newIconSelected"
             v-on:icon-picker-cancelled="closeIconPicker"
           ></IconPicker>
