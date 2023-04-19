@@ -1,7 +1,10 @@
 export default interface CategoryTag {
   // Identifiers
   id: string;
+
+  // Association
   userId: string;
+  areaId?: string;
 
   // Display
   title: string;

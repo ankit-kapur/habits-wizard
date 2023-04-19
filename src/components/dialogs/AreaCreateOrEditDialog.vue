@@ -333,11 +333,7 @@ export enum DialogMode {
                   <!-- TODO --------- ActivitySelector needs to be built.  -->
 
                   <!-- ? -------------------------------- Activities -->
-                  <ActivitySelector
-                    :area="currentArea"
-                    :selectedItemIdList="currentArea.activities"
-                  >
-                  </ActivitySelector>
+                  <ActivitySelector :area="currentArea"> </ActivitySelector>
                 </v-card-text>
 
                 <!--  -->

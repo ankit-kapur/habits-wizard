@@ -39,6 +39,17 @@ export default class ActivitySelector extends Vue {
   // ------------------------------------------------ Stores
   activitiesStore = useActivitiesStore();
 
+  /**
+   * TODO ---- hook these up.
+   */
+  onShow() {
+    this.activitiesStore.subscribeToStore();
+  }
+
+  onHide() {
+    this.activitiesStore.unsubscribe();
+  }
+
   // ------------------------------------------------ Data
   showCreateCategoryDialog = false;
   showEditCategoryDialog = false;

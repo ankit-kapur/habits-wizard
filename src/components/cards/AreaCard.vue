@@ -191,31 +191,31 @@ export default class AreaCard extends Vue {
         <!--  -->
         <v-card-actions class="mx-auto px-auto pt-0 pb-2">
           <!--  -->
-          <v-spacer></v-spacer>
+          <!-- <v-spacer></v-spacer> -->
 
           <!-- ? ------------------- Edit & Delete buttons ----------------------->
           <v-btn
-            x-small
+            icon
+            small
             outlined
             @click="showEditDialog"
             color="edit_button"
-            style="border-radius: 12px; border-width: 1"
-            min-height="25"
-            class="ml-10 mr-2"
+            style="border-radius: 15px; border-width: 1"
+            class="ml-5"
           >
-            <v-icon small class="mr-2"> {{ `mdi-lead-pencil` }}</v-icon> Edit
+            <v-icon small class="mr-0"> {{ `mdi-lead-pencil` }}</v-icon>
           </v-btn>
 
           <v-btn
-            x-small
+            icon
+            small
             outlined
             @click="confirmDelete"
             color="delete_button"
-            style="border-radius: 12px; border-width: 1"
-            min-height="25"
-            class=""
+            style="border-radius: 15px; border-width: 1"
+            class="ml-4"
           >
-            <v-icon small class="mr-2"> {{ `mdi-delete` }}</v-icon> Delete
+            <v-icon small class="mr-0"> {{ `mdi-delete` }}</v-icon>
           </v-btn>
 
           <v-spacer></v-spacer>
@@ -230,34 +230,24 @@ export default class AreaCard extends Vue {
           </v-btn>
         </v-card-actions>
 
-        <v-divider class="mx-4 mb-1"></v-divider>
-
-        <!-- ? ------------------- Timestamps ----------------------->
-        <v-card-text align="left">
-          Created:
-          <span :style="{ color: '#8e9199' }" class="font-weight-medium">
-            {{ getPrettyTimestamp(area.createdAt) }}
-          </span>
-          <br />
-
-          Last updated:
-          <span :style="{ color: '#8e9199' }" class="font-weight-medium">
-            {{ getPrettyTimestamp(area.lastUpdatedAt) }}
-          </span>
-          <!-- Other colors: #888a89 (medium-gray) -->
-        </v-card-text>
-
         <!-- TODO P0 --- New component for "CategoryChip". Props: CategoryTag[] -->
 
         <!-- TODO --- (random idea, move to Notion) allow ongoing activities to be paused and resumed. 
                      *  calc totalDuration = (endTime - startTime - all paused durations)  -->
 
-        <div v-if="getCategoriesForArea().length > 0">
-          <v-divider class="mx-4 mb-1"></v-divider>
-          <v-card-text class="pt-3 mb-0 pb-0">Categories</v-card-text>
+        <!-- ? ------------------- Categories section ----------------------->
+        <v-divider class=""></v-divider>
+        <v-card-text
+          v-if="getCategoriesForArea().length > 0"
+          class="font-weight-light mb-0 pb-0"
+        >
+          Categories
+        </v-card-text>
 
+        <!-- ? -------------------- Category chips ----------------------->
+        <v-card-text v-if="getCategoriesForArea().length > 0" class="pt-1 pb-2">
           <!-- Category chips -->
-          <v-chip-group column multiple class="ml-3 mr-1 pt-0 pb-1">
+          <v-chip-group column multiple>
             <v-chip
               v-for="(categoryTag, index) in getCategoriesForArea()"
               v-bind:categoryTag="categoryTag"
@@ -270,7 +260,29 @@ export default class AreaCard extends Vue {
               {{ categoryTag.title }}
             </v-chip>
           </v-chip-group>
-        </div>
+        </v-card-text>
+
+        <v-divider class="mx-4 mb-1"></v-divider>
+
+        <!-- ? ------------------- Timestamps ----------------------->
+        <v-card-text align="left">
+          <span :style="{ color: '#8e9199' }" class="font-weight-light">
+            Created:
+          </span>
+          <span class="font-weight-light">
+            {{ getPrettyTimestamp(area.createdAt) }}
+          </span>
+          <br />
+
+          <span :style="{ color: '#8e9199' }" class="font-weight-light">
+            Last updated:
+          </span>
+          <span class="font-weight-light">
+            {{ getPrettyTimestamp(area.lastUpdatedAt) }}
+          </span>
+          <!-- Other colors: #888a89 (medium-gray) -->
+        </v-card-text>
+
         <!-- </v-card> -->
       </div>
     </v-expand-transition>

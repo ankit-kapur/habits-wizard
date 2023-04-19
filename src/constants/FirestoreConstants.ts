@@ -8,6 +8,7 @@ export class FirestoreConstants {
 
   static readonly CREATED_AT_ATTRIBUTE: string = "createdAt";
   static readonly USER_ID_ATTRIBUTE: string = "userId";
+  static readonly AREA_ID_ATTRIBUTE: string = "areaId";
 
   static readonly ASCENDING: OrderByDirection = "asc";
   static readonly DESCENDING: OrderByDirection = "desc";

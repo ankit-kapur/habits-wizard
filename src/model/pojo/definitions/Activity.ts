@@ -5,14 +5,19 @@ export interface Activity {
   userId: string;
 
   // Association
-  areaId: string; // ? --- do I need this?
+  areaId: string;
+  categoryId: string;
 
   // Display
   title: string;
   icon: string;
 
+  // * Whether this is an Activity or a Task.
+  //      If true, default measurables to be added: ---- startTime, endTime, duration.
+  //      Else, default measurables to be added: ---- endTime (i.e. completed at time).
+  hasTimeTracking: boolean;
+
   // Tracking
-  //    Default measurables for Activities ---- startTime, endTime, duration.
   //    Only IDs here. Definitions live in UserConfig
   measurables: string[];
 

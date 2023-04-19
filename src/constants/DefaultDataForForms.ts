@@ -3,6 +3,7 @@ import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 
 export const defaultNewArea: Area = {
+  id: "",
   title: "New Area",
   imageUrl: "https://cdn.vuetifyjs.com/images/cards/sunshine.jpg",
   color: "#8686D6",
@@ -10,8 +11,6 @@ export const defaultNewArea: Area = {
   description:
     "late 16th century from medieval Latin eleemosynarius, from late Latin eleemosyna‘alms",
   categoryTags: [],
-  activities: [],
-  habits: [],
 };
 
 export const defaultNewCategory: CategoryTag = {
@@ -19,6 +18,7 @@ export const defaultNewCategory: CategoryTag = {
   title: "",
   icon: "mdi-circle",
   userId: "",
+  areaId: "",
 };
 
 export const defaultNewActivity: Activity = {
@@ -26,6 +26,8 @@ export const defaultNewActivity: Activity = {
   userId: "",
   title: "",
   areaId: "",
+  categoryId: "",
   icon: "mdi-square",
+  hasTimeTracking: false,
   measurables: [],
 };

@@ -1,25 +1,26 @@
 export interface Area {
-  // Identifiers
-  id?: string;
+  // ? --------------- Identifiers
+  id: string;
   userId: string;
 
-  // Timestamps
+  // ? --------------- Timestamps
   createdAt?: number;
   lastUpdatedAt?: number;
 
-  // Display attributes
+  // ? --------------- Display attributes
   title: string;
   color: string;
   imageUrl: string;
   description?: string;
 
-  // TODO --- Add timestamp attributes. Created on. Last modified on.
+  // ? ---- Removing links to Categories and Activities here. Don't need bi-directional links.
+  // // Associated entities (only IDs here)
+  // activities: string[];
 
-  // Associated entities (only IDs here)
+  // ? --------------- Tags
   categoryTags: string[];
-  activities: string[];
-  habits: string[];
-  // TODO --- Habits
+  // List of all tags used in Activities in this Area.
+  tags?: string[];
 
   // ------------------ Future attributes ------------------ //
 
@@ -30,8 +31,7 @@ export interface Area {
   // Essential Things under this Area can show status of the Area.
   // weeklyGoals: WeeklyGoalForArea[];
 
-  // Challenges
-  // TODO Should Challenges live OUTSIDE Area?
+  // ------ Challenges
   // activeChallenges?: Challenge[];
   // archivedChallenges: Challenge[];
   // completedChallenges: Challenge[];

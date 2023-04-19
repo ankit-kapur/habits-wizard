@@ -1,6 +1,17 @@
 import { ComparisonOperator } from "@/model/enum/ComparisonOperator";
 import { ConditionalOperator } from "@/model/enum/ConditionalOperator";
 
+// ! ------ Change Day & Weekly goals into generic structures.
+//          to allow goals over longer periods.
+//          For eg. burn 1000 cals per week ---- has no daily goal.
+
+/**
+ * Goal       = criteria for 1 time-period (i.e. smallest unit of time to measure)
+ *                for eg. burn 1000 cals in a week, or
+ *                for eg. do 30 mins cardio per day.
+ * Challenge  = criteria for how many time-periods need to be successful.
+ */
+
 export interface WeekGoal {
   // Metadata
   setOnDate: Date;
