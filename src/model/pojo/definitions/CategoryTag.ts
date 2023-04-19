@@ -4,13 +4,19 @@ export default interface CategoryTag {
 
   // ? --------------- Association
   userId: string;
+
+  /**
+   * @deprecated
+   */
   areaId?: string;
 
   // ? --------------- Display
   title: string;
   color?: string;
 
-  // TODO: Deprecate
+  /**
+   * @deprecated
+   */
   icon: string;
 
   // ? --------------- Timestamps

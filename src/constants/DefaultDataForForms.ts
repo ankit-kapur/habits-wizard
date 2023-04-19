@@ -19,6 +19,7 @@ export const defaultNewCategory: CategoryTag = {
   icon: "mdi-circle",
   userId: "",
   areaId: "",
+  color: "",
 };
 
 export const defaultNewActivity: Activity = {

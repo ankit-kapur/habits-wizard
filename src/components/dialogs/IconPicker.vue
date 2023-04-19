@@ -9,7 +9,6 @@ import { useIconsStore } from "@/store/IconsStore";
   components: {
     ConfirmationDialog: ConfirmationDialog,
   },
-  methods: {},
 })
 export default class IconPicker extends Vue {
   // ------------------------------------------------ Props

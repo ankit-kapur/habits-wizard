@@ -272,50 +272,49 @@ export default class AreaCard extends Vue {
             >
               <!-- TODO P0 ---- Use colored circle icon here instead of Icon -->
 
-              <v-icon color="primary" small class="ml-0 mr-2"
-                >mdi-circle</v-icon
-              >
+              <v-icon :color="categoryTag.color" small class="ml-0 mr-2">
+                mdi-circle
+              </v-icon>
               {{ categoryTag.title }}
             </v-chip>
           </v-chip-group>
         </v-card-text>
 
-        <v-divider class="mx-4 mb-1"></v-divider>
-
         <!-- ? ------------------- Activities section ----------------------->
-        <v-card-text
-          v-if="activitiesList.length > 0"
-          class="font-weight-light mb-0 pb-0"
-        >
-          Activities
-        </v-card-text>
+        <div v-if="activitiesList.length > 0">
+          <v-divider class="mx-4 mb-1"></v-divider>
 
-        <!-- ? -------------------- Activity chips ----------------------->
-        <v-card-text v-if="activitiesList.length > 0" class="pt-1 pb-2">
-          <!-- TODO P0 ---- Reminder to use the FILTER feature of the TODO extension plugin here. -->
-          <!-- TODO P0 ---- Use color from 'categories' computed prop to set border-color -->
+          <v-card-text class="font-weight-light mb-0 pb-0">
+            Activities
+          </v-card-text>
 
-          <!-- Activity chips -->
-          <v-chip-group column multiple>
-            <v-chip
-              outlined
-              v-for="(activity, index) in activitiesList"
-              v-bind:activity="activity"
-              v-bind:index="index"
-              v-bind:key="activity.id"
-              :model-value="true"
-              :prepend-icon="activity.icon"
-              color="purple"
-            >
-              <v-icon small class="ml-0 mr-2">{{ activity.icon }}</v-icon>
-              {{ activity.title }}
-            </v-chip>
-          </v-chip-group>
-        </v-card-text>
+          <!-- ? -------------------- Activity chips ----------------------->
+          <v-card-text class="pt-1 pb-2">
+            <!-- TODO P0 ---- Reminder to use the FILTER feature of the TODO extension plugin here. -->
+            <!-- TODO P0 ---- Use color from 'categories' computed prop to set border-color -->
 
-        <v-divider class="mx-4 mb-1"></v-divider>
+            <!-- Activity chips -->
+            <v-chip-group column multiple>
+              <v-chip
+                outlined
+                v-for="(activity, index) in activitiesList"
+                v-bind:activity="activity"
+                v-bind:index="index"
+                v-bind:key="activity.id"
+                :model-value="true"
+                :prepend-icon="activity.icon"
+                color="purple"
+              >
+                <v-icon small class="ml-0 mr-2">{{ activity.icon }}</v-icon>
+                {{ activity.title }}
+              </v-chip>
+            </v-chip-group>
+          </v-card-text>
+        </div>
 
         <!-- ? ------------------- Timestamps ----------------------->
+        <v-divider class="mx-4 mb-1"></v-divider>
+
         <v-card-text align="left">
           <span :style="{ color: '#8e9199' }" class="font-weight-light">
             Created:

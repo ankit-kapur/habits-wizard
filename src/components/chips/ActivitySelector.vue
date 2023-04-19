@@ -6,10 +6,12 @@ import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ActivityCreateOrEditDialog from "../dialogs/ActivityCreateOrEditDialog.vue";
+import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
 
 @Component({
   components: {
     ActivityCreateOrEditDialog: ActivityCreateOrEditDialog,
+    ConfirmationDialog: ConfirmationDialog,
   },
 })
 export default class ActivitySelector extends Vue {
@@ -40,16 +42,16 @@ export default class ActivitySelector extends Vue {
   activitiesStore = useActivitiesStore();
 
   // ------------------------------------------------ Data
-  activitiesList!: Activity[];
   showCreateActivityDialog = false;
   showEditActivityDialog = false;
+  showDeleteActivityDialog = false;
   selectedActivity: Activity | null = null;
   selectedItemIdList_local: string[] = [];
   newActivity: Activity = deepCopy(defaultNewActivity);
   searchInput = "";
 
-  // ------------------------------------------------ Computer props
-  get allItemsList() {
+  // ------------------------------------------------ Computed
+  get activitiesList(): Activity[] {
     return this.activitiesStore.getActivitiesByArea(this.area.id);
   }
 
@@ -75,7 +77,7 @@ export default class ActivitySelector extends Vue {
   promptForNewActivity() {
     // Checks if the searchInput text matches something from the dropdown.
     if (
-      this.allItemsList.filter((e) => e.title.startsWith(this.searchInput))
+      this.activitiesList.filter((e) => e.title.startsWith(this.searchInput))
         .length == 0
     ) {
       this.newActivity.title = this.searchInput;
@@ -110,6 +112,12 @@ export default class ActivitySelector extends Vue {
     this.showEditActivityDialog = true;
   }
 
+  triggerDeleteDialog(categoryTag: Activity) {
+    console.log("triggerDeleteDialog");
+    this.selectedActivity = categoryTag;
+    this.showDeleteActivityDialog = true;
+  }
+
   saveExistingActivity(updatedActivity: Activity) {
     console.log("Saving new category");
     this.activitiesStore.updateActivity(updatedActivity);
@@ -125,129 +133,88 @@ export default class ActivitySelector extends Vue {
     this.showEditActivityDialog = false;
   }
 
-  /**
-   * Trigger when the (x) button is clicked on a chip
-   * @param category
-   */
-  removeActivityFromArea(category: Activity) {
-    const index = this.selectedItemIdList_local.indexOf(category.id);
-    if (index >= 0) this.selectedItemIdList_local.splice(index, 1);
+  // Delete
+  respondToConfirmDeleteDialog(isConfirmed: boolean): void {
+    if (isConfirmed) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.activitiesStore.deleteActivity(this.selectedActivity!);
+    }
+    this.showDeleteActivityDialog = false;
   }
 }
 </script>
 
 <template>
-  <div class="text-center">
-    <!-- * ------------------------ Auto-complete for chips  -------------------------->
-    <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
-    <!-- removed fields: clearable -->
-    <v-autocomplete
-      loading
-      auto-select-first
-      chips
-      deletable-chips
-      label="Activities"
-      v-model="selectedItemIdList_local"
-      :items="allItemsList"
-      item-text="title"
-      item-value="id"
-      multiple
-      hint="Select a tag or create a new one."
-      color="blue-grey-lighten-2"
-      hide-selected
-      :hide-no-data="showCreateActivityDialog"
-      @input="searchInput = ''"
-      :search-input.sync="searchInput"
-      @keydown.enter="promptForNewActivity"
-      @keydown.enter.native.prevent
-      @change="onTagSelectionChange"
-      :menu-props="{
-        closeOnContentClick: false,
-        closeOnClick: true,
-        openOnClick: false,
-      }"
-      :disabled="showEditActivityDialog"
-      class="pt-6"
-    >
-      <!-- Notes about the modifiers above in <v-autocomplete> -->
-      <!--      @input will reset the text-input to '' once tag is selected -->
-      <!--      search-input.sync will bind the text-input to our variable -->
-      <!--      (unused) @update:search-input="callFunc" will call our func when text-input changes -->
-      <!--      hide-no-data will make the prompy for 'no-data' disappear when Create box is active -->
+  <div>
+    <v-card flat>
+      <!-- * ---------------- Chips -->
+      <v-card-text class="pa-0 ma-0">
+        <!-- * ---------------- Title -->
+        <v-card-title class="pa-1 text-h6 font-weight-light">
+          Activities
+        </v-card-title>
 
-      <!-- * ------------ When no tags match ------------ * -->
-      <template v-slot:no-data>
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title>
-              Press <code>enter</code> to create.
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </template>
-
-      <!-- * ------------ Chip ------------ * -->
-      <template v-slot:selection="data">
-        <v-chip
-          v-bind="data.attrs"
-          close
-          @click="triggerEditDialog(data.item)"
-          @click:close="removeActivityFromArea(data.item)"
-        >
-          <v-icon class="mr-2">{{ data.item.icon }}</v-icon>
-          {{ data.item.title }}
-        </v-chip>
-      </template>
-
-      <!-- * ------------ List item in dropdown ------------ * -->
-      <!-- eslint-disable vue/no-unused-vars -->
-      <!-- eslint-disable vue/no-v-text-v-html-on-component -->
-      <template v-slot:item="{ item, attrs, on }">
-        <v-list-item v-on="on" v-bind="attrs" #default="{ active }">
-          <!-- <v-list-item-avatar>
-            <img :src="area.imageUrl" />
-          </v-list-item-avatar> -->
-          <v-list-item-content>
-            <v-list-item-title>
-              <v-row no-gutters align="center">
-                <v-icon class="pr-4">{{ item.icon }}</v-icon>
-                <span>{{ item.title }}</span>
-                <v-spacer></v-spacer>
-                <!-- <v-btn icon>
-                      <v-icon small class="">mdi-pencil</v-icon>
-                    </v-btn> -->
-              </v-row>
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </template>
+        <v-chip-group column>
+          <v-chip
+            v-for="(activity, index) in activitiesList"
+            :close-icon="`mdi-delete`"
+            close
+            @click="triggerEditDialog(activity)"
+            @click:close="triggerDeleteDialog(activity)"
+            v-bind:activity="activity"
+            v-bind:index="index"
+            v-bind:key="activity.id"
+            :model-value="true"
+            :prepend-icon="activity.icon"
+            class="pa-4 pl-3 pr-4"
+          >
+            <v-icon class="ml-0 mr-2">{{ activity.icon }}</v-icon>
+            <span class="text-body-2">{{ activity.title }}</span>
+          </v-chip>
+        </v-chip-group>
+      </v-card-text>
 
       <!-- * ------------ (+) icon ------------ * -->
-      <!-- eslint-disable vue/no-v-text-v-html-on-component -->
-      <template v-slot:append-outer>
-        <v-icon
-          @click="showCreateActivityDialog = true"
-          v-text="'mdi-plus-circle-outline'"
-        ></v-icon>
-      </template>
-    </v-autocomplete>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn outlined rounded @click="showCreateActivityDialog = true">
+          <v-icon class="pr-2"> mdi-plus </v-icon>
+          Add
+        </v-btn>
+        <v-spacer />
+      </v-card-actions>
 
-    <!-- TODO ----- Make this new component -->
-    <!-- * ------------------------ New Activity popup  -------------------------->
+      <!--  -->
+    </v-card>
+
+    <!-- * ------------------------ New popup  -------------------------->
     <ActivityCreateOrEditDialog
       :activity="newActivity"
+      :area="area"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateActivityDialog"
       v-on:save-confirmed="createNewActivity"
       v-on:discard="discardActivityChange"
     ></ActivityCreateOrEditDialog>
 
+    <!-- * ------------------------ Edit popup  -------------------------->
     <ActivityCreateOrEditDialog
       :activity="selectedActivity"
+      :area="area"
       :dialog-mode="`EDIT`"
       :showDialog="showEditActivityDialog"
       v-on:save-confirmed="saveExistingActivity"
       v-on:discard="discardActivityChange"
     ></ActivityCreateOrEditDialog>
+
+    <!-- * ------------------------ Delete popup  -------------------------->
+    <!-- Trigger when the (x) button is clicked on a chip -->
+    <ConfirmationDialog
+      v-on:confirm-status-change="respondToConfirmDeleteDialog"
+      :showDialog="showDeleteActivityDialog"
+      messageToDisplay="Sure you want to delete this?"
+      yesButtonText="Delete"
+      noButtonText="Cancel"
+    />
   </div>
 </template>

@@ -5,14 +5,11 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { DialogMode } from "./AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { useIconsStore } from "@/store/IconsStore";
-import IconPicker from "@/components/dialogs/IconPicker.vue";
 import { deepCopy } from "deep-copy-ts";
-import { Ref } from "vue-property-decorator";
 
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
-    IconPicker: IconPicker,
   },
   methods: {},
 })
@@ -70,9 +67,18 @@ export default class CategoryCreateOrEditDialog extends Vue {
   // ------------------------------------------------ Data
   categoryTag_local = deepCopy(defaultNewCategory);
   showDialogForConfirmDiscard = false;
-  showIconPicker = false;
+  showColorPicker = false;
 
-  @Ref() readonly titleTextBox!: HTMLInputElement;
+  /**
+   *  TODO --------- Replace with values from the THIEF
+   */
+  colorSwatches = [
+    ["#FF0000", "#AA0000", "#550000"],
+    ["#FFFF00", "#AAAA00", "#555500"],
+    ["#00FF00", "#00AA00", "#005500"],
+    ["#00FFFF", "#00AAAA", "#005555"],
+    ["#0000FF", "#0000AA", "#000055"],
+  ];
 
   // ------------------------------------------------ Methods
   resetNewCategoryData() {
@@ -121,17 +127,6 @@ export default class CategoryCreateOrEditDialog extends Vue {
       this.showDialogForConfirmDiscard = true;
     }
   }
-
-  newIconSelected(newIcon: string) {
-    console.log("---- newIconSelected (PARENT) = " + newIcon);
-    this.categoryTag_local.icon = newIcon;
-    this.closeIconPicker(true);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  closeIconPicker(state: boolean) {
-    this.showIconPicker = false;
-  }
 }
 </script>
 
@@ -174,20 +169,13 @@ export default class CategoryCreateOrEditDialog extends Vue {
             <v-container fluid>
               <!--  -->
               <v-row>
-                <!-- ? -------------- Icon button -------------- * -->
-                <v-col cols="2">
-                  <!-- <v-btn
-                    icon
-                    @click="showIconPicker = !showIconPicker"
-                    class="px-auto pt-4"
-                  > -->
-                  <v-icon
-                    @click="showIconPicker = true"
-                    large
-                    class="px-auto pt-4 mr-20"
-                    >{{ categoryTag_local.icon }}</v-icon
-                  >
-                  <!-- </v-btn> -->
+                <!-- ? -------------- Color picker -------------- * -->
+                <v-col cols="3">
+                  Color:
+                  <v-btn
+                    @click="showColorPicker = !showColorPicker"
+                    :color="categoryTag.color"
+                  ></v-btn>
                 </v-col>
 
                 <!-- ? ------------------ Name ---------------- * -->
@@ -200,7 +188,6 @@ export default class CategoryCreateOrEditDialog extends Vue {
                     hint="Something short and sweet."
                     counter="15"
                     clearable
-                    autofocus="false"
                     ref="titleTextBox"
                   ></v-text-field>
                 </v-col>
@@ -208,6 +195,19 @@ export default class CategoryCreateOrEditDialog extends Vue {
 
               <!--  -->
             </v-container>
+
+            <v-card-text>
+              <v-color-picker
+                v-show="showColorPicker"
+                v-model="categoryTag_local.color"
+                dot-size="25"
+                mode="hexa"
+                hide-inputs
+                :swatches="colorSwatches"
+                swatches-max-height="100"
+                show-swatches
+              ></v-color-picker>
+            </v-card-text>
 
             <!-- ? ------------------ Save / Cancel ---------------- * -->
             <v-card-actions>
@@ -227,13 +227,6 @@ export default class CategoryCreateOrEditDialog extends Vue {
             yesButtonText="Discard"
             noButtonText="Cancel"
           />
-
-          <IconPicker
-            :showDialog="showIconPicker"
-            :initialSearchPrefix="categoryTag_local.title"
-            v-on:icon-selected="newIconSelected"
-            v-on:icon-picker-cancelled="closeIconPicker"
-          ></IconPicker>
         </v-bottom-sheet>
       </v-col>
     </v-row>

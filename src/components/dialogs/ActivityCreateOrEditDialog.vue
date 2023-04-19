@@ -7,7 +7,9 @@ import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { useIconsStore } from "@/store/IconsStore";
 import IconPicker from "@/components/dialogs/IconPicker.vue";
 import { deepCopy } from "deep-copy-ts";
-import { Ref } from "vue-property-decorator";
+import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import { Area } from "@/model/pojo/definitions/Area";
+import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 
 @Component({
   components: {
@@ -21,6 +23,8 @@ export default class ActivityCreateOrEditDialog extends Vue {
   @Prop()
   activity!: Activity;
   @Prop()
+  area!: Area;
+  @Prop()
   showDialog!: boolean;
   @Prop()
   dialogMode!: DialogMode;
@@ -32,36 +36,18 @@ export default class ActivityCreateOrEditDialog extends Vue {
   // @Watch("activity")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
-    console.log(
-      "🚨 🚨 🚨 @Watch for ActivityCreateOrEditDialog. _newValue = " + _newValue
-    );
+    console.log("👀 @Watch in ActivityCreateOrEdit. showDialog = " + _newValue);
     const isDialogOpen = !!_newValue;
-
-    if (isDialogOpen === true) {
-      if (DialogMode[this.dialogMode] === DialogMode.CREATE) {
-        console.log(
-          "🌹 🌹 🌹 CREATE MODE ---- this.activity_local = " +
-            JSON.stringify(this.activity_local)
-        );
-        this.activity_local = deepCopy(defaultNewActivity); // Reset
-      } else {
-        console.log("🌹 🌹 🌹 EDIT");
-        this.activity_local = deepCopy(this.activity);
-      }
+    if (isDialogOpen) {
+      this.onShow();
+    } else {
+      this.onHide();
     }
-
-    console.log(
-      "🐞 🐞 🐞 @Watch triggered in ActivityCreateOrEdit. showDialog ===> " +
-        this.showDialog +
-        ", activity_local ===> " +
-        JSON.stringify(this.activity_local) +
-        ", dialogMode = " +
-        this.dialogMode
-    );
   }
 
   // ------------------------------------------------ Stores
   iconsStore = useIconsStore();
+  categoryTagsStore = useCategoryTagsStore();
 
   mounted() {
     this.iconsStore.loadIcons();
@@ -69,12 +55,41 @@ export default class ActivityCreateOrEditDialog extends Vue {
 
   // ------------------------------------------------ Data
   activity_local = deepCopy(defaultNewActivity);
+  selectedCategory: CategoryTag | null = null;
   showDialogForConfirmDiscard = false;
   showIconPicker = false;
+  showSearchBar = false;
+  searchInput = "";
+  selectedItemsList: string[] = [];
 
-  @Ref() readonly titleTextBox!: HTMLInputElement;
+  // ------------------------------------------------ Computed
+  get categories(): CategoryTag[] {
+    return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
+  }
 
   // ------------------------------------------------ Methods
+  onShow() {
+    this.categoryTagsStore.subscribeToStore(); // Subscribe to store
+    if (DialogMode.CREATE === DialogMode[this.dialogMode]) {
+      this.activity_local = deepCopy(defaultNewActivity); // Reset
+    } else if (DialogMode.EDIT === DialogMode[this.dialogMode]) {
+      this.activity_local = deepCopy(this.activity);
+    }
+  }
+
+  onHide() {
+    // Unsubscribe from stores.
+    this.categoryTagsStore.unsubscribe(); // Unsubscribe from store
+  }
+
+  onTagSelectionChange() {
+    this.showSearchBar = false;
+    this.selectedCategory = this.categoryTagsStore.getCategoryById(
+      this.selectedItemsList[0]
+    );
+    this.selectedItemsList = [];
+  }
+
   resetNewActivityData() {
     this.activity_local = deepCopy(defaultNewActivity);
   }
@@ -153,8 +168,8 @@ export default class ActivityCreateOrEditDialog extends Vue {
                 <v-list-item-content>
                   <v-list-item-title>Activity</v-list-item-title>
                   <v-list-item-subtitle
-                    >Click save to create</v-list-item-subtitle
-                  >
+                    >Click save to create
+                  </v-list-item-subtitle>
                 </v-list-item-content>
 
                 <!-- ? -------------- (x) Close button -------------- * -->
@@ -194,13 +209,98 @@ export default class ActivityCreateOrEditDialog extends Vue {
                     counter="15"
                     clearable
                     :autofocus="false"
-                    ref="titleTextBox"
                   ></v-text-field>
                 </v-col>
               </v-row>
 
               <!--  -->
             </v-container>
+
+            <!-- * -------------------- CATEGORY selection ---------------- * -->
+            <v-card-subtitle class="text-body font-weight-light"
+              >Category</v-card-subtitle
+            >
+
+            <!-- ? ------- Chip -->
+            <!-- <v-chip @click="showSearchBar = !showSearchBar">
+              <v-icon :color="selectedCategory?.color" small class="mr-2">
+                mdi-circle
+              </v-icon>
+              {{ selectedCategory?.title }}
+            </v-chip> -->
+
+            <v-card-text>
+              <!-- ? ------------------------ Auto-complete for chips  --------->
+              <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
+              <v-autocomplete
+                loading
+                auto-select-first
+                chips
+                label=""
+                v-model="selectedItemsList"
+                :items="categories"
+                item-text="title"
+                item-value="id"
+                hint="Search for a category"
+                persistent-hint
+                color="blue-grey-lighten-2"
+                hide-selected
+                @input="searchInput = ''"
+                :search-input.sync="searchInput"
+                @keydown.enter.native.prevent
+                @change="onTagSelectionChange"
+                :menu-props="{
+                  closeOnContentClick: false,
+                  closeOnClick: true,
+                  openOnClick: true,
+                }"
+                class=""
+              >
+                <!-- Notes about the modifiers above in <v-autocomplete> -->
+                <!--      @input will reset the text-input to '' once tag is selected -->
+                <!--      search-input.sync will bind the text-input to our variable -->
+                <!--      (unused) @update:search-input="callFunc" will call our func when text-input changes -->
+                <!--      hide-no-data will make the prompy for 'no-data' disappear when Create box is active -->
+
+                <!-- * ------------ When no tags match ------------ * -->
+                <template v-slot:no-data>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-list-item-title> No matches. </v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+
+                <!-- * ------------ Chip ------------ * -->
+                <template v-slot:selection="data">
+                  <v-chip v-bind="data.attrs">
+                    <v-icon class="mr-2">{{ data.item.icon }}</v-icon>
+                    {{ data.item.title }}
+                  </v-chip>
+                </template>
+
+                <!-- * ------------ List item in dropdown ------------ * -->
+                <!-- eslint-disable vue/no-unused-vars -->
+                <!-- eslint-disable vue/no-v-text-v-html-on-component -->
+                <template v-slot:item="{ item, attrs, on }">
+                  <v-list-item v-on="on" v-bind="attrs" #default="{ active }">
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        <v-row no-gutters align="center">
+                          <v-icon small class="pr-4" :color="item.color"
+                            >mdi-circle</v-icon
+                          >
+                          <span>{{ item.title }}</span>
+                          <v-spacer></v-spacer>
+                        </v-row>
+                      </v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+
+                <!--  -->
+              </v-autocomplete>
+            </v-card-text>
 
             <!-- ? ------------------ Save / Cancel ---------------- * -->
             <v-card-actions>

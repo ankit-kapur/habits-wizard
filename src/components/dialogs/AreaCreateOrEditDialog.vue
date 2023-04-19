@@ -10,6 +10,7 @@ import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import CategorySelector from "../chips/CategorySelector.vue";
 import ActivitySelector from "../chips/ActivitySelector.vue";
 import ColorThief from "colorthief";
+import ImagePicker from "@/components/picker/ImagePicker.vue";
 
 @Component({
   components: {
@@ -17,6 +18,7 @@ import ColorThief from "colorthief";
     CategorySelector: CategorySelector,
     ActivitySelector: ActivitySelector,
     ColorThief: ColorThief,
+    ImagePicker: ImagePicker,
   },
 })
 export default class AreaCreateOrEditDialog extends Vue {
@@ -67,6 +69,9 @@ export default class AreaCreateOrEditDialog extends Vue {
   next_step_icon = "mdi-chevon-right";
   save_icon = "mdi-content-save";
 
+  // Image dimensions
+  IMAGE_HEIGHT = 110;
+
   mdiIcons = import("@/assets/icons/mdi_icons.json");
 
   valid = true;
@@ -78,15 +83,6 @@ export default class AreaCreateOrEditDialog extends Vue {
       `Name must be less than ${Limits.AREA_NAME_MAX_LENGTH} characters`,
   ];
   firstStepValidations = this.areaNameRules;
-
-  // Put some nice colors here. And hide the full color-picker.
-  colorSwatches = [
-    ["#FF0000", "#AA0000", "#550000"],
-    ["#FFFF00", "#AAAA00", "#555500"],
-    ["#00FF00", "#00AA00", "#005500"],
-    ["#00FFFF", "#00AAAA", "#005555"],
-    ["#0000FF", "#0000AA", "#000055"],
-  ];
 
   // ------------------------------------------------ Computed
 
@@ -156,7 +152,7 @@ export default class AreaCreateOrEditDialog extends Vue {
     if (destination >= this.numberOfSteps) {
       this.currentStepperPos = this.numberOfSteps;
     } else if (destination < 0) {
-      this.currentStepperPos = 0;
+      this.currentStepperPos = this.numberOfSteps - 1;
     } else {
       this.currentStepperPos = destination;
     }
@@ -168,11 +164,23 @@ export default class AreaCreateOrEditDialog extends Vue {
     this.moveToStep(this.currentStepperPos - 1);
   }
 
+  showImagePicker() {
+    console.log("CLICKED");
+    this.showImageEditDialog = true;
+  }
+
   /**
    * ? -------------- Color thief
+   * ! --------- imageChanged() ----- needs to be called in a better place.  -->
    */
-  imageChanged() {
+  imageChanged(newImageUrl: string) {
     console.log("--------- IMAGE CHANGED");
+
+    // Update URL
+    this.currentArea.imageUrl = newImageUrl;
+
+    // Hide image-picker.
+    this.showImageEditDialog = false;
 
     const colorThief = new ColorThief();
 
@@ -196,6 +204,10 @@ export default class AreaCreateOrEditDialog extends Vue {
       console.log("🎨 🎨 🎨 🎨 Dominant color -----> " + dominantColor);
       const palette = colorThief.getPalette(imageElement);
       console.log("🎨 🎨 🎨 🎨 Palette -----> " + palette);
+
+      /**
+       * TODO ------- Colors should be set in Area.
+       */
     });
 
     // Destroy
@@ -245,38 +257,38 @@ export enum DialogMode {
 
             <!-- ? --------------------------------------------- Step 1 -->
             <v-window-item :step="1">
-              <v-card elevation="0" style="border-radius: 8px">
+              <v-card flat style="pa-0 border-radius: 8px">
                 <!-- ? ------------------------------ Image -->
                 <v-card-text class="ma-0 pa-0">
-                  <v-img
-                    :src="currentArea.imageUrl"
-                    height="180"
-                    @click="showImageEditDialog = !showImageEditDialog"
-                  ></v-img>
+                  <v-container>
+                    <v-row>
+                      <v-col cols="4" class="ma-0 pa-0">
+                        <v-img
+                          style="border-radius: 10px"
+                          :src="currentArea.imageUrl"
+                          :width="IMAGE_HEIGHT"
+                          :height="IMAGE_HEIGHT"
+                          @click="showImagePicker"
+                        />
+                      </v-col>
 
-                  <!-- ? Text-field for Image URL  -->
-                  <v-text-field
-                    v-model="currentArea.imageUrl"
-                    label="Image URL"
-                    v-show="showImageEditDialog"
-                    @keydown.enter="imageChanged()"
-                  ></v-text-field
-                ></v-card-text>
-
-                <!-- ! --------- imageChanged() ----- needs to be called in a better place.  -->
+                      <v-col class="ma-0 pa-0 pl-4">
+                        <v-textarea
+                          rows="3"
+                          hint="Describe what this Area means to you."
+                          label="Description"
+                          v-model="currentArea.description"
+                          counter="200"
+                          max-length="200"
+                          clearable
+                        />
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                </v-card-text>
 
                 <!-- TODO --------- Update palette and set Area color  -->
                 <!-- TODO --------- Write the palette into the Area. So it doesn't need to be reconstructed every time. -->
-
-                <v-card-text class="ma-0 pa-0">
-                  <v-text-field
-                    label="Description"
-                    v-model="currentArea.description"
-                    counter="200"
-                    max-length="200"
-                    clearable
-                  ></v-text-field>
-                </v-card-text>
 
                 <!--  -->
               </v-card>
@@ -289,23 +301,6 @@ export enum DialogMode {
                 <v-card-text class="ma-0 pa-0">
                   <v-form ref="areaForm" v-model="valid" lazy-validation>
                     <!--  -->
-
-                    <v-color-picker
-                      v-show="showColorPicker"
-                      v-model="currentArea.color"
-                      dot-size="25"
-                      mode="hexa"
-                      hide-inputs
-                      :swatches="colorSwatches"
-                      swatches-max-height="100"
-                      show-swatches
-                    ></v-color-picker>
-
-                    Color:
-                    <v-btn
-                      @click="showColorPicker = !showColorPicker"
-                      :color="currentArea.color"
-                    ></v-btn>
 
                     <!-- * ---------------- Tag selector for category chips -->
                     <CategorySelector
@@ -432,6 +427,13 @@ export enum DialogMode {
       messageToDisplay="Sure you want to discard this?"
       yesButtonText="Discard"
       noButtonText="Cancel"
+    />
+
+    <ImagePicker
+      :showDialog="showImageEditDialog"
+      :imageUrl="currentArea.imageUrl"
+      v-on:save="imageChanged"
+      v-on:cancelled="showImageEditDialog = false"
     />
 
     <!-- Minor TODO --- Make an image-lookup component -->

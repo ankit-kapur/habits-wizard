@@ -1,19 +1,25 @@
 export interface Area {
-  // ? --------------- Identifiers
+  // ? ------------------------------ Identifiers
   id: string;
   userId: string;
 
-  // ? --------------- Timestamps
+  // ? ------------------------------ Timestamps
   createdAt?: number;
   lastUpdatedAt?: number;
 
-  // ? --------------- Display attributes
+  // ? ------------------------------ Display attributes
   title: string;
+  // ! --- (UX decision) Not sure if I need color.
+  //       Avatar of the image works. But Calendar
   color: string;
   imageUrl: string;
   description?: string;
 
-  // ? ---- Removing links to Categories and Activities here. Don't need bi-directional links.
+  // Hex color codes.
+  dominantColor?: string;
+  palette?: string[];
+
+  // * ---- Removing links to Categories and Activities here. Don't need bi-directional links.
   // // Associated entities (only IDs here)
   // activities: string[];
 
