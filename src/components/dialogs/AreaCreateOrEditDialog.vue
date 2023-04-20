@@ -205,9 +205,7 @@ export default class AreaCreateOrEditDialog extends Vue {
       const palette = colorThief.getPalette(imageElement);
       console.log("🎨 🎨 🎨 🎨 Palette -----> " + palette);
 
-      /**
-       * TODO ------- Colors should be set in Area.
-       */
+      // <!-- TODO P1 --------- Write the palette into the Area. So it doesn't need to be reconstructed every time. -->
     });
 
     // Destroy
@@ -286,9 +284,6 @@ export enum DialogMode {
                     </v-row>
                   </v-container>
                 </v-card-text>
-
-                <!-- TODO --------- Update palette and set Area color  -->
-                <!-- TODO --------- Write the palette into the Area. So it doesn't need to be reconstructed every time. -->
 
                 <!--  -->
               </v-card>
@@ -435,14 +430,5 @@ export enum DialogMode {
       v-on:save="imageChanged"
       v-on:cancelled="showImageEditDialog = false"
     />
-
-    <!-- Minor TODO --- Make an image-lookup component -->
-    <!-- <v-bottom-sheet v-model="showImageEditDialog" hide-overlay persistent>
-      <v-text-field
-        v-model="currentArea.imageUrl"
-        label="Image URL"
-        @click="showImageEditDialog = false"
-      ></v-text-field
-    ></v-bottom-sheet> -->
   </div>
 </template>

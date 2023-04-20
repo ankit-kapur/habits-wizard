@@ -15,10 +15,9 @@ export const defaultNewArea: Area = {
 
 export const defaultNewCategory: CategoryTag = {
   id: "",
-  title: "",
+  title: "New Category",
   icon: "mdi-circle",
   userId: "",
-  areaId: "",
   color: "",
 };
 

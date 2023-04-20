@@ -12,7 +12,7 @@ export default interface CategoryTag {
 
   // ? --------------- Display
   title: string;
-  color?: string;
+  color: string;
 
   /**
    * @deprecated

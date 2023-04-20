@@ -154,6 +154,7 @@ export default class ActivitySelector extends Vue {
           Activities
         </v-card-title>
 
+        <!-- TODO P0 --------- Use ActivityChips component here. -->
         <v-chip-group column>
           <v-chip
             v-for="(activity, index) in activitiesList"

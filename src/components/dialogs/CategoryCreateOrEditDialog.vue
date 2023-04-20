@@ -6,15 +6,16 @@ import { DialogMode } from "./AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { useIconsStore } from "@/store/IconsStore";
 import { deepCopy } from "deep-copy-ts";
+import CategoryChips from "../chips/CategoryChips.vue";
 
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
+    CategoryChips: CategoryChips,
   },
   methods: {},
 })
 export default class CategoryCreateOrEditDialog extends Vue {
-  // ------------------------------------------------ Props
   @Prop()
   categoryTag!: CategoryTag;
   @Prop()
@@ -22,29 +23,18 @@ export default class CategoryCreateOrEditDialog extends Vue {
   @Prop()
   dialogMode!: DialogMode;
 
-  /**
-   * Watches parent variable. Sync's its value to the child.
-   */
+  // <!-- * ------------------------------------------- Watchers -->
   @Watch("showDialog")
-  // @Watch("categoryTag")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onPropertyChanged(_newValue: string, _oldValue: string) {
-    console.log(
-      "🚨 🚨 🚨 @Watch for CategoryCreateOrEditDialog. _newValue = " + _newValue
-    );
+  onDisplayStateChange(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
-
-    if (isDialogOpen === true) {
-      if (DialogMode[this.dialogMode] === DialogMode.CREATE) {
-        console.log(
-          "🌹 🌹 🌹 CREATE MODE ---- this.categoryTag_local = " +
-            JSON.stringify(this.categoryTag_local)
-        );
-        this.categoryTag_local = deepCopy(defaultNewCategory); // Reset
-      } else {
-        console.log("🌹 🌹 🌹 EDIT");
-        this.categoryTag_local = deepCopy(this.categoryTag);
-      }
+    console.log(
+      "👀 @Watch in CategorySelector. isDialogOpen ===> " + isDialogOpen
+    );
+    if (isDialogOpen) {
+      this.onShow();
+    } else {
+      this.onHide();
     }
 
     console.log(
@@ -57,17 +47,43 @@ export default class CategoryCreateOrEditDialog extends Vue {
     );
   }
 
-  // ------------------------------------------------ Stores
+  // <!-- * ------------------------------------------- Stores -->
   iconsStore = useIconsStore();
 
+  // <!-- * ------------------------------------------- Lifecycle actions -->
   mounted() {
     this.iconsStore.loadIcons();
+    this.onShow();
+  }
+
+  onShow() {
+    this.categoryTag_local = deepCopy(this.categoryTag); // Reset
+
+    // if (DialogMode[this.dialogMode] === DialogMode.CREATE) {
+    //   console.log(
+    //     "🌹 🌹 🌹 CREATE MODE ---- this.categoryTag_local = " +
+    //       JSON.stringify(this.categoryTag_local)
+    //   );
+    //   this.categoryTag_local = deepCopy(defaultNewCategory); // Reset
+    // } else {
+    //   console.log("🌹 🌹 🌹 EDIT");
+    //   this.categoryTag_local = deepCopy(this.categoryTag);
+    // }
+  }
+
+  onHide() {
+    // Do nothing. For now.
   }
 
   // ------------------------------------------------ Data
   categoryTag_local = deepCopy(defaultNewCategory);
   showDialogForConfirmDiscard = false;
   showColorPicker = false;
+  showAdvancedColorPicker = false;
+
+  get categoriesList() {
+    return [this.categoryTag_local];
+  }
 
   /**
    *  TODO --------- Replace with values from the THIEF
@@ -131,104 +147,163 @@ export default class CategoryCreateOrEditDialog extends Vue {
 </script>
 
 <template>
-  <v-container fluid>
-    <v-row center>
-      <v-col>
-        <v-bottom-sheet
-          max-width="300"
-          overlay-opacity="0.88"
-          inset
-          v-model="showDialog"
-          persistent
-          @keydown.esc="triggerCancellation"
-          @keydown.enter="saveCategoryTag"
-        >
-          <v-card>
-            <v-list>
-              <v-list-item>
-                <!-- ? ----------------- Box heading ---------------- * -->
-                <v-list-item-content>
-                  <v-list-item-title>Category</v-list-item-title>
-                  <v-list-item-subtitle
-                    >Click save to create</v-list-item-subtitle
-                  >
-                </v-list-item-content>
+  <v-bottom-sheet
+    max-width="300"
+    overlay-opacity="0.88"
+    inset
+    v-model="showDialog"
+    persistent
+    @keydown.esc="triggerCancellation"
+    @keydown.enter="saveCategoryTag"
+  >
+    <v-card flat class="px-2">
+      <!--  -->
 
-                <!-- ? -------------- (x) Close button -------------- * -->
-                <v-list-item-action>
-                  <v-btn icon>
-                    <v-icon @click="triggerCancellation">mdi-close</v-icon>
-                  </v-btn>
-                </v-list-item-action>
-              </v-list-item>
-            </v-list>
+      <!-- <v-list>
+        <v-list-item> -->
+      <!-- ? ----------------- Box heading ---------------- * -->
+      <!-- <v-list-item-content>
+            <v-list-item-title>Category</v-list-item-title>
+            <v-list-item-subtitle>Click save to create</v-list-item-subtitle>
+          </v-list-item-content> -->
 
-            <v-divider></v-divider>
+      <!-- ? -------------- (x) Close button -------------- * -->
+      <!-- <v-list-item-action>
+            <v-btn icon>
+              <v-icon @click="triggerCancellation">mdi-close</v-icon>
+            </v-btn>
+          </v-list-item-action>
+        </v-list-item>
+      </v-list> -->
 
-            <!-- * ---------- Title text-field ---------- * -->
-            <v-container fluid>
-              <!--  -->
-              <v-row>
-                <!-- ? -------------- Color picker -------------- * -->
-                <v-col cols="3">
-                  Color:
-                  <v-btn
-                    @click="showColorPicker = !showColorPicker"
-                    :color="categoryTag.color"
-                  ></v-btn>
-                </v-col>
+      <v-card-title class="text-h6 font-weight-light"
+        >New Category</v-card-title
+      >
+      <v-card-subtitle>Pick a name & color</v-card-subtitle>
 
-                <!-- ? ------------------ Name ---------------- * -->
-                <v-col>
-                  <v-text-field
-                    label="Name"
-                    v-model="categoryTag_local.title"
-                    class="shrink;display:flex;width=100px"
-                    placeholder="New category"
-                    hint="Something short and sweet."
-                    counter="15"
-                    clearable
-                    ref="titleTextBox"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
+      <v-divider></v-divider>
 
-              <!--  -->
-            </v-container>
+      <!-- * -------------------- Title text-field -------------------- * -->
 
-            <v-card-text>
-              <v-color-picker
-                v-show="showColorPicker"
-                v-model="categoryTag_local.color"
-                dot-size="25"
-                mode="hexa"
-                hide-inputs
-                :swatches="colorSwatches"
-                swatches-max-height="100"
-                show-swatches
-              ></v-color-picker>
-            </v-card-text>
+      <v-card-text class="pa-0 pt-2">
+        <v-container fluid>
+          <!--  -->
+          <v-row>
+            <!-- ? -------------- Color picker -------------- * -->
+            <v-col cols="3" class="pr-0">
+              <v-card
+                outlined
+                label="Color"
+                @click="showColorPicker = !showColorPicker"
+                class="pa-4"
+              >
+                <v-card-text class="pa-0 ma-0">
+                  <v-spacer />
+                  <v-icon :color="categoryTag_local.color"> mdi-circle </v-icon>
+                  <v-spacer />
+                </v-card-text>
+              </v-card>
+            </v-col>
 
-            <!-- ? ------------------ Save / Cancel ---------------- * -->
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn text @click="triggerCancellation"> Cancel </v-btn>
-              <v-btn text color="primary" @click="saveCategoryTag">
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
+            <v-col>
+              <!-- ? ------------------- Name ----------------->
+              <v-text-field
+                label="Name"
+                outlined
+                v-model="categoryTag_local.title"
+                placeholder="New category"
+                hint="Something short and sweet."
+                counter="15"
+                clearable
+                class="pa-0"
+              >
+                <!-- ? -------------- Color icon ------------>
+                <template v-slot:prepend>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-icon
+                        v-on="on"
+                        :color="categoryTag_local.color"
+                        icon="mdi-circle"
+                      />
+                    </template>
+                    Click to select a color
+                  </v-tooltip>
+                </template>
 
-          <!-- * ------------------------ Confirm discard  -------------------------->
-          <ConfirmationDialog
-            v-on:confirm-status-change="respondToConfirmDiscardDialog"
-            :showDialog="showDialogForConfirmDiscard"
-            messageToDisplay="Sure you want to discard this?"
-            yesButtonText="Discard"
-            noButtonText="Cancel"
-          />
-        </v-bottom-sheet>
-      </v-col>
-    </v-row>
-  </v-container>
+                <!--  -->
+              </v-text-field>
+            </v-col>
+          </v-row>
+
+          <!--  -->
+        </v-container>
+      </v-card-text>
+
+      <v-divider />
+
+      <v-card-actions class="pt-4">
+        <span class="mr-4">Preview</span>
+        <CategoryChips :categories="[categoryTag_local]" />
+        <v-spacer />
+      </v-card-actions>
+
+      <!-- * --------------------- Save / Cancel ---------------------->
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="triggerCancellation"> Cancel </v-btn>
+        <v-btn text color="primary" @click="saveCategoryTag"> Save </v-btn>
+      </v-card-actions>
+    </v-card>
+
+    <!-- * ----------------------- Color picker  -------------------------->
+    <v-dialog v-model="showColorPicker">
+      <!--  -->
+      <v-card class="pa-2 pt-4">
+        <!-- TODO P0 --------- Set palette from Area -->
+
+        <v-card-actions>
+          <v-spacer />
+          <v-icon @click="showColorPicker = false">mdi-close</v-icon>
+        </v-card-actions>
+
+        <v-card-text>
+          <v-color-picker
+            v-model="categoryTag_local.color"
+            dot-size="25"
+            mode="hexa"
+            hide-inputs
+            :swatches="colorSwatches"
+            swatches-max-height="200"
+            show-swatches
+            :hide-canvas="showAdvancedColorPicker"
+            :hide-sliders="showAdvancedColorPicker"
+          ></v-color-picker>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+
+          <!-- ? -------------- "Show more" button -->
+          <v-btn
+            text
+            @click="showAdvancedColorPicker = !showAdvancedColorPicker"
+          >
+            Show more
+          </v-btn>
+
+          <v-spacer />
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- * ------------------------ Confirm discard  -------------------------->
+    <ConfirmationDialog
+      v-on:confirm-status-change="respondToConfirmDiscardDialog"
+      :showDialog="showDialogForConfirmDiscard"
+      messageToDisplay="Sure you want to discard this?"
+      yesButtonText="Discard"
+      noButtonText="Cancel"
+    />
+  </v-bottom-sheet>
 </template>

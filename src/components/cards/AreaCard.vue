@@ -9,11 +9,15 @@ import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { getPrettyTimestamp } from "@/utils/time/TimestampConversionUtils";
 import VClamp from "vue-clamp";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
+import CategoryChips from "@/components/chips/CategoryChips.vue";
+import ActivityChips from "@/components/chips/ActivityChips.vue";
 
 @Component({
   components: {
     AreaCreateOrEditDialog: AreaCreateOrEditDialog,
     ConfirmationDialog: ConfirmationDialog,
+    CategoryChips: CategoryChips,
+    ActivityChips: ActivityChips,
     VClamp: VClamp,
   },
 })
@@ -55,7 +59,7 @@ export default class AreaCard extends Vue {
   }
 
   // ------------------------------------------------ Computer props
-  get activitiesList() {
+  get activities() {
     return this.activitiesStore.getActivitiesByArea(this.area.id);
   }
 
@@ -139,6 +143,7 @@ export default class AreaCard extends Vue {
     <v-container>
       <v-row @click="expandAreaClicked">
         <!--  -->
+
         <!-- ? ------------------- Image ----------------------->
         <v-col :cols="IMAGE_COLUMNS" class="ma-2 mr-0 pa-0">
           <v-img
@@ -151,17 +156,9 @@ export default class AreaCard extends Vue {
         </v-col>
 
         <v-col class="pt-1 pl-2 ma-0">
-          <!--  -->
-          <!-- ? ------------------- Color indicater ----------------------->
-          <!-- <v-icon
-            start
-            :color="area.color"
-            class="mx-auto px-auto ma-2 ml-1 mr-2 pl-0"
-            @click="expandAreaClicked"
-            >mdi-circle</v-icon
-          > -->
-
           <v-container>
+            <!--  -->
+
             <!-- ? ------------------- Title ----------------------->
             <v-row>
               <v-col class="pa-0 pb-1 pl-0 pt-2">
@@ -203,38 +200,41 @@ export default class AreaCard extends Vue {
       >
       <div v-if="isCardExpanded">
         <!--  -->
+
+        <!-- * ------------------- Edit & Delete buttons ----------------------->
         <v-card-actions class="mx-auto px-auto pt-0 pb-2">
           <!--  -->
           <!-- <v-spacer></v-spacer> -->
 
-          <!-- ? ------------------- Edit & Delete buttons ----------------------->
+          <!-- ? ------------------- Edit button -->
           <v-btn
-            icon
+            text
             small
-            outlined
             @click="showEditDialog"
             color="edit_button"
             style="border-radius: 15px; border-width: 1"
             class="ml-5"
           >
-            <v-icon small class="mr-0"> {{ `mdi-lead-pencil` }}</v-icon>
-          </v-btn>
-
-          <v-btn
-            icon
-            small
-            outlined
-            @click="confirmDelete"
-            color="delete_button"
-            style="border-radius: 15px; border-width: 1"
-            class="ml-4"
-          >
-            <v-icon small class="mr-0"> {{ `mdi-delete` }}</v-icon>
+            <v-icon small class="mr-1"> {{ `mdi-lead-pencil` }}</v-icon> Edit
           </v-btn>
 
           <v-spacer></v-spacer>
 
-          <!-- ? ------------------- ^ button to collapse ----------------------->
+          <!-- ? ------------------- Delete button -->
+          <v-btn
+            text
+            small
+            @click="confirmDelete"
+            color="delete_button"
+            style="border-radius: 15px; border-width: 1"
+            class="mr-4"
+          >
+            <v-icon small class="mr-1"> {{ `mdi-delete` }}</v-icon> Delete
+          </v-btn>
+
+          <!-- <v-spacer></v-spacer> -->
+
+          <!-- ? ------------------- ^ button to collapse -->
           <v-btn icon @click="expandAreaClicked">
             <v-icon>
               {{
@@ -244,8 +244,9 @@ export default class AreaCard extends Vue {
           </v-btn>
         </v-card-actions>
 
-        <!-- ? ------------------- Categories section ----------------------->
-        <v-divider class=""></v-divider>
+        <v-divider />
+
+        <!-- * ------------------- Categories section ----------------------->
         <v-card-text
           v-if="categories.length > 0"
           class="font-weight-light mb-0 pb-0"
@@ -255,43 +256,11 @@ export default class AreaCard extends Vue {
 
         <!-- ? -------------------- Category chips ----------------------->
         <v-card-text v-if="categories.length > 0" class="pt-1 pb-2">
-          <!--  -->
-
-          <!-- TODO P0 ------ Make a new component: "CategoryChips" -->
-          <!-- "27" below is a magic-number for opacity. Put it in a constant. -->
-
-          <!-- Category chips -->
-          <v-chip-group column multiple>
-            <v-chip
-              v-for="(categoryTag, index) in categories"
-              v-bind:categoryTag="categoryTag"
-              v-bind:index="index"
-              v-bind:key="categoryTag.id"
-              :model-value="true"
-              :prepend-icon="categoryTag.icon"
-              :style="`border: 1px solid${categoryTag.color}; border-radius: 20px`"
-              :color="
-                categoryTag.color?.substring(0, categoryTag.color?.length - 2) +
-                `27`
-              "
-            >
-              <!-- darkslategray -->
-              <v-icon
-                x-large
-                :color="categoryTag.color"
-                small
-                class="ml-0 mr-2"
-                style="border: 1px dotted darkslategray; border-radius: 20px"
-              >
-                mdi-circle
-              </v-icon>
-              {{ categoryTag.title }}
-            </v-chip>
-          </v-chip-group>
+          <CategoryChips :categories="categories" />
         </v-card-text>
 
         <!-- ? ------------------- Activities section ----------------------->
-        <div v-if="activitiesList.length > 0">
+        <div v-if="activities.length > 0">
           <v-divider class="mx-4 mb-1"></v-divider>
 
           <v-card-text class="font-weight-light mb-0 pb-0">
@@ -300,36 +269,14 @@ export default class AreaCard extends Vue {
 
           <!-- ? -------------------- Activity chips ----------------------->
           <v-card-text class="pt-1 pb-2">
-            <!--  -->
-            <!-- TODO P0 ------ Make a new component: "CategoryChips" -->
-            <!-- TODO P0 ---- Reminder to use the FILTER feature of the TODO extension plugin here. -->
-            <!-- TODO P0 ---- Use color from 'categories' computed prop to set border-color -->
-
-            <!-- Activity chips -->
-            <v-chip-group column multiple>
-              <v-chip
-                outlined
-                v-for="(activity, index) in activitiesList"
-                v-bind:activity="activity"
-                v-bind:index="index"
-                v-bind:key="activity.id"
-                :model-value="true"
-                :prepend-icon="activity.icon"
-                :style="`border-radius: 8px`"
-                color="purple"
-              >
-                <!-- TODO ---- Make the icon bigger -->
-                <v-icon small class="ml-0 mr-2">{{ activity.icon }}</v-icon>
-                {{ activity.title }}
-              </v-chip>
-            </v-chip-group>
+            <ActivityChips :activities="activities" :categories="categories" />
           </v-card-text>
         </div>
 
         <!-- ? ------------------- Timestamps ----------------------->
         <v-divider class="mx-4 mb-1"></v-divider>
 
-        <v-card-text align="left">
+        <v-card-text align="left" @click="expandAreaClicked">
           <span :style="{ color: '#8e9199' }" class="font-weight-light">
             Created:
           </span>

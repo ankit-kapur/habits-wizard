@@ -4,11 +4,13 @@ import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import CategoryCreateOrEditDialog from "../dialogs/CategoryCreateOrEditDialog.vue";
+import CategoryCreateOrEditDialog from "@/components/dialogs/CategoryCreateOrEditDialog.vue";
+import CategoryChips from "@/components/chips/CategoryChips.vue";
 
 @Component({
   components: {
     CategoryCreateOrEditDialog: CategoryCreateOrEditDialog,
+    CategoryChips: CategoryChips,
   },
 })
 export default class CategorySelector extends Vue {
@@ -88,6 +90,12 @@ export default class CategorySelector extends Vue {
     this.$emit("category-tags-changed", this.selectedItemIdList_local);
   }
 
+  get selectedCategories() {
+    return this.allItemsList.filter((category) =>
+      this.selectedItemIdList_local.includes(category.id)
+    );
+  }
+
   /**
    * * ------------------------------------------------ Actions
    */
@@ -151,6 +159,15 @@ export default class CategorySelector extends Vue {
           >Categories</v-card-title
         >
 
+        <!-- TODO ------------- Delete this after chips from v-autocomplete work better. -->
+        <!-- <CategoryChips
+          :categories="selectedCategories"
+          :hasCloseButton="true"
+          :closeIcon="`mdi-close`"
+          v-on:chip-clicked="triggerEditDialog"
+          v-on:chip-closed="removeCategoryTagFromArea"
+        /> -->
+
         <!-- * ------------------------ Auto-complete for chips  -------------------------->
         <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
         <!-- removed fields: clearable -->
@@ -200,19 +217,20 @@ export default class CategorySelector extends Vue {
             </v-list-item>
           </template>
 
-          <!-- * ------------ Chip ------------ * -->
+          <!-- * ------------ Disable chips from v-autocomplete ------------ * -->
+          <!-- <template v-slot:selection="" /> -->
+
+          <!-- ! -------------- ALMOST THERE with this. Fix the spacing. Get rid of the CHIP-GROUP in CategoryChips -->
+
+          <!-- TODO P0 --------- Clean up CategoryChips component here. -->
           <template v-slot:selection="data">
-            <v-chip
-              v-bind="data.attrs"
-              close
-              @click="triggerEditDialog(data.item)"
-              @click:close="removeCategoryTagFromArea(data.item)"
-            >
-              <v-icon class="mr-2" :color="data.item.color">
-                mdi-circle
-              </v-icon>
-              {{ data.item.title }}
-            </v-chip>
+            <CategoryChips
+              :categories="[data.item]"
+              :hasCloseButton="true"
+              :closeIcon="`mdi-close`"
+              v-on:chip-clicked="triggerEditDialog"
+              v-on:chip-closed="removeCategoryTagFromArea"
+            />
           </template>
 
           <!-- * ------------ List item in dropdown ------------ * -->
