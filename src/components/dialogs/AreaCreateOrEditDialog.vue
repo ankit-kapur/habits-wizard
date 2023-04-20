@@ -380,32 +380,30 @@ export enum DialogMode {
         </v-card-actions>
 
         <!-- ? ------------------------------ Buttons for Save & Cancel -->
-        <v-card-actions class="pt-6">
+        <v-card-actions class="pa-4 pr-6">
           <!--  -->
-          <!-- <v-spacer /> -->
+          <v-spacer />
 
           <!------------- Cancel -->
           <v-btn
             @click="triggerCancellation"
-            rounded
             outlined
             density="comfortable"
-            class="text-body-2 font-weight-light px-auto"
+            class="mr-4 text-body-2 px-auto"
           >
             Cancel
           </v-btn>
 
-          <v-spacer />
+          <!-- <v-spacer /> -->
 
           <!------------- Save -->
           <v-btn
             @click="saveArea"
-            rounded
             density="comfortable"
             :disabled="false"
-            class="px-auto"
             color="primary"
             min-width="90"
+            class=""
           >
             {{ dialogMode === "EDIT" ? `Save` : `Create` }}
           </v-btn>

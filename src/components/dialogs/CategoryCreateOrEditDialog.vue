@@ -176,87 +176,109 @@ export default class CategoryCreateOrEditDialog extends Vue {
         </v-list-item>
       </v-list> -->
 
-      <v-card-title class="text-h6 font-weight-light"
-        >New Category</v-card-title
-      >
-      <v-card-subtitle>Pick a name & color</v-card-subtitle>
+      <v-card-text class="pa-0 ma-0">
+        <v-card-title class="pb-0 text-h6 font-weight-light">
+          {{ dialogMode === "CREATE" ? `New` : `Edit` }} category
+        </v-card-title>
+      </v-card-text>
+
+      <v-card-text class="pa-0 ma-0">
+        <v-card-subtitle class="pt-1 text-body-2 font-weight-light">
+          Pick a name & color
+        </v-card-subtitle>
+      </v-card-text>
 
       <v-divider></v-divider>
 
-      <!-- * -------------------- Title text-field -------------------- * -->
+      <v-card-actions class="">
+        <v-container fluid>
+          <v-row>
+            <span class="mr-4 text-caption font-weight-light">Preview</span>
+          </v-row>
+          <v-row>
+            <CategoryChips :categories="[categoryTag_local]" />
+          </v-row>
+        </v-container>
+        <v-spacer />
+      </v-card-actions>
+
+      <v-divider></v-divider>
 
       <v-card-text class="pa-0 pt-2">
         <v-container fluid>
           <!--  -->
-          <v-row>
-            <!-- ? -------------- Color picker -------------- * -->
-            <v-col cols="3" class="pr-0">
-              <v-card
-                outlined
-                label="Color"
-                @click="showColorPicker = !showColorPicker"
-                class="pa-4"
-              >
-                <v-card-text class="pa-0 ma-0">
-                  <v-spacer />
-                  <v-icon :color="categoryTag_local.color"> mdi-circle </v-icon>
-                  <v-spacer />
-                </v-card-text>
-              </v-card>
-            </v-col>
 
-            <v-col>
-              <!-- ? ------------------- Name ----------------->
+          <!-- * -------------------- Name text-field -------------------- * -->
+          <v-row>
+            <v-col class="px-auto">
+              <!--  -->
+
+              <!-- ? -------------- Text field ------------>
               <v-text-field
                 label="Name"
-                outlined
                 v-model="categoryTag_local.title"
+                outlined
+                clearable
                 placeholder="New category"
                 hint="Something short and sweet."
                 counter="15"
-                clearable
                 class="pa-0"
               >
                 <!-- ? -------------- Color icon ------------>
-                <template v-slot:prepend>
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on }">
-                      <v-icon
-                        v-on="on"
-                        :color="categoryTag_local.color"
-                        icon="mdi-circle"
-                      />
-                    </template>
-                    Click to select a color
-                  </v-tooltip>
-                </template>
+                <!-- <template v-slot:prepend>
+                  <div class="px-2">
+                    <v-tooltip bottom right>
+                      <template v-slot:activator="{ on }">
+                        <v-icon
+                          v-on="on"
+                          :color="categoryTag_local.color"
+                          class="pr-0"
+                        >
+                          mdi-circle
+                        </v-icon>
+                      </template>
+                      Click to select a color
+                    </v-tooltip>
+                  </div>
+                </template> -->
 
                 <!--  -->
               </v-text-field>
             </v-col>
           </v-row>
-
-          <!--  -->
         </v-container>
       </v-card-text>
 
-      <v-divider />
+      <!-- * ------------------------------- Pick a color ---------------------------->
+      <v-card-actions
+        @click="showColorPicker = !showColorPicker"
+        class="pl-4 pb-4"
+      >
+        <!--  -->
+        <!-- <v-spacer /> -->
 
-      <v-card-actions class="pt-4">
-        <span class="mr-4">Preview</span>
-        <CategoryChips :categories="[categoryTag_local]" />
+        <!-- ? -------------- Circle with color -->
+        <v-icon :color="categoryTag_local.color"> mdi-circle </v-icon>
+
+        <!-- ? -------------- Hint -->
+        <span class="pl-2 text-body-2 font-weight-light">Pick a color</span>
+
         <v-spacer />
       </v-card-actions>
 
+      <!-- <v-divider /> -->
+
       <!-- * --------------------- Save / Cancel ---------------------->
-      <v-card-actions>
+      <v-card-actions class="pt-4 pb-4">
         <v-spacer></v-spacer>
         <v-btn text @click="triggerCancellation"> Cancel </v-btn>
-        <v-btn text color="primary" @click="saveCategoryTag"> Save </v-btn>
+        <v-btn color="primary" @click="saveCategoryTag"> Save </v-btn>
       </v-card-actions>
     </v-card>
 
-    <!-- * ----------------------- Color picker  -------------------------->
+    <!-- * ----------------------- Dialogs  -------------------------->
+
+    <!-- ? ----------------------- Color picker -->
     <v-dialog v-model="showColorPicker">
       <!--  -->
       <v-card class="pa-2 pt-4">
@@ -297,7 +319,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
       </v-card>
     </v-dialog>
 
-    <!-- * ------------------------ Confirm discard  -------------------------->
+    <!-- ? ------------------------ Confirm discard -->
     <ConfirmationDialog
       v-on:confirm-status-change="respondToConfirmDiscardDialog"
       :showDialog="showDialogForConfirmDiscard"
