@@ -17,6 +17,16 @@ export default class LoginPage extends Vue {
   loginFailed = false;
   routerPush = routerPush;
 
+  get minHeight() {
+    console.log("window.innerHeight = " + window.innerHeight);
+    return window.innerHeight;
+  }
+
+  get minWidth() {
+    console.log("window.innerWidth = " + window.outerWidth);
+    return window.outerWidth;
+  }
+
   // ------------------------------------------------ Methods
   googleSignIn() {
     const auth = getAuth();
@@ -72,41 +82,65 @@ export default class LoginPage extends Vue {
 }
 </script>
 
-<!-- To enable the Google signin button -->
-<!-- <component
-      src="https://accounts.google.com/gsi/client"
-      :is="'script'"
-    ></component> -->
-
 <template>
-  <v-container fluid class="pt-0">
-    <v-row align="center" class="flex-child" justify="space-around">
-      <v-col class="d-flex" cols="12" md="4">
-        <v-sheet class="d-flex mt-auto" color="purple lighten-3" height="300">
-          <v-avatar size="26px" class="pr-4 mr-4">
-            <v-img
-              src="https://cdn-icons-png.flaticon.com/512/2965/2965278.png"
-            ></v-img>
-          </v-avatar>
-          <v-btn text elevation="10" @click="googleSignIn">
-            Sign In with Google
-          </v-btn>
-        </v-sheet>
-      </v-col>
-    </v-row>
+  <!-- :min-height="minHeight" :min-width="minWidth"  -->
+  <v-container outlined :max-width="minWidth">
+    <v-card-actions>
+      <v-spacer />
+      <v-row
+        justify="center"
+        align-self="center"
+        align="center"
+        no-gutters
+        style=""
+      >
+        <v-col justify="center" align-self="center">
+          <!--  -->
 
-    <v-row dense v-show="loginFailed">
-      <v-col cols="12">
-        <div>
-          <span class="error"> Something went wrong. Login failed</span>
-        </div>
-      </v-col>
-    </v-row>
+          <v-card max-width="100%" elevation="10">
+            <!--  -->
+
+            <v-card-title
+              :max-width="minWidth"
+              class="text-h4 font-weight-light"
+            >
+              <v-spacer />
+              Hello
+              <v-spacer />
+            </v-card-title>
+
+            <v-card-actions>
+              <v-img
+                width="280"
+                src="https://i.pinimg.com/564x/1d/97/ef/1d97efec244f4588042476d05e56aebd.jpg"
+              ></v-img>
+            </v-card-actions>
+
+            <!-- Toad
+            https://i.pinimg.com/564x/1d/97/ef/1d97efec244f4588042476d05e56aebd.jpg -->
+
+            <!-- Lizard Wizard
+            https://i.pinimg.com/736x/ea/87/7e/ea877e78ec10be0966b23aa35ea54b57.jpg -->
+
+            <v-card-actions @click="googleSignIn">
+              <v-spacer />
+
+              <v-icon color="blue" class="mr-2">mdi-google</v-icon>
+              <span class="font-weight-light">Sign in with Google</span>
+
+              <v-spacer />
+            </v-card-actions>
+
+            <v-card-text> </v-card-text>
+
+            <!--  -->
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <v-spacer />
+
+      <!--  -->
+    </v-card-actions>
   </v-container>
-
-  <!-- <v-sheet id="app" class="d-flex">
-    <v-app id="MainApp">
-      <v-main> </v-main>
-    </v-app>
-  </v-sheet> -->
 </template>
