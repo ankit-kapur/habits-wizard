@@ -12,6 +12,10 @@ import ActivitySelector from "../chips/ActivitySelector.vue";
 import ColorThief from "colorthief";
 import ImagePicker from "@/components/picker/ImagePicker.vue";
 
+/**
+ * TODO P1 ----- Add validations. Block the Save button.
+ **/
+
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
@@ -88,11 +92,10 @@ export default class AreaCreateOrEditDialog extends Vue {
 
   // ------------------------------------------------ Mounted
   mounted() {
-    console.log("🐪 🐪 🐪  Loading categories");
     this.categoryStore.subscribeToStore();
     this.areCategoriesLoaded = true;
     this.resetToDefaultState();
-    console.log("🐪 🐪 🐪  Mounted AreaCreateOrEditDialog");
+    console.log("🐪  Mounted AreaCreateOrEditDialog");
   }
 
   // ------------------------------------------------ Methods
@@ -157,11 +160,17 @@ export default class AreaCreateOrEditDialog extends Vue {
       this.currentStepperPos = destination;
     }
   }
+
   moveToNextStep(): void {
     this.moveToStep(1 + this.currentStepperPos);
   }
+
   moveToPreviousStep(): void {
     this.moveToStep(this.currentStepperPos - 1);
+  }
+
+  isCurrentStep(stepNumber: number) {
+    return this.currentStepperPos == stepNumber - 1;
   }
 
   showImagePicker() {
@@ -230,8 +239,9 @@ export enum DialogMode {
       overlay-opacity="0.88"
       @keydown.esc="triggerCancellation"
     >
-      <!-- ? ------------------------- Stepper -------------------------->
       <v-card flat tile>
+        <!--  -->
+
         <!-- ? ------------------------------ Title -->
         <v-card-text class="pt-2">
           <v-text-field
@@ -249,6 +259,7 @@ export enum DialogMode {
           ></v-text-field>
         </v-card-text>
 
+        <!-- ? ------------------------- Stepper Window -------------------------->
         <v-card-text>
           <v-window v-model="currentStepperPos">
             <!--  -->
@@ -289,33 +300,29 @@ export enum DialogMode {
               </v-card>
             </v-window-item>
 
-            <!-- * ---------------------------- Step 2 ------ Categories -->
-
+            <!-- ? --------------------------------------------- Step 2 ---- Categories -->
             <v-window-item :step="2">
               <v-card elevation="0" style="border-radius: 8px">
                 <v-card-text class="ma-0 pa-0">
-                  <v-form ref="areaForm" v-model="valid" lazy-validation>
-                    <!--  -->
+                  <!--  -->
 
-                    <!-- * ---------------- Tag selector for category chips -->
-                    <CategorySelector
-                      :area="currentArea"
-                      :allItemsList="categoryStore.getCategoryTagsList()"
-                      :selectedItemIdList="currentArea.categoryTags"
-                      :isDisplayed="showDialog"
-                      v-on:category-tags-changed="onCategoryTagsChanged"
-                    ></CategorySelector>
+                  <!-- * ---------------- Tag selector for category chips -->
+                  <CategorySelector
+                    :area="currentArea"
+                    :allItemsList="categoryStore.getCategoryTagsList()"
+                    :selectedItemIdList="currentArea.categoryTags"
+                    :isDisplayed="showDialog"
+                    v-on:category-tags-changed="onCategoryTagsChanged"
+                  ></CategorySelector>
 
-                    <!--  -->
-                  </v-form>
+                  <!--  -->
                 </v-card-text>
 
                 <!--  -->
               </v-card>
             </v-window-item>
 
-            <!-- * ---------------------------- Step 3 ----- Activities -->
-
+            <!-- ? --------------------------------------------- Step 3 ---- Activities -->
             <v-window-item :step="3">
               <v-card elevation="0" style="border-radius: 8px">
                 <v-card-text class="ma-0 pa-0">
@@ -359,7 +366,9 @@ export enum DialogMode {
               v-slot="{ active, toggle }"
             >
               <v-btn :input-value="active" icon @click="toggle">
-                <v-icon>mdi-record</v-icon>
+                <v-icon :color="isCurrentStep(n) ? `primary` : 'darkgray'"
+                  >mdi-record</v-icon
+                >
               </v-btn>
             </v-item>
           </v-item-group>

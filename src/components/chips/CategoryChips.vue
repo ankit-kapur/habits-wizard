@@ -7,25 +7,35 @@ export default class CategoryChips extends Vue {
   // ------------------------------------------------ Props
   @Prop()
   categories!: CategoryTag[];
+
   @Prop()
   hasCloseButton?: boolean;
   @Prop()
   closeIcon?: string;
 
   // ------------------------------------------------ Data
-  fillOpacityPercent = 8;
+  fillOpacityPercent = 20;
 
-  // ------------------------------------------------ Methods
+  // ------------------------------------------------ Computed props
   get shouldHaveCloseButton() {
     if (this.hasCloseButton) return this.hasCloseButton;
     else return false;
   }
 
-  get fillOpacityHex() {
+  // ------------------------------------------------ Getters
+  getFillColor(categoryTag: CategoryTag) {
+    return (
+      categoryTag.color.substring(0, categoryTag.color.length - 2) +
+      this.getFillOpacityHex()
+    );
+  }
+
+  getFillOpacityHex() {
     const hex = Math.round((this.fillOpacityPercent / 100) * 255).toString(16);
     return hex.length > 1 ? hex : 0 + hex;
   }
 
+  // ------------------------------------------------ Actions
   onChipClick(categoryTag: CategoryTag) {
     console.log("onChipClick for " + JSON.stringify(categoryTag));
     this.$emit("chip-clicked", categoryTag);
@@ -42,7 +52,8 @@ export default class CategoryChips extends Vue {
 <!-- :style="`border: 1px solid${categoryTag.color}; border-radius: 20px`" -->
 
 <template>
-  <v-chip-group column multiple>
+  <!-- <v-chip-group column multiple> -->
+  <v-card tile flat class="ma-0 pa-0">
     <v-chip
       v-for="(categoryTag, index) in categories"
       v-bind:categoryTag="categoryTag"
@@ -53,10 +64,8 @@ export default class CategoryChips extends Vue {
       @click:close="onChipCloseButtonClick(categoryTag)"
       :model-value="true"
       :style="`border: 1px solid darkgray; border-radius: 20px`"
-      :color="
-        categoryTag.color.substring(0, categoryTag.color.length - 2) +
-        fillOpacityHex
-      "
+      :color="getFillColor(categoryTag)"
+      class="ma-1 mt-0 ml-0 mr-1"
     >
       <v-icon
         x-large
@@ -69,5 +78,6 @@ export default class CategoryChips extends Vue {
       </v-icon>
       {{ categoryTag.title }}
     </v-chip>
-  </v-chip-group>
+    <!-- </v-chip-group> -->
+  </v-card>
 </template>

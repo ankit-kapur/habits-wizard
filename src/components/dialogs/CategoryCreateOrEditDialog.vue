@@ -8,6 +8,10 @@ import { useIconsStore } from "@/store/IconsStore";
 import { deepCopy } from "deep-copy-ts";
 import CategoryChips from "../chips/CategoryChips.vue";
 
+/**
+ * TODO P1 ----- Add validations. Block the Save button.
+ **/
+
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
@@ -17,7 +21,7 @@ import CategoryChips from "../chips/CategoryChips.vue";
 })
 export default class CategoryCreateOrEditDialog extends Vue {
   @Prop()
-  categoryTag!: CategoryTag;
+  categoryTag?: CategoryTag;
   @Prop()
   showDialog!: boolean;
   @Prop()
@@ -29,22 +33,24 @@ export default class CategoryCreateOrEditDialog extends Vue {
   onDisplayStateChange(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
     console.log(
-      "👀 @Watch in CategorySelector. isDialogOpen ===> " + isDialogOpen
+      "👀 @Watch in CategoryCreateOrEdit. isDialogOpen ===> " + isDialogOpen
     );
     if (isDialogOpen) {
       this.onShow();
     } else {
       this.onHide();
     }
+  }
 
-    console.log(
-      "🐞 🐞 🐞 @Watch triggered in CategoryCreateOrEdit. showDialog ===> " +
-        this.showDialog +
-        ", categoryTag_local ===> " +
-        JSON.stringify(this.categoryTag_local) +
-        ", dialogMode = " +
-        this.dialogMode
-    );
+  // <!-- * ------------------------------------------- Data -->
+  categoryTag_local = deepCopy(defaultNewCategory);
+  showDialogForConfirmDiscard = false;
+  showColorPicker = false;
+  showAdvancedColorPicker = false;
+
+  // <!-- * ------------------------------------------- Computed props -->
+  get categoriesList() {
+    return [this.categoryTag_local];
   }
 
   // <!-- * ------------------------------------------- Stores -->
@@ -54,39 +60,22 @@ export default class CategoryCreateOrEditDialog extends Vue {
   mounted() {
     this.iconsStore.loadIcons();
     this.onShow();
+    console.log("🐪 Mounted CategoryCreateOrEditDialog");
   }
 
   onShow() {
-    this.categoryTag_local = deepCopy(this.categoryTag); // Reset
-
-    // if (DialogMode[this.dialogMode] === DialogMode.CREATE) {
-    //   console.log(
-    //     "🌹 🌹 🌹 CREATE MODE ---- this.categoryTag_local = " +
-    //       JSON.stringify(this.categoryTag_local)
-    //   );
-    //   this.categoryTag_local = deepCopy(defaultNewCategory); // Reset
-    // } else {
-    //   console.log("🌹 🌹 🌹 EDIT");
-    //   this.categoryTag_local = deepCopy(this.categoryTag);
-    // }
+    // Reset
+    this.categoryTag_local = this.categoryTag
+      ? this.categoryTag
+      : defaultNewCategory;
   }
 
   onHide() {
-    // Do nothing. For now.
-  }
-
-  // ------------------------------------------------ Data
-  categoryTag_local = deepCopy(defaultNewCategory);
-  showDialogForConfirmDiscard = false;
-  showColorPicker = false;
-  showAdvancedColorPicker = false;
-
-  get categoriesList() {
-    return [this.categoryTag_local];
+    // No actions so far.
   }
 
   /**
-   *  TODO --------- Replace with values from the THIEF
+   *  TODO --------- Replace with values from the Thief
    */
   colorSwatches = [
     ["#FF0000", "#AA0000", "#550000"],
@@ -97,10 +86,6 @@ export default class CategoryCreateOrEditDialog extends Vue {
   ];
 
   // ------------------------------------------------ Methods
-  resetNewCategoryData() {
-    this.categoryTag_local = deepCopy(defaultNewCategory);
-  }
-
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
     if (isConfirmed) {
       this.discard();
@@ -113,19 +98,12 @@ export default class CategoryCreateOrEditDialog extends Vue {
   discard() {
     console.log("DISCARDING");
     this.$emit("discard", true);
-    this.resetNewCategoryData();
   }
 
   saveCategoryTag() {
     // Reset dialog box
     // Ask the parent to update.
-    console.log(
-      "!!!!!! ------- this.categoryTag_local = " +
-        JSON.stringify(this.categoryTag_local)
-    );
     this.$emit("save-confirmed", this.categoryTag_local);
-
-    this.resetNewCategoryData();
   }
 
   triggerCancellation() {
@@ -159,29 +137,17 @@ export default class CategoryCreateOrEditDialog extends Vue {
     <v-card flat class="px-2">
       <!--  -->
 
-      <!-- <v-list>
-        <v-list-item> -->
-      <!-- ? ----------------- Box heading ---------------- * -->
-      <!-- <v-list-item-content>
-            <v-list-item-title>Category</v-list-item-title>
-            <v-list-item-subtitle>Click save to create</v-list-item-subtitle>
-          </v-list-item-content> -->
-
-      <!-- ? -------------- (x) Close button -------------- * -->
-      <!-- <v-list-item-action>
-            <v-btn icon>
-              <v-icon @click="triggerCancellation">mdi-close</v-icon>
-            </v-btn>
-          </v-list-item-action>
-        </v-list-item>
-      </v-list> -->
-
-      <v-card-text class="pa-0 ma-0">
-        <v-card-title class="pb-0 text-h6 font-weight-light">
-          {{ dialogMode === "CREATE" ? `New` : `Edit` }} category
+      <!-- ? ----------------- Box title ---------------- * -->
+      <v-card-actions class="pa-4 pb-0 ma-0">
+        <v-card-title class="pa-0 text-h6 font-weight-light">
+          {{ dialogMode === "CREATE" ? `New` : `Edit` }} Category
         </v-card-title>
-      </v-card-text>
+        <v-spacer />
+        <!-- ? ------------- (x) Close button --------------->
+        <v-icon @click="triggerCancellation">mdi-close</v-icon>
+      </v-card-actions>
 
+      <!-- ? ----------------- Box subtitle ---------------- * -->
       <v-card-text class="pa-0 ma-0">
         <v-card-subtitle class="pt-1 text-body-2 font-weight-light">
           Pick a name & color
@@ -190,10 +156,65 @@ export default class CategoryCreateOrEditDialog extends Vue {
 
       <v-divider></v-divider>
 
+      <!-- ? ----------------- Name text-field --------------------->
+      <v-card-text class="pa-0 pt-2">
+        <v-container fluid>
+          <!--  -->
+
+          <v-row>
+            <v-col class="px-auto pb-0">
+              <!--  -->
+              <!-- ? -------------- Text field ------------>
+              <v-text-field
+                label="Name"
+                v-model="categoryTag_local.title"
+                outlined
+                clearable
+                placeholder="Category name"
+                hint="Something short and sweet."
+                counter="15"
+                class="pa-0"
+              />
+            </v-col>
+          </v-row>
+
+          <!--  -->
+        </v-container>
+      </v-card-text>
+
+      <!-- ? ------------------ Pick a color ----------------------->
+      <v-card-actions class="pl-4 pb-4 pt-0">
+        <v-container fluid>
+          <v-row>
+            <!-- ? -------------- Hint -->
+            <span class="mr-4 ml-1 mb-1 text-caption font-weight-light">
+              Pick a color
+            </span>
+          </v-row>
+          <v-row>
+            <!-- ? -------------- Circle with color -->
+            <v-icon
+              x-large
+              @click="showColorPicker = true"
+              :color="categoryTag_local.color"
+            >
+              mdi-circle
+            </v-icon>
+          </v-row>
+        </v-container>
+
+        <v-spacer />
+      </v-card-actions>
+
+      <v-divider />
+
+      <!-- ? --------------------- Preview ------------------------->
       <v-card-actions class="">
         <v-container fluid>
           <v-row>
-            <span class="mr-4 text-caption font-weight-light">Preview</span>
+            <span class="mr-4 ml-1 mb-1 text-caption font-weight-light">
+              Preview
+            </span>
           </v-row>
           <v-row>
             <CategoryChips :categories="[categoryTag_local]" />
@@ -202,97 +223,34 @@ export default class CategoryCreateOrEditDialog extends Vue {
         <v-spacer />
       </v-card-actions>
 
-      <v-divider></v-divider>
-
-      <v-card-text class="pa-0 pt-2">
-        <v-container fluid>
-          <!--  -->
-
-          <!-- * -------------------- Name text-field -------------------- * -->
-          <v-row>
-            <v-col class="px-auto">
-              <!--  -->
-
-              <!-- ? -------------- Text field ------------>
-              <v-text-field
-                label="Name"
-                v-model="categoryTag_local.title"
-                outlined
-                clearable
-                placeholder="New category"
-                hint="Something short and sweet."
-                counter="15"
-                class="pa-0"
-              >
-                <!-- ? -------------- Color icon ------------>
-                <!-- <template v-slot:prepend>
-                  <div class="px-2">
-                    <v-tooltip bottom right>
-                      <template v-slot:activator="{ on }">
-                        <v-icon
-                          v-on="on"
-                          :color="categoryTag_local.color"
-                          class="pr-0"
-                        >
-                          mdi-circle
-                        </v-icon>
-                      </template>
-                      Click to select a color
-                    </v-tooltip>
-                  </div>
-                </template> -->
-
-                <!--  -->
-              </v-text-field>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-card-text>
-
-      <!-- * ------------------------------- Pick a color ---------------------------->
-      <v-card-actions
-        @click="showColorPicker = !showColorPicker"
-        class="pl-4 pb-4"
-      >
-        <!--  -->
-        <!-- <v-spacer /> -->
-
-        <!-- ? -------------- Circle with color -->
-        <v-icon :color="categoryTag_local.color"> mdi-circle </v-icon>
-
-        <!-- ? -------------- Hint -->
-        <span class="pl-2 text-body-2 font-weight-light">Pick a color</span>
-
-        <v-spacer />
-      </v-card-actions>
-
-      <!-- <v-divider /> -->
-
-      <!-- * --------------------- Save / Cancel ---------------------->
+      <!-- ? ------------------ Save / Cancel ---------------------->
       <v-card-actions class="pt-4 pb-4">
         <v-spacer></v-spacer>
         <v-btn text @click="triggerCancellation"> Cancel </v-btn>
-        <v-btn color="primary" @click="saveCategoryTag"> Save </v-btn>
+        <v-btn color="primary" @click="saveCategoryTag">
+          {{ dialogMode === "CREATE" ? `Create` : `Save` }}
+        </v-btn>
       </v-card-actions>
     </v-card>
 
     <!-- * ----------------------- Dialogs  -------------------------->
 
-    <!-- ? ----------------------- Color picker -->
+    <!-- ? ----------------------- Color picker dialog -->
     <v-dialog v-model="showColorPicker">
-      <!--  -->
       <v-card class="pa-2 pt-4">
-        <!-- TODO P0 --------- Set palette from Area -->
+        <!--  -->
 
+        <!-- ? ----------------------- Close button -->
         <v-card-actions>
           <v-spacer />
           <v-icon @click="showColorPicker = false">mdi-close</v-icon>
         </v-card-actions>
 
+        <!-- ? ----------------------- Color picker -->
+        <!-- TODO P0 --------- Set palette from Area -->
         <v-card-text>
           <v-color-picker
             v-model="categoryTag_local.color"
-            dot-size="25"
             mode="hexa"
             hide-inputs
             :swatches="colorSwatches"
@@ -304,17 +262,20 @@ export default class CategoryCreateOrEditDialog extends Vue {
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer />
+          <!-- <v-spacer /> -->
 
           <!-- ? -------------- "Show more" button -->
           <v-btn
             text
             @click="showAdvancedColorPicker = !showAdvancedColorPicker"
           >
-            Show more
+            See more
           </v-btn>
 
           <v-spacer />
+
+          <!-- ? -------------- "Save" button -->
+          <v-btn color="primary" @click="showColorPicker = false"> Save </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

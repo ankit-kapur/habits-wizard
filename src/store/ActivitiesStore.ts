@@ -65,10 +65,7 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
         queryToLoad,
         (snapshot: QuerySnapshot<Activity>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
-          console.log(
-            "🔥 🔥 🔥 Snapshot updated. Refreshed ACTIVITIES list: " +
-              JSON.stringify(this.allDocs)
-          );
+          console.log("🔥 🔥 🔥 Snapshot updated. Refreshed ACTIVITIES list.");
         }
       );
       this.unsubscribeHooks.push(unsubscribe);
@@ -87,12 +84,6 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
     },
 
     getActivitiesByArea(areaId: string): Activity[] {
-      console.log(
-        "🧪 🧪 🧪 Before filtering. getActivitiesByArea for areaId: " +
-          areaId +
-          ", list = " +
-          JSON.stringify(this.getAllDocs())
-      );
       return this.getAllDocs().filter((activity) => activity.areaId === areaId);
     },
 
@@ -101,11 +92,7 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
     },
 
     // ? -------------------------------------------- Create --------------------------------------------
-    createActivity(
-      activity: Activity,
-      areaId: string,
-      categoryId: string
-    ): string {
+    createActivity(activity: Activity, areaId: string): string {
       // Generate doc ID
       const newID: string = uuid();
       activity.id = newID;
@@ -115,7 +102,6 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
 
       // Set Area ID
       activity.areaId = areaId;
-      activity.categoryId = categoryId;
 
       // Set timestamps
       const currentTimestamp: number = Date.now().valueOf();
@@ -131,6 +117,10 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
 
     // ? -------------------------------------------- Update --------------------------------------------
     async updateActivity(activity: Activity) {
+      // Update timestamp
+      const currentTimestamp: number = Date.now().valueOf();
+      activity.lastUpdatedAt = currentTimestamp;
+
       console.log("Updating activity: " + JSON.stringify(activity));
       updateDoc(doc(firestoreCollection, activity.id), activity);
     },

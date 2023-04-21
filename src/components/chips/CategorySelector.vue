@@ -75,14 +75,15 @@ export default class CategorySelector extends Vue {
   mounted() {
     this.selectedItemIdList_local = this.selectedItemIdList;
     this.onShow();
+    console.log("🐪 Mounted CategorySelector");
   }
 
   onShow() {
-    this.categoryTagsStore.subscribeToStore(); // Subscribe to store
+    // Subscribe to stores here
   }
 
   onHide() {
-    this.categoryTagsStore.unsubscribe(); // Unsubscribe from store
+    // Unsubscribe from stores
   }
 
   // Update parent
@@ -151,13 +152,16 @@ export default class CategorySelector extends Vue {
 </script>
 
 <template>
-  <div class="text-center">
+  <div>
     <v-card flat>
       <v-card-text class="pa-0 ma-0">
         <!-- * ---------------- Title -->
-        <v-card-title class="pa-0 ma-0 text-h6 font-weight-light"
+        <v-card-title class="pa-2 ma-0 text-h6 font-weight-light"
           >Categories</v-card-title
         >
+        <v-card-subtitle class="pa-2 pt-3 text-caption font-weight-light">
+          Select from the list, or create a new one.
+        </v-card-subtitle>
 
         <!-- TODO ------------- Delete this after chips from v-autocomplete work better. -->
         <!-- <CategoryChips
@@ -172,7 +176,6 @@ export default class CategorySelector extends Vue {
         <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
         <!-- removed fields: clearable -->
         <v-autocomplete
-          loading
           auto-select-first
           chips
           deletable-chips
@@ -184,7 +187,6 @@ export default class CategorySelector extends Vue {
           multiple
           hint="Select a tag or create a new one."
           persistent-hint
-          color="blue-grey-lighten-2"
           hide-selected
           :hide-no-data="showCreateCategoryDialog"
           @input="searchInput = ''"
@@ -198,13 +200,12 @@ export default class CategorySelector extends Vue {
             openOnClick: false,
           }"
           :disabled="showEditCategoryDialog"
-          class="pt-6"
+          color="primary"
+          class="pt-2 px-2"
         >
           <!-- Notes about the modifiers above in <v-autocomplete> -->
           <!--      @input will reset the text-input to '' once tag is selected -->
           <!--      search-input.sync will bind the text-input to our variable -->
-          <!--      (unused) @update:search-input="callFunc" will call our func when text-input changes -->
-          <!--      hide-no-data will make the prompy for 'no-data' disappear when Create box is active -->
 
           <!-- * ------------ When no tags match ------------ * -->
           <template v-slot:no-data>
@@ -217,12 +218,7 @@ export default class CategorySelector extends Vue {
             </v-list-item>
           </template>
 
-          <!-- * ------------ Disable chips from v-autocomplete ------------ * -->
-          <!-- <template v-slot:selection="" /> -->
-
-          <!-- ! -------------- ALMOST THERE with this. Fix the spacing. Get rid of the CHIP-GROUP in CategoryChips -->
-
-          <!-- TODO P0 --------- Clean up CategoryChips component here. -->
+          <!-- * ------------ Chips component ------------ * -->
           <template v-slot:selection="data">
             <CategoryChips
               :categories="[data.item]"
@@ -233,7 +229,7 @@ export default class CategorySelector extends Vue {
             />
           </template>
 
-          <!-- * ------------ List item in dropdown ------------ * -->
+          <!-- ? ------------ List item in dropdown ------------ * -->
           <!-- eslint-disable vue/no-unused-vars -->
           <!-- eslint-disable vue/no-v-text-v-html-on-component -->
           <template v-slot:item="{ item, attrs, on }">
@@ -241,7 +237,9 @@ export default class CategorySelector extends Vue {
               <v-list-item-content>
                 <v-list-item-title>
                   <v-row no-gutters align="center">
-                    <v-icon class="pr-4">{{ item.icon }}</v-icon>
+                    <v-icon class="pr-4" :color="item.color">
+                      mdi-circle
+                    </v-icon>
                     <span>{{ item.title }}</span>
                     <v-spacer></v-spacer>
                   </v-row>
@@ -250,16 +248,30 @@ export default class CategorySelector extends Vue {
             </v-list-item>
           </template>
 
-          <!-- * ------------ (+) icon ------------ * -->
+          <!-- ? ------------ (+) icon ------------ * -->
           <!-- eslint-disable vue/no-v-text-v-html-on-component -->
-          <template v-slot:append-outer>
+          <!-- <template v-slot:append-outer>
             <v-icon
               @click="showCreateCategoryDialog = true"
               v-text="'mdi-plus-circle-outline'"
             ></v-icon>
-          </template>
+          </template> -->
+
+          <!--  -->
         </v-autocomplete>
       </v-card-text>
+
+      <!-- ? ------------ (+) icon ------------ * -->
+      <v-card-actions class="mt-4">
+        <v-spacer />
+        <v-btn outlined rounded @click="showCreateCategoryDialog = true">
+          <v-icon class="pr-2"> mdi-plus </v-icon>
+          Add
+        </v-btn>
+        <v-spacer />
+      </v-card-actions>
+
+      <!--  -->
     </v-card>
 
     <!-- * ------------------------ New category popup  -------------------------->
@@ -269,7 +281,7 @@ export default class CategorySelector extends Vue {
       :showDialog="showCreateCategoryDialog"
       v-on:save-confirmed="createNewCategory"
       v-on:discard="discardCategoryChange"
-    ></CategoryCreateOrEditDialog>
+    />
 
     <CategoryCreateOrEditDialog
       :categoryTag="selectedCategoryTag"
@@ -277,6 +289,6 @@ export default class CategorySelector extends Vue {
       :showDialog="showEditCategoryDialog"
       v-on:save-confirmed="saveExistingCategory"
       v-on:discard="discardCategoryChange"
-    ></CategoryCreateOrEditDialog>
+    />
   </div>
 </template>

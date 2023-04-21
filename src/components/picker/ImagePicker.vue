@@ -23,7 +23,7 @@ export default class ImagePicker extends Vue {
   }
 
   // ------------------------------------------------ Data
-  imageUrl_local!: string;
+  imageUrl_local = "";
 
   // ------------------------------------------------ Methods
   triggerCancellation() {

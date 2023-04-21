@@ -10,24 +10,32 @@ import { deepCopy } from "deep-copy-ts";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { Area } from "@/model/pojo/definitions/Area";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import CategoryChips from "../chips/CategoryChips.vue";
+import ActivityChips from "../chips/ActivityChips.vue";
+
+/**
+ * TODO P1 ----- Add validations. Especially when a Category is not selected. Block the Save button.
+ **/
 
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
     IconPicker: IconPicker,
+    CategoryChips: CategoryChips,
+    ActivityChips: ActivityChips,
   },
   methods: {},
 })
 export default class ActivityCreateOrEditDialog extends Vue {
   // ------------------------------------------------ Props
   @Prop()
-  activity!: Activity;
+  dialogMode!: DialogMode;
+  @Prop()
+  activity?: Activity;
   @Prop()
   area!: Area;
   @Prop()
   showDialog!: boolean;
-  @Prop()
-  dialogMode!: DialogMode;
 
   /**
    * Watches parent variable. Sync's its value to the child.
@@ -50,6 +58,7 @@ export default class ActivityCreateOrEditDialog extends Vue {
   categoryTagsStore = useCategoryTagsStore();
 
   mounted() {
+    console.log("🐪 Mounted ActivityCreateOrEditDialog");
     this.iconsStore.loadIcons();
   }
 
@@ -60,21 +69,29 @@ export default class ActivityCreateOrEditDialog extends Vue {
   showIconPicker = false;
   showSearchBar = false;
   searchInput = "";
-  selectedItemsList: string[] = [];
+  selectedCategoryId = "";
 
   // ------------------------------------------------ Computed
   get categories(): CategoryTag[] {
+    console.log(
+      "🏏 ---- categories = " +
+        JSON.stringify(
+          this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags)
+        )
+    );
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
   }
 
   // ------------------------------------------------ Methods
   onShow() {
     this.categoryTagsStore.subscribeToStore(); // Subscribe to store
-    if (DialogMode.CREATE === DialogMode[this.dialogMode]) {
-      this.activity_local = deepCopy(defaultNewActivity); // Reset
-    } else if (DialogMode.EDIT === DialogMode[this.dialogMode]) {
-      this.activity_local = deepCopy(this.activity);
-    }
+
+    // Reset
+
+    this.activity_local = this.activity ? this.activity : defaultNewActivity;
+
+    // Assign category
+    this.selectedCategoryId = this.activity_local.categoryId;
   }
 
   onHide() {
@@ -82,12 +99,18 @@ export default class ActivityCreateOrEditDialog extends Vue {
     this.categoryTagsStore.unsubscribe(); // Unsubscribe from store
   }
 
-  onTagSelectionChange() {
-    this.showSearchBar = false;
-    this.selectedCategory = this.categoryTagsStore.getCategoryById(
-      this.selectedItemsList[0]
+  onSelectionChange() {
+    console.log(
+      "🏉 🏉 🏉 SELECTION CHANGED: " + JSON.stringify(this.selectedCategoryId)
     );
-    this.selectedItemsList = [];
+    if (this.selectedCategoryId.length > 0) {
+      this.activity_local.categoryId = this.selectedCategoryId;
+    } else {
+      // TODO: Show error
+    }
+    console.log(
+      "🏉 this.activity_local: " + JSON.stringify(this.activity_local)
+    );
   }
 
   resetNewActivityData() {
@@ -110,15 +133,12 @@ export default class ActivityCreateOrEditDialog extends Vue {
   }
 
   saveActivity() {
-    // Reset dialog box
     // Ask the parent to update.
     console.log(
       "!!!!!! ------- this.activity_local = " +
         JSON.stringify(this.activity_local)
     );
     this.$emit("save-confirmed", this.activity_local);
-
-    this.resetNewActivityData();
   }
 
   triggerCancellation() {
@@ -161,122 +181,133 @@ export default class ActivityCreateOrEditDialog extends Vue {
           @keydown.esc="triggerCancellation"
           @keydown.enter="saveActivity"
         >
-          <v-card>
-            <v-list>
-              <v-list-item>
-                <!-- ? ----------------- Box heading ---------------- * -->
-                <v-list-item-content>
-                  <v-list-item-title>Activity</v-list-item-title>
-                  <v-list-item-subtitle
-                    >Click save to create
-                  </v-list-item-subtitle>
-                </v-list-item-content>
+          <v-card flat class="px-2">
+            <!--  -->
 
-                <!-- ? -------------- (x) Close button -------------- * -->
-                <v-list-item-action>
-                  <v-btn icon>
-                    <v-icon @click="triggerCancellation">mdi-close</v-icon>
-                  </v-btn>
-                </v-list-item-action>
-              </v-list-item>
-            </v-list>
+            <!-- ? ----------------- Box title ---------------- * -->
+            <v-card-actions class="pa-4 pb-0 ma-0">
+              <v-card-title class="pa-0 text-h6 font-weight-light">
+                {{ dialogMode === "CREATE" ? `New` : `Edit` }} Activity
+              </v-card-title>
+              <v-spacer />
+              <!-- ? ------------- (x) Close button --------------->
+              <v-icon @click="triggerCancellation">mdi-close</v-icon>
+            </v-card-actions>
+
+            <!-- ? ----------------- Box subtitle ---------------- * -->
+            <v-card-text class="pa-0 ma-0">
+              <v-card-subtitle class="pt-1 text-body-2 font-weight-light">
+                Pick a name & an icon
+              </v-card-subtitle>
+            </v-card-text>
 
             <v-divider></v-divider>
 
-            <!-- * ---------- Title text-field ---------- * -->
-            <v-container fluid>
-              <!--  -->
-              <v-row>
-                <!-- ? -------------- Icon button -------------- * -->
-                <v-col cols="2">
+            <!-- ? ----------------- Name text-field --------------------->
+            <v-card-text class="pa-0 pt-2">
+              <v-container fluid>
+                <!--  -->
+
+                <v-row>
+                  <v-col class="px-auto pb-0">
+                    <!--  -->
+                    <!-- ? -------------- Text field ------------>
+                    <v-text-field
+                      label="Name"
+                      v-model="activity_local.title"
+                      outlined
+                      clearable
+                      placeholder="Activity name"
+                      hint="Something short and sweet."
+                      counter="15"
+                      class="pa-0"
+                    />
+                  </v-col>
+                </v-row>
+
+                <!--  -->
+              </v-container>
+            </v-card-text>
+
+            <!-- ? ------------------ Pick an icon ----------------------->
+            <v-card-actions class="pl-4 pb-4 pt-0">
+              <v-container fluid>
+                <v-row>
+                  <!-- ? -------------- Hint -->
+                  <span class="mr-4 ml-1 mb-1 text-caption font-weight-light">
+                    Pick an icon
+                  </span>
+                </v-row>
+                <v-row>
+                  <!-- ? -------------- Icon-->
                   <v-icon
+                    x-large
                     @click="showIconPicker = true"
-                    large
-                    class="px-auto pt-4 mr-20"
-                    >{{ activity_local.icon }}</v-icon
+                    class="px-auto pt-1 mr-20 mt-0"
                   >
-                  <!-- </v-btn> -->
-                </v-col>
+                    {{ activity_local.icon }}
+                  </v-icon>
+                </v-row>
+              </v-container>
 
-                <!-- ? ------------------ Name ---------------- * -->
-                <v-col>
-                  <v-text-field
-                    label="Name"
-                    v-model="activity_local.title"
-                    class="shrink;display:flex;width=100px"
-                    placeholder="New Activity"
-                    hint="Something short and sweet."
-                    counter="15"
-                    clearable
-                    :autofocus="false"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
+              <v-spacer />
+            </v-card-actions>
 
-              <!--  -->
-            </v-container>
+            <v-divider />
 
-            <!-- * -------------------- CATEGORY selection ---------------- * -->
-            <v-card-subtitle class="text-body font-weight-light"
-              >Category</v-card-subtitle
-            >
+            <!-- ? -------------------- CATEGORY selection ---------------- * -->
 
-            <!-- ? ------- Chip -->
-            <!-- <v-chip @click="showSearchBar = !showSearchBar">
-              <v-icon :color="selectedCategory?.color" small class="mr-2">
-                mdi-circle
-              </v-icon>
-              {{ selectedCategory?.title }}
-            </v-chip> -->
+            <span class="pl-5 pt-5 mb-1 text-caption font-weight-light">
+              Select a Category
+            </span>
 
-            <v-card-text>
+            <v-card-text class="pl-4 pb-4 pt-0">
               <!-- ? ------------------------ Auto-complete for chips  --------->
               <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
               <v-autocomplete
-                loading
                 auto-select-first
                 chips
                 label=""
-                v-model="selectedItemsList"
+                v-model="selectedCategoryId"
                 :items="categories"
                 item-text="title"
                 item-value="id"
-                hint="Search for a category"
+                hint="Click to select a category"
                 persistent-hint
-                color="blue-grey-lighten-2"
                 hide-selected
                 @input="searchInput = ''"
                 :search-input.sync="searchInput"
                 @keydown.enter.native.prevent
-                @change="onTagSelectionChange"
+                @change="onSelectionChange"
                 :menu-props="{
                   closeOnContentClick: false,
                   closeOnClick: true,
-                  openOnClick: true,
+                  openOnClick: false,
                 }"
+                color="primary"
                 class=""
               >
                 <!-- Notes about the modifiers above in <v-autocomplete> -->
                 <!--      @input will reset the text-input to '' once tag is selected -->
                 <!--      search-input.sync will bind the text-input to our variable -->
-                <!--      (unused) @update:search-input="callFunc" will call our func when text-input changes -->
-                <!--      hide-no-data will make the prompy for 'no-data' disappear when Create box is active -->
 
                 <!-- * ------------ When no tags match ------------ * -->
                 <template v-slot:no-data>
                   <v-list-item>
                     <v-list-item-content>
-                      <v-list-item-title> No matches. </v-list-item-title>
+                      <v-list-item-title>
+                        No categories matched.
+                      </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
                 </template>
 
-                <!-- * ------------ Chip ------------ * -->
+                <!-- * ------------ Chips component ------------ * -->
                 <template v-slot:selection="data">
-                  <v-chip v-bind="data.attrs">
-                    <v-icon class="mr-2">{{ data.item.icon }}</v-icon>
-                    {{ data.item.title }}
-                  </v-chip>
+                  <CategoryChips
+                    :categories="[data.item]"
+                    :hasCloseButton="false"
+                  />
                 </template>
 
                 <!-- * ------------ List item in dropdown ------------ * -->
@@ -287,10 +318,14 @@ export default class ActivityCreateOrEditDialog extends Vue {
                     <v-list-item-content>
                       <v-list-item-title>
                         <v-row no-gutters align="center">
-                          <v-icon small class="pr-4" :color="item.color"
-                            >mdi-circle</v-icon
-                          >
+                          <!--  -->
+
+                          <v-icon small class="pr-4" :color="item.color">
+                            mdi-circle
+                          </v-icon>
+
                           <span>{{ item.title }}</span>
+
                           <v-spacer></v-spacer>
                         </v-row>
                       </v-list-item-title>
@@ -298,19 +333,51 @@ export default class ActivityCreateOrEditDialog extends Vue {
                   </v-list-item>
                 </template>
 
+                <!-- ? ------------ (+) icon ------------ * -->
+                <!-- TODO: @click should display CreateCategory dialog -->
+                <!-- eslint-disable vue/no-v-text-v-html-on-component -->
+                <template v-slot:append-outer>
+                  <v-icon v-text="'mdi-plus-circle-outline'"></v-icon>
+                </template>
+
                 <!--  -->
               </v-autocomplete>
+
+              <!--  -->
             </v-card-text>
+
+            <!-- ? --------------------- Preview ------------------------->
+            <v-card-actions class="">
+              <v-container fluid>
+                <v-row>
+                  <span class="mr-4 ml-1 mb-1 text-caption font-weight-light">
+                    Preview
+                  </span>
+                </v-row>
+                <v-row>
+                  <ActivityChips
+                    :activities="[activity_local]"
+                    :categories="categories"
+                    :hasCloseButton="false"
+                  />
+                </v-row>
+              </v-container>
+              <v-spacer />
+            </v-card-actions>
 
             <!-- ? ------------------ Save / Cancel ---------------- * -->
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn text @click="triggerCancellation"> Cancel </v-btn>
-              <v-btn text color="primary" @click="saveActivity"> Save </v-btn>
+              <v-btn color="primary" @click="saveActivity">
+                {{ dialogMode === "CREATE" ? `Create` : `Save` }}
+              </v-btn>
             </v-card-actions>
           </v-card>
 
-          <!-- * ------------------------ Confirm discard  -------------------------->
+          <!-- * ------------------------ Dialogs  -------------------------->
+
+          <!-- ? ---------------- Confirm discard  ------------------->
           <ConfirmationDialog
             v-on:confirm-status-change="respondToConfirmDiscardDialog"
             :showDialog="showDialogForConfirmDiscard"
@@ -319,6 +386,7 @@ export default class ActivityCreateOrEditDialog extends Vue {
             noButtonText="Cancel"
           />
 
+          <!-- ? ---------------- Icon Picker  ------------------->
           <IconPicker
             :showDialog="showIconPicker"
             :initialSearchPrefix="activity_local.title"

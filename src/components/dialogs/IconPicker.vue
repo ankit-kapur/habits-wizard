@@ -90,11 +90,10 @@ export default class IconPicker extends Vue {
           @keydown.enter="enterKeyPressed"
         >
           <v-card>
-            <v-card-title class="pa-2">
+            <v-card-title class="pa-auto ml-2">
               <!--  -->
 
               <!-- ? ------------- Search bar --------------->
-              <v-icon class="ma-2 pa-2">mdi-magnify</v-icon>
               <div class="text-h6 font-weight-light">Pick an icon</div>
 
               <v-spacer></v-spacer>
@@ -116,7 +115,8 @@ export default class IconPicker extends Vue {
                 class="shrink;display:flex;width=100px pt-6"
                 placeholder=""
                 hint="Start typing to search"
-                autofocus="false"
+                :autofocus="false"
+                prepend-icon="mdi-magnify"
                 @input="searchForIcon"
               ></v-text-field>
             </v-card-text>
