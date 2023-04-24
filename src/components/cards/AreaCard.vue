@@ -4,7 +4,7 @@ import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useAreasStore } from "@/store/AreasStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
-import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.vue";
+import AreaWizard from "@/components/dialogs/AreaWizard.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { getPrettyTimestamp } from "@/utils/time/TimestampConversionUtils";
 import VClamp from "vue-clamp";
@@ -14,7 +14,7 @@ import ActivityChips from "@/components/chips/ActivityChips.vue";
 
 @Component({
   components: {
-    AreaCreateOrEditDialog: AreaCreateOrEditDialog,
+    AreaWizard: AreaWizard,
     ConfirmationDialog: ConfirmationDialog,
     CategoryChips: CategoryChips,
     ActivityChips: ActivityChips,

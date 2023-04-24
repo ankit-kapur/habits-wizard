@@ -2,7 +2,6 @@
 import { defaultNewActivity } from "@/constants/DefaultDataForForms";
 import Activity from "@/model/pojo/definitions/Activity";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { DialogMode } from "./AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { useIconsStore } from "@/store/IconsStore";
 import IconPicker from "@/components/dialogs/IconPicker.vue";
@@ -12,10 +11,12 @@ import { Area } from "@/model/pojo/definitions/Area";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import CategoryChips from "../chips/CategoryChips.vue";
 import ActivityChips from "../chips/ActivityChips.vue";
+import { DialogMode } from "@/model/enum/DialogMode";
 
 /**
  * TODO P0 ----- Step 1 & 2 should be to select an Area and Category if not provided.
  * TODO P1 ----- Add validations. Especially when a Category is not selected. Block the Save button.
+ * TODO P1 ----- Validate that category selected must exist in Area. (or should it get auto-added?)
  **/
 
 @Component({
@@ -27,7 +28,7 @@ import ActivityChips from "../chips/ActivityChips.vue";
   },
   methods: {},
 })
-export default class ActivityCreateOrEditDialog extends Vue {
+export default class ActivityWizard extends Vue {
   // ------------------------------------------------ Props
   @Prop()
   dialogMode!: DialogMode;
@@ -56,7 +57,7 @@ export default class ActivityCreateOrEditDialog extends Vue {
   categoryTagsStore = useCategoryTagsStore();
 
   mounted() {
-    console.log("🐪 Mounted ActivityCreateOrEditDialog");
+    console.log("🐪 Mounted ActivityWizard");
     this.iconsStore.loadIcons();
   }
 

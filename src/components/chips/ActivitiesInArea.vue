@@ -158,6 +158,8 @@ export default class ActivitySelector extends Vue {
 <template>
   <div>
     <v-card flat>
+      <!--  -->
+
       <!-- * ---------------- Chips -->
       <v-card-text class="pa-0 ma-0">
         <!-- * ---------------- Title -->
@@ -165,89 +167,21 @@ export default class ActivitySelector extends Vue {
           Activities
         </v-card-title>
         <v-card-subtitle class="pa-2 pt-3 text-caption font-weight-light">
-          Select from the list, or create a new one.
+          Click to edit, or create a new one.
         </v-card-subtitle>
+
+        <ActivityChips
+          :activities="activitiesList"
+          :categories="categoriesList"
+          :hasCloseButton="true"
+          :closeIcon="`mdi-delete`"
+          v-on:chip-clicked="triggerEditDialog"
+          v-on:chip-closed="triggerDeleteDialog"
+        />
 
         <!-- * ------------------------ Auto-complete for chips  -------------------------->
         <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
         <!-- removed fields: clearable -->
-        <v-autocomplete
-          auto-select-first
-          chips
-          deletable-chips
-          label=""
-          v-model="selectedItemIDs"
-          :items="activitiesList"
-          item-text="title"
-          item-value="id"
-          multiple
-          hint=""
-          persistent-hint
-          hide-selected
-          :hide-no-data="showCreateActivityDialog"
-          @input="searchInput = ''"
-          :search-input.sync="searchInput"
-          @keydown.enter="promptForNewCategory"
-          @keydown.enter.native.prevent
-          :menu-props="{
-            closeOnContentClick: false,
-            closeOnClick: true,
-            openOnClick: false,
-          }"
-          :disabled="showEditActivityDialog"
-          color="primary"
-          class="pt-2 px-2"
-        >
-          <!-- Notes about the modifiers above in <v-autocomplete> -->
-          <!--      @input will reset the text-input to '' once tag is selected -->
-          <!--      search-input.sync will bind the text-input to our variable -->
-          <!--      (unused) @update:search-input="callFunc" will call our func when text-input changes -->
-          <!--      hide-no-data will make the prompy for 'no-data' disappear when Create box is active -->
-
-          <!-- * ------------ When no tags match ------------ * -->
-          <template v-slot:no-data>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title>
-                  Press <code>enter</code> to create.
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-
-          <!-- * ------------ Chips component ------------ * -->
-          <template v-slot:selection="data">
-            <ActivityChips
-              :activities="[data.item]"
-              :categories="categoriesList"
-              :hasCloseButton="true"
-              :closeIcon="`mdi-delete`"
-              v-on:chip-clicked="triggerEditDialog"
-              v-on:chip-closed="triggerDeleteDialog"
-            />
-          </template>
-
-          <!-- * ------------ List item in dropdown ------------ * -->
-          <!-- eslint-disable vue/no-unused-vars -->
-          <!-- eslint-disable vue/no-v-text-v-html-on-component -->
-          <template v-slot:item="{ item, attrs, on }">
-            <v-list-item v-on="on" v-bind="attrs" #default="{ active }">
-              <v-list-item-content>
-                <v-list-item-title>
-                  <v-row no-gutters align="center">
-                    <v-icon class="pr-4" :color="item.color">
-                      {{ item.icon }}
-                    </v-icon>
-                    <span>{{ item.title }}</span>
-                    <v-spacer></v-spacer>
-                  </v-row>
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-
-          <!--  -->
-        </v-autocomplete>
       </v-card-text>
 
       <!-- ? ------------ (+) icon ------------ * -->

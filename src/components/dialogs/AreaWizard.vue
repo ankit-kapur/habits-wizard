@@ -8,24 +8,30 @@ import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { defaultNewArea } from "@/constants/DefaultDataForForms";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import CategorySelector from "../chips/CategorySelector.vue";
-import ActivitySelector from "../chips/ActivitySelector.vue";
+import ActivitiesInArea from "../chips/ActivitiesInArea.vue";
 import ColorThief from "colorthief";
 import ImagePicker from "@/components/picker/ImagePicker.vue";
+import { DialogMode } from "@/model/enum/DialogMode";
 
 /**
- * TODO P1 ----- Add validations. Block the Save button.
+ * TODO P1 ----- Add validations. Block the Save button, mark the pages that have errors or ✅
+ * Validations:
+ *    - Name, description, image are required. Length limits.
+ *    - At least 1 category must be selected.
+ *    - Category delete should be disallowed if any Activities (in this Area) are associated with it.
+ *    - At least 1 category, and 1 activity must be selected.
  **/
 
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
     CategorySelector: CategorySelector,
-    ActivitySelector: ActivitySelector,
+    ActivitiesInArea: ActivitiesInArea,
     ColorThief: ColorThief,
     ImagePicker: ImagePicker,
   },
 })
-export default class AreaCreateOrEditDialog extends Vue {
+export default class AreaWizard extends Vue {
   // ------------------------------------------------ Props
   @Prop()
   providedArea!: Area;
@@ -40,9 +46,7 @@ export default class AreaCreateOrEditDialog extends Vue {
   @Watch("showDialog")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
-    console.log(
-      "👀 @Watch in AreaCreateOrEditDialog. _newValue = " + _newValue
-    );
+    console.log("👀 @Watch in AreaWizard. _newValue = " + _newValue);
     if (this.providedArea != null)
       this.currentArea = deepCopy(this.providedArea);
     // Stop stepper from overflowing
@@ -94,7 +98,7 @@ export default class AreaCreateOrEditDialog extends Vue {
     this.categoryStore.subscribeToStore();
     this.areCategoriesLoaded = true;
     this.resetToDefaultState();
-    console.log("🐪  Mounted AreaCreateOrEditDialog");
+    console.log("🐪  Mounted AreaWizard");
   }
 
   // ------------------------------------------------ Methods
@@ -223,11 +227,6 @@ export default class AreaCreateOrEditDialog extends Vue {
     imageElement.remove();
   }
 }
-
-export enum DialogMode {
-  CREATE = "CREATE",
-  EDIT = "EDIT",
-}
 </script>
 
 <template>
@@ -331,11 +330,11 @@ export enum DialogMode {
                   <!--  -->
 
                   <!-- ? -------- Activities selector -->
-                  <ActivitySelector
+                  <ActivitiesInArea
                     :area="currentArea"
                     :isDisplayed="showDialog"
                   >
-                  </ActivitySelector>
+                  </ActivitiesInArea>
                 </v-card-text>
 
                 <!--  -->

@@ -81,7 +81,7 @@ export default class ActivityChips extends Vue {
       :prepend-icon="activity.icon"
       :style="`border-radius: 8px`"
       :color="getCategoryColor(activity)"
-      class="pl-2"
+      class="pl-1 ma-1 mr-1 mt-0 mb-2 pb-0 pt-0"
     >
       <v-icon class="ml-0 mr-2">{{ activity.icon }}</v-icon>
       {{ activity.title }}

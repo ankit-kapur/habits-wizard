@@ -1,10 +1,10 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.vue";
+import AreaWizard from "@/components/dialogs/AreaWizard.vue";
 
 @Component({
   components: {
-    AreaCreateOrEditDialog: AreaCreateOrEditDialog,
+    AreaWizard: AreaWizard,
   },
 })
 export default class BottomNavBar extends Vue {

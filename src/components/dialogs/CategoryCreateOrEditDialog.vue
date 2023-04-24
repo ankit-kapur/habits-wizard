@@ -2,11 +2,11 @@
 import { defaultNewCategory } from "@/constants/DefaultDataForForms";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { DialogMode } from "./AreaCreateOrEditDialog.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { useIconsStore } from "@/store/IconsStore";
 import { deepCopy } from "deep-copy-ts";
 import CategoryChips from "../chips/CategoryChips.vue";
+import { DialogMode } from "@/model/enum/DialogMode";
 
 /**
  * TODO P1 ----- Add validations. Block the Save button.

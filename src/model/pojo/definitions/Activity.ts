@@ -6,7 +6,8 @@ export default interface Activity {
 
   // ? --------------- Association
   areaId: string;
-  categoryId: string;
+  categoryId: string; // TODO P0 ------- Make this into a list. of tags.
+  // ! ^^^^^ do this ASAP.
 
   // ? --------------- Display
   title: string;

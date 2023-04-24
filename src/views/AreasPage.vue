@@ -4,7 +4,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { useAreasStore } from "@/store/AreasStore";
 import AreaCard from "@/components/cards/AreaCard.vue";
 import { Area } from "@/model/pojo/definitions/Area";
-import AreaCreateOrEditDialog from "@/components/dialogs/AreaCreateOrEditDialog.vue";
+import AreaWizard from "@/components/dialogs/AreaWizard.vue";
 import { defaultNewArea } from "@/constants/DefaultDataForForms";
 
 // See documentation on class-components:
@@ -12,7 +12,7 @@ import { defaultNewArea } from "@/constants/DefaultDataForForms";
 @Component({
   components: {
     AreaCard: AreaCard,
-    AreaCreateOrEditDialog: AreaCreateOrEditDialog,
+    AreaWizard: AreaWizard,
   },
 })
 export default class AreasPage extends Vue {
@@ -102,14 +102,14 @@ export default class AreasPage extends Vue {
 
     <!------------------- Dialogs -------------------->
     <!-- Create dialog -->
-    <AreaCreateOrEditDialog
+    <AreaWizard
       :dialog-mode="`CREATE`"
       v-on:close-dialog="closeNewAreaDialog"
       :showDialog="showDialogForNewArea"
     />
 
     <!-- Edit dialog -->
-    <AreaCreateOrEditDialog
+    <AreaWizard
       :dialog-mode="`EDIT`"
       v-on:close-dialog="closeEditAreaDialog"
       :showDialog="showDialogForEditArea"
