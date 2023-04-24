@@ -1,3 +1,5 @@
+import MeasurableDefinition from "./MeasurableDefinition";
+
 export interface Area {
   // ? ------------------------------ Identifiers
   id: string;
@@ -27,10 +29,15 @@ export interface Area {
   categoryTags: string[];
   // List of all tags used in Activities in this Area.
 
-  // ? ------------------------------ Categories
+  // ? ------------------------------ Tags
   // * ------ Note: Tags here are not definitions. EventRecords can be tagged instantly.
   //          Purpose of this list is to prompt the user when creating/editing a new EventRecord.
   tags?: string[];
+
+  // ? ------------------------------ Measurables
+  // TODO P0 ---- CreateArea should make some by default: duration, isSuccessful, etc.
+  // ! Make this required.
+  measurableDefinitions?: MeasurableDefinition[];
 
   // ------------------ Future attributes ------------------ //
 

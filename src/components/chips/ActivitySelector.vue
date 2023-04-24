@@ -99,13 +99,11 @@ export default class ActivitySelector extends Vue {
   }
 
   createNewActivity(newActivity: Activity) {
-    console.log("Saving new Activity: " + JSON.stringify(newActivity));
-
     // Save to store
     this.activitiesStore.createActivity(newActivity, this.area.id);
 
     // Hide dialog
-    this.showCreateActivityDialog = false;
+    this.closeActivityDialog();
   }
 
   triggerEditDialog(categoryTag: Activity) {
@@ -134,16 +132,16 @@ export default class ActivitySelector extends Vue {
   saveExistingActivity(updatedActivity: Activity) {
     console.log("Saving new category");
     this.activitiesStore.updateActivity(updatedActivity);
-    // Reset things.
-    this.showEditActivityDialog = false;
-    this.selectedActivity = null;
+    this.closeActivityDialog();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  discardActivityChange(irrelevantValue: boolean) {
+  closeActivityDialog(irrelevantValue?: boolean) {
     console.log("Discarding");
     this.showCreateActivityDialog = false;
     this.showEditActivityDialog = false;
+
+    this.selectedActivity = deepCopy(defaultNewActivity);
   }
 
   // Delete
@@ -272,7 +270,7 @@ export default class ActivitySelector extends Vue {
       :dialog-mode="`CREATE`"
       :showDialog="showCreateActivityDialog"
       v-on:save-confirmed="createNewActivity"
-      v-on:discard="discardActivityChange"
+      v-on:discard="closeActivityDialog"
     />
 
     <!-- * ------------------------ Edit popup  -------------------------->
@@ -282,7 +280,7 @@ export default class ActivitySelector extends Vue {
       :dialog-mode="`EDIT`"
       :showDialog="showEditActivityDialog"
       v-on:save-confirmed="saveExistingActivity"
-      v-on:discard="discardActivityChange"
+      v-on:discard="closeActivityDialog"
     />
 
     <!-- * ------------------------ Delete popup  -------------------------->

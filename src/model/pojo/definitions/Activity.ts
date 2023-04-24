@@ -22,7 +22,10 @@ export default interface Activity {
   //      Else, default measurables to be added: ---- endTime (i.e. completed at time).
   hasTimeTracking: boolean;
 
-  measurables: string[]; // Only IDs here. Definitions live in UserConfig
+  // ? --------------- Measurables
+  // ! -------- Need to keep track of what's required.
+  // ! -------- Maybe make a new "Measurable" structure.
+  measurables: string[]; // Only IDs here. Definitions live in Area.
 
   // ? --------------- Future fields
   // // typically just 1 per day. List for Things done multiple times a day.
@@ -37,7 +40,6 @@ export default interface Activity {
   // archivedDayGoals?: DayGoal[] | null; // Ordered by date.
   // archivedWeekGoals?: WeekGoal[] | null;
 
-  // // Future-fields
   // priority: Priority;
   // // defaultTags?: defaultTags[]; // Nah. Templates would work better.
 }

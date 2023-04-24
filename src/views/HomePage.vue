@@ -25,7 +25,11 @@ export default class HomePage extends Vue {
 
 <template>
   <div class="">
-    <!-------------- Ongoing -------------->
+    <!-- ? ------------------------ Errors -------------------------->
+    <!-- ! (!) Error marker for Activities that were completed but are missing metadata -->
+
+    <!-- ? ------------------------ Ongoing -------------------------->
+    <!-- ! (!) Error marker should be shown on the card, if a required Measurable has not been provided. Or no Activity has been associated. -->
     <!-- TODO: Hide when nothing's ongoing -->
     <div class="mt-0">Ongoing</div>
     <v-divider />

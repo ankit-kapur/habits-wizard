@@ -35,6 +35,9 @@ export default class AreasPage extends Vue {
     console.log("🐪 🐪 🐪  Mounted AreasPage");
   }
 
+  /**
+   * TODO P1 ------- Add an "isDisplayed" prop that's set based on the router.
+   */
   unmounted() {
     // TODO -- not the right place to unsubscribe. not getting called.
 

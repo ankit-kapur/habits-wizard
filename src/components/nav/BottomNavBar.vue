@@ -101,22 +101,22 @@ export default class BottomNavBar extends Vue {
       offset-y
     >
       <v-list>
-        <!-- TODO: Set different @click action -->
-        <v-list-item @click="showRecordingDialog = true">
+        <!-- <v-list-item @click="showRecordingDialog = true">
           <v-list-item-icon>
             <v-icon> mdi-fruit-cherries </v-icon>
           </v-list-item-icon>
           <v-list-item-title> Pomodoro </v-list-item-title>
-        </v-list-item>
+        </v-list-item> -->
 
-        <!-- TODO: Set different @click action -->
-        <v-list-item @click="showRecordingDialog = true">
+        <!-- TODO: Maybe remove. Stepper can offer this choice. -->
+        <!-- <v-list-item @click="showRecordingDialog = true">
           <v-list-item-icon>
             <v-icon> mdi-timer-play </v-icon>
           </v-list-item-icon>
           <v-list-item-title> Timer </v-list-item-title>
-        </v-list-item>
+        </v-list-item> -->
 
+        <!-- TODO: Set different @click action -->
         <v-list-item @click="showRecordingDialog = true">
           <v-list-item-icon>
             <v-icon> mdi-location-enter </v-icon>

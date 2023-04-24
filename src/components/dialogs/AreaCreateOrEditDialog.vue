@@ -71,7 +71,6 @@ export default class AreaCreateOrEditDialog extends Vue {
   numberOfSteps = 3;
   previous_step_icon = "mdi-chevon-left";
   next_step_icon = "mdi-chevon-right";
-  save_icon = "mdi-content-save";
 
   // Image dimensions
   IMAGE_HEIGHT = 110;
@@ -181,6 +180,9 @@ export default class AreaCreateOrEditDialog extends Vue {
   /**
    * ? -------------- Color thief
    * ! --------- imageChanged() ----- needs to be called in a better place.  -->
+   *
+   * ! ----- Use this to generate SHADES
+   * https://stackoverflow.com/questions/40619476/javascript-generate-different-shades-of-the-same-color
    */
   imageChanged(newImageUrl: string) {
     console.log("--------- IMAGE CHANGED");
@@ -232,11 +234,11 @@ export enum DialogMode {
   <div class="">
     <!-- * ------------------------------------------------ Bottom sheet -->
     <v-bottom-sheet
-      max-width="500"
-      inset
       v-model="showDialog"
-      persistent
+      inset
+      max-width="500"
       overlay-opacity="0.88"
+      persistent
       @keydown.esc="triggerCancellation"
     >
       <v-card flat tile>
@@ -302,7 +304,7 @@ export enum DialogMode {
 
             <!-- ? --------------------------------------------- Step 2 ---- Categories -->
             <v-window-item :step="2">
-              <v-card elevation="0" style="border-radius: 8px">
+              <v-card flat style="border-radius: 8px">
                 <v-card-text class="ma-0 pa-0">
                   <!--  -->
 
@@ -324,7 +326,7 @@ export enum DialogMode {
 
             <!-- ? --------------------------------------------- Step 3 ---- Activities -->
             <v-window-item :step="3">
-              <v-card elevation="0" style="border-radius: 8px">
+              <v-card flat style="border-radius: 8px">
                 <v-card-text class="ma-0 pa-0">
                   <!--  -->
 

@@ -5,6 +5,7 @@ export class FirestoreConstants {
   static readonly AREA_COLLECTION_NAME: string = "areas";
   static readonly ACTIVITIES_COLLECTION_NAME: string = "activities";
   static readonly CATEGORY_TAGS_COLLECTION_NAME: string = "categories";
+  static readonly EVENT_RECORDS_COLLECTION_NAME: string = "eventRecords";
 
   static readonly CREATED_AT_ATTRIBUTE: string = "createdAt";
   static readonly USER_ID_ATTRIBUTE: string = "userId";
