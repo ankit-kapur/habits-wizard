@@ -68,12 +68,12 @@ export default class ActivitySelector extends Vue {
 
   mounted() {
     this.onShow();
-    console.log("🐪 🐪 🐪 Mounted ---- ActivitySelector");
+    console.log("🐪 Mounted ---- ActivitySelector");
   }
 
   unmounted() {
     this.onHide();
-    console.log("🐪 🐪 🐪 🐪 🐪 🐪 UNMOUNTED ---- ActivitySelector");
+    console.log("🐪 Unmounted ---- ActivitySelector");
   }
 
   // ------------------------------------------------ Methods
@@ -106,31 +106,19 @@ export default class ActivitySelector extends Vue {
     this.closeActivityDialog();
   }
 
-  triggerEditDialog(categoryTag: Activity) {
+  triggerEditDialog(activity: Activity) {
     console.log("triggerEditDialog");
-    this.selectedActivity = categoryTag;
+    this.selectedActivity = activity;
     this.showEditActivityDialog = true;
   }
 
-  triggerDeleteDialog(categoryTag: Activity) {
+  triggerDeleteDialog(activity: Activity) {
     console.log("triggerDeleteDialog");
-    this.selectedActivity = categoryTag;
+    this.selectedActivity = activity;
     this.showDeleteActivityDialog = true;
   }
 
-  promptForNewCategory() {
-    // Checks if the searchInput text matches something from the dropdown.
-    if (
-      this.activitiesList.filter((e) => e.title.startsWith(this.searchInput))
-        .length == 0
-    ) {
-      this.newActivity.title = this.searchInput;
-      this.showCreateActivityDialog = true;
-    }
-  }
-
   saveExistingActivity(updatedActivity: Activity) {
-    console.log("Saving new category");
     this.activitiesStore.updateActivity(updatedActivity);
     this.closeActivityDialog();
   }
@@ -187,7 +175,7 @@ export default class ActivitySelector extends Vue {
           :hide-no-data="showCreateActivityDialog"
           @input="searchInput = ''"
           :search-input.sync="searchInput"
-          @keydown.enter="promptForNewCategory"
+          @keydown.enter="promptForNewActivity"
           @keydown.enter.native.prevent
           :menu-props="{
             closeOnContentClick: false,

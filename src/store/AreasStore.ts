@@ -20,6 +20,7 @@ import { defineStore } from "pinia";
 import { v4 as uuid } from "uuid";
 import { getDocReference } from "@/utils/firebase/FirestoreUtils";
 import { getCurrentUserId } from "@/utils/firebase/GoogleAuthUtils";
+import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 
 interface State {
   allDocs: Area[];
@@ -142,6 +143,35 @@ export const useAreasStore = defineStore("AreasStore", {
     deleteArea(area: Area) {
       console.log("Deleting area: " + JSON.stringify(area));
       deleteDoc(doc(firestoreCollection, area.id));
+    },
+
+    /**
+     * Measurables-related operations
+     */
+    updateMeasurableDefinition(
+      measurableDefinition: MeasurableDefinition,
+      areaId: string
+    ) {
+      const area: Area = this.getAreaById(areaId);
+
+      // Remove existing one
+      area.measurableDefinitions = area.measurableDefinitions.filter(
+        (measurable) => measurable.id !== measurableDefinition.id
+      );
+
+      // Push new one
+      area.measurableDefinitions.push(measurableDefinition);
+      this.updateArea(area);
+    },
+
+    deleteMeasurableDefinition(measurableDefinitionId: string, areaId: string) {
+      const area: Area = this.getAreaById(areaId);
+
+      area.measurableDefinitions = area.measurableDefinitions.filter(
+        (measurable) => measurable.id !== measurableDefinitionId
+      );
+
+      this.updateArea(area);
     },
 
     // -------------------------------------------- Private functions

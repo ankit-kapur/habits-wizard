@@ -1,6 +1,13 @@
 import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import {
+  count,
+  duration,
+  endTime,
+  isDone,
+  startTime,
+} from "./DefaultMeasurables";
 
 export const defaultNewArea: Area = {
   id: "",
@@ -11,6 +18,7 @@ export const defaultNewArea: Area = {
   description:
     "late 16th century from medieval Latin eleemosynarius, from late Latin eleemosyna‘alms",
   categoryTags: [],
+  measurableDefinitions: [duration, count, isDone, startTime, endTime],
 };
 
 export const defaultNewCategory: CategoryTag = {

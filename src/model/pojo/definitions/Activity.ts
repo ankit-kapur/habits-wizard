@@ -24,9 +24,7 @@ export default interface Activity {
   hasTimeTracking: boolean;
 
   // ? --------------- Measurables
-  // ! -------- Need to keep track of what's required.
-  // ! -------- Maybe make a new "Measurable" structure.
-  measurables: string[]; // Only IDs here. Definitions live in Area.
+  measurables: MeasurableForActivity[];
 
   // ? --------------- Future fields
   // // typically just 1 per day. List for Things done multiple times a day.
@@ -43,4 +41,9 @@ export default interface Activity {
 
   // priority: Priority;
   // // defaultTags?: defaultTags[]; // Nah. Templates would work better.
+}
+
+export interface MeasurableForActivity {
+  measurableDefinitionId: string;
+  isRequired: boolean;
 }

@@ -36,8 +36,7 @@ export interface Area {
 
   // ? ------------------------------ Measurables
   // TODO P0 ---- CreateArea should make some by default: duration, isSuccessful, etc.
-  // ! Make this required.
-  measurableDefinitions?: MeasurableDefinition[];
+  measurableDefinitions: MeasurableDefinition[];
 
   // ------------------ Future attributes ------------------ //
 

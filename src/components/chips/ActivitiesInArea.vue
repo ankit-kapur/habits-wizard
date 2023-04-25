@@ -18,7 +18,7 @@ import ActivityChips from "./ActivityChips.vue";
     ActivityChips: ActivityChips,
   },
 })
-export default class ActivitySelector extends Vue {
+export default class ActivitiesInArea extends Vue {
   // ------------------------------------------------ Props
   @Prop()
   area!: Area;
@@ -33,7 +33,7 @@ export default class ActivitySelector extends Vue {
   onPropertyChanged(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
     console.log(
-      "👀 @Watch in ActivitySelector. isDialogOpen ===> " + isDialogOpen
+      "👀 @Watch in ActivitiesInArea. isDialogOpen ===> " + isDialogOpen
     );
     if (isDialogOpen) {
       this.onShow();
@@ -68,12 +68,12 @@ export default class ActivitySelector extends Vue {
 
   mounted() {
     this.onShow();
-    console.log("🐪 🐪 🐪 Mounted ---- ActivitySelector");
+    console.log("🐪 🐪 🐪 Mounted ---- ActivitiesInArea");
   }
 
   unmounted() {
     this.onHide();
-    console.log("🐪 🐪 🐪 🐪 🐪 🐪 UNMOUNTED ---- ActivitySelector");
+    console.log("🐪 🐪 🐪 🐪 🐪 🐪 UNMOUNTED ---- ActivitiesInArea");
   }
 
   // ------------------------------------------------ Methods

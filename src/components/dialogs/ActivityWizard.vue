@@ -1,6 +1,8 @@
 <script lang="ts">
 import { defaultNewActivity } from "@/constants/DefaultDataForForms";
-import Activity from "@/model/pojo/definitions/Activity";
+import Activity, {
+  MeasurableForActivity,
+} from "@/model/pojo/definitions/Activity";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { useIconsStore } from "@/store/IconsStore";
@@ -12,6 +14,7 @@ import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import CategoryChips from "../chips/CategoryChips.vue";
 import ActivityChips from "../chips/ActivityChips.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
+import ConfigureMeasurablesInActivity from "../configure/ConfigureMeasurablesInActivity.vue";
 
 /**
  * TODO P0 ----- Step 1 & 2 should be to select an Area and Category if not provided.
@@ -25,6 +28,7 @@ import { DialogMode } from "@/model/enum/DialogMode";
     IconPicker: IconPicker,
     CategoryChips: CategoryChips,
     ActivityChips: ActivityChips,
+    ConfigureMeasurablesInActivity: ConfigureMeasurablesInActivity,
   },
   methods: {},
 })
@@ -65,6 +69,7 @@ export default class ActivityWizard extends Vue {
   activity_local = deepCopy(defaultNewActivity);
   selectedCategory: CategoryTag | null = null;
   showDialogForConfirmDiscard = false;
+  showMeasurableSelectionDialog = false;
   showIconPicker = false;
   showSearchBar = false;
   searchInput = "";
@@ -129,6 +134,10 @@ export default class ActivityWizard extends Vue {
     } else {
       // TODO: Show error. At least 1 category must be selected.
     }
+  }
+
+  saveMeasurablesUpdate(measurables: MeasurableForActivity[]) {
+    this.activity_local.measurables = measurables;
   }
 
   resetNewActivityData() {
@@ -221,8 +230,8 @@ export default class ActivityWizard extends Vue {
       overlay-opacity="0.88"
       persistent
       @keydown.esc="triggerCancellation"
-      @keydown.enter="saveActivity"
     >
+      <!-- @keydown.enter="saveActivity" -->
       <v-card flat class="px-2">
         <!--  -->
         <!-- ? ---------------------------------- Top panel --------------------------------- * -->
@@ -251,7 +260,7 @@ export default class ActivityWizard extends Vue {
           <v-window v-model="currentStepperPos">
             <!--  -->
 
-            <!-- ? --------------------------------------------- Step 1 -->
+            <!-- ? --------------------------------------------- Step 1: Name & Icon -->
             <v-window-item :step="1">
               <!--  -->
 
@@ -301,7 +310,7 @@ export default class ActivityWizard extends Vue {
               </v-card>
             </v-window-item>
 
-            <!-- ? ------------------------------------------- Step 2 ---- Category selection -->
+            <!-- ? --------------------------------------------- Step 2: Category selection -->
             <v-window-item :step="2">
               <v-card flat style="border-radius: 8px">
                 <v-card-text class="ma-0 pa-0">
@@ -405,41 +414,15 @@ export default class ActivityWizard extends Vue {
               </v-card>
             </v-window-item>
 
-            <!-- ? --------------------------------------------- Step 3 -->
+            <!-- ? --------------------------------------------- Step 3: Measurables -->
             <v-window-item :step="3">
               <!--  -->
 
-              <!-- TODO --------- Implement measurables -->
-
-              <v-card flat style="border-radius: 8px">
-                <!-- ? ----------------- Name text-field --------------------->
-                <v-card-text class="pa-0 ma-0 pt-2">
-                  <v-container>
-                    <!--  -->
-
-                    <v-row class="text-center">
-                      <v-col class="px-auto pb-0">
-                        <!--  -->
-                        <!-- ? -------------- Text field ------------>
-                        <v-text-field
-                          label="Measurables"
-                          v-model="activity_local.title"
-                          outlined
-                          clearable
-                          placeholder="Not implemented yet"
-                          hint="Need to Build this window."
-                          counter="15"
-                          class="pa-0"
-                        />
-                      </v-col>
-                    </v-row>
-
-                    <!--  -->
-                  </v-container>
-                </v-card-text>
-
-                <!--  -->
-              </v-card>
+              <ConfigureMeasurablesInActivity
+                :activity="activity_local"
+                :area="area"
+                v-on:update="saveMeasurablesUpdate"
+              />
             </v-window-item>
 
             <!-- ? --------------------------------------------- Step 4 -->
