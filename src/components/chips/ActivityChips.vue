@@ -1,6 +1,7 @@
 <script lang="ts">
 import Activity from "@/model/pojo/definitions/Activity";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import { getFillColor } from "@/utils/colors/ColorUtils";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
@@ -26,18 +27,7 @@ export default class ActivityChips extends Vue {
   }
 
   // ------------------------------------------------ Getters
-  getFillColor(categoryTag: CategoryTag) {
-    return (
-      categoryTag.color.substring(0, categoryTag.color.length - 2) +
-      this.getFillOpacityHex()
-    );
-  }
-
-  getFillOpacityHex() {
-    const hex = Math.round((this.fillOpacityPercent / 100) * 255).toString(16);
-    return hex.length > 1 ? hex : 0 + hex;
-  }
-
+  getFillColor = getFillColor;
   getCategoryColor(activity: Activity): string {
     const categoryId: string = activity.categoryId;
     const categoryMatched = this.categories.find(
@@ -68,7 +58,6 @@ export default class ActivityChips extends Vue {
 <template>
   <v-chip-group column multiple>
     <v-chip
-      outlined
       v-for="(activity, index) in activities"
       v-bind:activity="activity"
       v-bind:index="index"
@@ -78,13 +67,22 @@ export default class ActivityChips extends Vue {
       @click="onChipClick(activity)"
       @click:close="onChipCloseButtonClick(activity)"
       :model-value="true"
-      :prepend-icon="activity.icon"
-      :style="`border-radius: 8px`"
-      :color="getCategoryColor(activity)"
+      :style="
+        `border: 1px solid ` +
+        getCategoryColor(activity) +
+        `; border-radius: 8px`
+      "
+      :color="getFillColor(getCategoryColor(activity), fillOpacityPercent)"
       class="pl-1 ma-1 mr-1 mt-0 mb-2 pb-0 pt-0"
     >
-      <v-icon class="ml-0 mr-2">{{ activity.icon }}</v-icon>
-      {{ activity.title }}
+      <v-icon
+        medium
+        class="ml-1 mt-2 mb-2 mr-2"
+        :color="getCategoryColor(activity)"
+      >
+        {{ activity.icon }}</v-icon
+      >
+      <span style="">{{ activity.title }}</span>
     </v-chip>
   </v-chip-group>
 </template>

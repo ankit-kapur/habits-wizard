@@ -277,6 +277,7 @@ export default class CategorySelector extends Vue {
     <!-- * ------------------------ New category popup  -------------------------->
     <CategoryCreateOrEditDialog
       :categoryTag="newCategoryTag"
+      :area="area"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateCategoryDialog"
       v-on:save-confirmed="createNewCategory"
@@ -285,6 +286,7 @@ export default class CategorySelector extends Vue {
 
     <CategoryCreateOrEditDialog
       :categoryTag="selectedCategoryTag"
+      :area="area"
       :dialog-mode="`EDIT`"
       :showDialog="showEditCategoryDialog"
       v-on:save-confirmed="saveExistingCategory"

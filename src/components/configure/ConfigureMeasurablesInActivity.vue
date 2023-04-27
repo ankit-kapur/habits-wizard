@@ -3,7 +3,7 @@ import Activity, {
   MeasurableForActivity,
 } from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
-import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
+import { deepCopy } from "@firebase/util";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import MeasurableSelector from "../selectors/MeasurableSelector.vue";
 
@@ -50,7 +50,8 @@ export default class ConfigureMeasurablesInActivity extends Vue {
 
   // ------------------------------------------------ Methods
   onShow() {
-    // Nothing here for now.
+    // <!-- ! --- THIS MAY NOT WORK. Moving between steps in ActivityWizard shouldn't reset this. -->
+    this.measurables = deepCopy(this.activity.measurables);
   }
 
   onHide() {
@@ -59,14 +60,6 @@ export default class ConfigureMeasurablesInActivity extends Vue {
   }
 
   // ------------------------------------------------ Computed props
-  getUnselectedMeasurables(): MeasurableDefinition[] {
-    const activityMeasurableIDList: string[] = this.activity.measurables.map(
-      (measurableForActivity) => measurableForActivity.measurableDefinitionId
-    );
-    return this.area.measurableDefinitions.filter(
-      (definition) => !activityMeasurableIDList.includes(definition.id)
-    );
-  }
 
   // ------------------------------------------------ Getters
   getMeasurableDefinition(measurable: MeasurableForActivity) {
@@ -76,14 +69,25 @@ export default class ConfigureMeasurablesInActivity extends Vue {
   }
 
   // ------------------------------------------------ Actions
-  onUpdate(measurables: MeasurableForActivity[]) {
-    this.$emit("update", measurables);
+  updateParentState() {
+    this.$emit("update", this.measurables);
   }
 
   removeMeasurableFromActivity(measurable: MeasurableForActivity) {
-    this.activity.measurables = this.activity.measurables.filter(
-      (m) => m !== measurable
+    this.measurables = this.measurables.filter(
+      (m) => m.measurableDefinitionId !== measurable.measurableDefinitionId
     );
+    this.updateParentState();
+  }
+
+  addSelectedMeasurable(newlySelectedMeasurable: MeasurableForActivity) {
+    this.measurables.push(newlySelectedMeasurable);
+    this.closeMeasurableSelector();
+    this.updateParentState();
+  }
+
+  closeMeasurableSelector() {
+    this.showMeasurableSelectionDialog = false;
   }
 }
 </script>
@@ -92,41 +96,77 @@ export default class ConfigureMeasurablesInActivity extends Vue {
   <v-card flat style="border-radius: 8px">
     <!--  -->
 
-    <v-card-text>
+    <v-card-text class="pa-0 ma-0 pt-2">
       What would you like to measure when you do this activity?
+    </v-card-text>
+
+    <!-- ? ----------------- Header --------------------->
+    <v-card-text
+      v-show="measurables && measurables.length > 0"
+      class="pa-0 ma-0 pt-3"
+    >
+      <v-container class="pa-0 ma-0">
+        <v-row class="pa-0 ma-0 text-center">
+          <v-spacer />
+
+          <v-col class="pa-1" cols="5"> Measurable </v-col>
+          <v-col class="pa-1 pr-5" cols="3"> Required? </v-col>
+          <v-col class="pa-1"> Remove </v-col>
+
+          <v-spacer />
+        </v-row>
+      </v-container>
     </v-card-text>
 
     <!-- ? ----------------- For loop on each Measurable --------------------->
     <v-card-text
+      v-show="measurables && measurables.length > 0"
       v-for="measurable in measurables"
       :key="measurable.measurableDefinitionId"
       class="pa-0 ma-0 pt-2"
     >
-      <v-container>
-        <v-row class="text-center">
+      <v-container class="pa-0 ma-0">
+        <v-row class="pa-0 ma-0 text-center">
           <!--  -->
 
-          <v-col class="px-auto">
+          <v-spacer />
+
+          <v-col class="pa-1 pb-0 text-left" cols="5">
+            <v-chip class="ma-0">
+              <!-- ? -------------- Icon ------------>
+              <span>
+                {{ getMeasurableDefinition(measurable)?.baseUnitEmoji }}
+              </span>
+              <!-- ? -------------- Name ------------>
+              <span class="pl-3">
+                {{ getMeasurableDefinition(measurable)?.title }}
+              </span>
+            </v-chip>
+          </v-col>
+
+          <!-- <v-spacer /> -->
+
+          <v-col class="pa-1 pt-2" cols="3">
             <!-- ? -------------- Is Required ------------>
-            <v-select v-model="measurable.isRequired"></v-select>
+            <v-switch
+              v-model="measurable.isRequired"
+              hide-details="false"
+              label=""
+              class="ma-0 pa-0"
+            >
+            </v-switch>
           </v-col>
 
-          <v-col class="px-auto">
-            <!-- ? -------------- Icon ------------>
-            <v-icon> {{ getMeasurableDefinition(measurable).icon }} </v-icon>
+          <!-- <v-spacer /> -->
+
+          <v-col class="pa-1">
+            <!-- ? -------------- (x) Remove button ------------>
+            <v-btn icon @click="removeMeasurableFromActivity(measurable)">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
           </v-col>
 
-          <v-col class="px-auto">
-            <!-- ? -------------- Name ------------>
-            <v-icon> {{ getMeasurableDefinition(measurable).title }} </v-icon>
-          </v-col>
-
-          <v-col class="px-auto">
-            <!-- ? -------------- Remove (x) ------------>
-            <v-icon @click="removeMeasurableFromActivity(measurable)">
-              mdi-close
-            </v-icon>
-          </v-col>
+          <v-spacer />
 
           <!--  -->
         </v-row>
@@ -148,8 +188,10 @@ export default class ConfigureMeasurablesInActivity extends Vue {
     <!-- ? ------------ Selector for adding Measurables ------------ * -->
     <MeasurableSelector
       :isDisplayed="showMeasurableSelectionDialog"
-      :availableMeasurables="getUnselectedMeasurables"
-      :area="area"
+      :measurablesInActivity="activity.measurables"
+      :areaId="activity.areaId"
+      v-on:save-confirmed="addSelectedMeasurable"
+      v-on:discard="closeMeasurableSelector"
     />
 
     <!--  -->

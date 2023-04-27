@@ -48,13 +48,11 @@ export default class MeasurableChips extends Vue {
       @click="onChipClick(measurableDefinition)"
       @click:close="onChipCloseButtonClick(measurableDefinition)"
       :model-value="true"
-      :prepend-icon="measurableDefinition.icon"
-      :style="`border-radius: 8px`"
-      :color="getCategoryColor(measurableDefinition)"
-      class="pl-1 ma-1 mr-1 mt-0 mb-2 pb-0 pt-0"
+      :style="`border-radius: 18px`"
+      class="pa-3 ma-1"
     >
-      {{ measurableDefinition.emoji }}
-      {{ measurableDefinition.title }}
+      {{ measurableDefinition.baseUnitEmoji }}
+      <span class="pl-2">{{ measurableDefinition.title }}</span>
     </v-chip>
   </v-chip-group>
 </template>

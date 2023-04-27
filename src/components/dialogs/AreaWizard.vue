@@ -9,9 +9,10 @@ import { defaultNewArea } from "@/constants/DefaultDataForForms";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import CategorySelector from "../chips/CategorySelector.vue";
 import ActivitiesInArea from "../chips/ActivitiesInArea.vue";
-import ColorThief from "colorthief";
 import ImagePicker from "@/components/picker/ImagePicker.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
+import { v4 as uuid } from "uuid";
+import { setColorsFromImage } from "@/utils/colors/ColorUtils";
 
 /**
  * TODO P1 ----- Add validations. Block the Save button, mark the pages that have errors or ✅
@@ -27,14 +28,13 @@ import { DialogMode } from "@/model/enum/DialogMode";
     ConfirmationDialog: ConfirmationDialog,
     CategorySelector: CategorySelector,
     ActivitiesInArea: ActivitiesInArea,
-    ColorThief: ColorThief,
     ImagePicker: ImagePicker,
   },
 })
 export default class AreaWizard extends Vue {
   // ------------------------------------------------ Props
   @Prop()
-  providedArea!: Area;
+  area!: Area;
   @Prop()
   showDialog!: boolean;
   @Prop()
@@ -46,12 +46,13 @@ export default class AreaWizard extends Vue {
   @Watch("showDialog")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
+    const isDialogOpen = !!_newValue;
     console.log("👀 @Watch in AreaWizard. _newValue = " + _newValue);
-    if (this.providedArea != null)
-      this.currentArea = deepCopy(this.providedArea);
-    // Stop stepper from overflowing
-    if (this.currentStepperPos > this.numberOfSteps) {
-      this.currentStepperPos = this.numberOfSteps;
+
+    if (isDialogOpen) {
+      this.onShow();
+    } else {
+      this.onHide();
     }
   }
 
@@ -61,7 +62,7 @@ export default class AreaWizard extends Vue {
 
   // ------------------------------------------------ Data
   // State
-  currentArea: Area = deepCopy(defaultNewArea);
+  area_local: Area = deepCopy(defaultNewArea);
 
   // Toggles for displays
   showDiscardConfirmationDialog = false;
@@ -93,7 +94,23 @@ export default class AreaWizard extends Vue {
 
   // ------------------------------------------------ Computed
 
-  // ------------------------------------------------ Mounted
+  // ------------------------------------------------ Lifecycle
+  onShow() {
+    this.resetToDefaultState();
+
+    if (this.dialogMode === DialogMode.CREATE) {
+      this.area_local.id = uuid(); // Generate a new ID
+
+      // ! ---- In the future, I might want to clean up DANGLING new things automatically.
+      this.areasStore.createArea(this.area_local); // Write to store.
+    }
+
+    console.log("🦎 onShow ---" + JSON.stringify(this.area_local));
+  }
+
+  onHide() {
+    // Nothing for now.
+  }
   mounted() {
     this.categoryStore.subscribeToStore();
     this.areCategoriesLoaded = true;
@@ -104,9 +121,11 @@ export default class AreaWizard extends Vue {
   // ------------------------------------------------ Methods
   saveArea(): void {
     if (this.dialogMode === DialogMode.CREATE) {
-      this.areasStore.createArea(this.currentArea);
+      // Setting colors here in case the default image has not been changed.
+      setColorsFromImage(this.area_local);
+      this.areasStore.createArea(this.area_local);
     } else {
-      this.areasStore.updateArea(this.currentArea);
+      this.areasStore.updateArea(this.area_local);
     }
     this.closeThisDialog();
   }
@@ -119,8 +138,10 @@ export default class AreaWizard extends Vue {
   }
 
   resetToDefaultState() {
-    // Reset to DEFAULT area
-    this.currentArea = deepCopy(defaultNewArea);
+    // Reset Area
+    this.area_local = this.area
+      ? deepCopy(this.area)
+      : deepCopy(defaultNewArea);
 
     // Hide dialogs and windows
     this.showDiscardConfirmationDialog = false;
@@ -133,8 +154,8 @@ export default class AreaWizard extends Vue {
   triggerCancellation() {
     // If nothing's changed, discard without confirmation
     if (
-      JSON.stringify(this.providedArea) == JSON.stringify(this.currentArea) ||
-      JSON.stringify(defaultNewArea) == JSON.stringify(this.currentArea)
+      JSON.stringify(this.area) == JSON.stringify(this.area_local) ||
+      JSON.stringify(defaultNewArea) == JSON.stringify(this.area_local)
     ) {
       this.closeThisDialog();
     } else {
@@ -142,15 +163,19 @@ export default class AreaWizard extends Vue {
     }
   }
 
-  respondToConfirmDialog(isConfirmed: boolean): void {
+  respondToDiscardConfirmation(isConfirmed: boolean): void {
     if (isConfirmed) {
+      if (this.dialogMode === DialogMode.CREATE) {
+        // Delete from the store.
+        this.areasStore.deleteArea(this.area_local);
+      }
       this.closeThisDialog();
     }
     this.showDiscardConfirmationDialog = false;
   }
 
   onCategoryTagsChanged(updatedCategoryTagIdList: string[]) {
-    this.currentArea.categoryTags = updatedCategoryTagIdList;
+    this.area_local.categoryTags = updatedCategoryTagIdList;
   }
 
   /* ------------------------------ Stepper ------------------------------*/
@@ -181,50 +206,15 @@ export default class AreaWizard extends Vue {
     this.showImageEditDialog = true;
   }
 
-  /**
-   * ? -------------- Color thief
-   * ! --------- imageChanged() ----- needs to be called in a better place.  -->
-   *
-   * ! ----- Use this to generate SHADES
-   * https://stackoverflow.com/questions/40619476/javascript-generate-different-shades-of-the-same-color
-   */
   imageChanged(newImageUrl: string) {
-    console.log("--------- IMAGE CHANGED");
+    console.log("IMAGE CHANGED");
+    // if (newImageUrl === this.area_local.imageUrl) return; // No change
 
-    // Update URL
-    this.currentArea.imageUrl = newImageUrl;
+    this.area_local.imageUrl = newImageUrl; // Update URL
+    this.showImageEditDialog = false; // Hide image-picker.
 
-    // Hide image-picker.
-    this.showImageEditDialog = false;
-
-    const colorThief = new ColorThief();
-
-    // Make a temporary HTML element for the image.
-    const imageElement = new Image();
-    // Hack to prevent CORS errors. We use a proxy server to redirect.
-    let imageURL = this.currentArea.imageUrl;
-    let googleProxyURL =
-      "https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=";
-
-    imageElement.src = googleProxyURL + encodeURIComponent(imageURL);
-
-    // Prevent CORS errors.
-    imageElement.crossOrigin = "Anonymous";
-
-    imageElement.addEventListener("load", function () {
-      /**
-       * * ------- Make color-thief do its thiefing.
-       */
-      const dominantColor = colorThief.getColor(imageElement);
-      console.log("🎨 🎨 🎨 🎨 Dominant color -----> " + dominantColor);
-      const palette = colorThief.getPalette(imageElement);
-      console.log("🎨 🎨 🎨 🎨 Palette -----> " + palette);
-
-      // <!-- TODO P1 --------- Write the palette into the Area. So it doesn't need to be reconstructed every time. -->
-    });
-
-    // Destroy
-    imageElement.remove();
+    // Extract colors from the image.
+    setColorsFromImage(this.area_local);
   }
 }
 </script>
@@ -247,7 +237,7 @@ export default class AreaWizard extends Vue {
         <v-card-text class="pt-2">
           <v-text-field
             label="Area"
-            v-model="currentArea.title"
+            v-model="area_local.title"
             :rules="areaNameRules"
             hint="Click to change"
             persistent-hint
@@ -260,8 +250,10 @@ export default class AreaWizard extends Vue {
           ></v-text-field>
         </v-card-text>
 
+        <v-divider />
+
         <!-- ? ------------------------- Stepper Window -------------------------->
-        <v-card-text>
+        <v-card-text class="mt-4">
           <v-window v-model="currentStepperPos">
             <!--  -->
 
@@ -275,7 +267,7 @@ export default class AreaWizard extends Vue {
                       <v-col cols="4" class="ma-0 pa-0">
                         <v-img
                           style="border-radius: 10px"
-                          :src="currentArea.imageUrl"
+                          :src="area_local.imageUrl"
                           :width="IMAGE_HEIGHT"
                           :height="IMAGE_HEIGHT"
                           @click="showImagePicker"
@@ -287,7 +279,7 @@ export default class AreaWizard extends Vue {
                           rows="3"
                           hint="Describe what this Area means to you."
                           label="Description"
-                          v-model="currentArea.description"
+                          v-model="area_local.description"
                           counter="200"
                           max-length="200"
                           clearable
@@ -309,9 +301,9 @@ export default class AreaWizard extends Vue {
 
                   <!-- * ---------------- Tag selector for category chips -->
                   <CategorySelector
-                    :area="currentArea"
+                    :area="area_local"
                     :allItemsList="categoryStore.getCategoryTagsList()"
-                    :selectedItemIdList="currentArea.categoryTags"
+                    :selectedItemIdList="area_local.categoryTags"
                     :isDisplayed="showDialog"
                     v-on:category-tags-changed="onCategoryTagsChanged"
                   ></CategorySelector>
@@ -331,7 +323,7 @@ export default class AreaWizard extends Vue {
 
                   <!-- ? -------- Activities selector -->
                   <ActivitiesInArea
-                    :area="currentArea"
+                    :area="area_local"
                     :isDisplayed="showDialog"
                   >
                   </ActivitiesInArea>
@@ -397,7 +389,7 @@ export default class AreaWizard extends Vue {
           <!------------- Cancel -->
           <v-btn
             @click="triggerCancellation"
-            outlined
+            text
             density="comfortable"
             class="mr-4 text-body-2 px-auto"
           >
@@ -425,7 +417,7 @@ export default class AreaWizard extends Vue {
 
     <!-- * -------------------------------- Confirm dialog for discarding -->
     <ConfirmationDialog
-      v-on:confirm-status-change="respondToConfirmDialog"
+      v-on:confirm-status-change="respondToDiscardConfirmation"
       :showDialog="showDiscardConfirmationDialog"
       messageToDisplay="Sure you want to discard this?"
       yesButtonText="Discard"
@@ -434,7 +426,7 @@ export default class AreaWizard extends Vue {
 
     <ImagePicker
       :showDialog="showImageEditDialog"
-      :imageUrl="currentArea.imageUrl"
+      :imageUrl="area_local.imageUrl"
       v-on:save="imageChanged"
       v-on:cancelled="showImageEditDialog = false"
     />

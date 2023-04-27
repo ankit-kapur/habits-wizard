@@ -2,11 +2,13 @@
 import { defaultNewCategory } from "@/constants/DefaultDataForForms";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import ConfirmationDialog from "./ConfirmationDialog.vue";
 import { useIconsStore } from "@/store/IconsStore";
 import { deepCopy } from "deep-copy-ts";
-import CategoryChips from "../chips/CategoryChips.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
+import { Area } from "@/model/pojo/definitions/Area";
+import CategoryChips from "@/components/chips/CategoryChips.vue";
+import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
+import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 
 /**
  * TODO P1 ----- Add validations. Block the Save button.
@@ -22,6 +24,8 @@ import { DialogMode } from "@/model/enum/DialogMode";
 export default class CategoryCreateOrEditDialog extends Vue {
   @Prop()
   categoryTag?: CategoryTag;
+  @Prop()
+  area!: Area;
   @Prop()
   showDialog!: boolean;
   @Prop()
@@ -45,8 +49,10 @@ export default class CategoryCreateOrEditDialog extends Vue {
   // <!-- * ------------------------------------------- Data -->
   categoryTag_local = deepCopy(defaultNewCategory);
   showDialogForConfirmDiscard = false;
+  showDeleteConfirmDialog = false;
   showColorPicker = false;
   showAdvancedColorPicker = false;
+  swatchesMaxColumns = 5;
 
   // <!-- * ------------------------------------------- Computed props -->
   get categoriesList() {
@@ -55,6 +61,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
 
   // <!-- * ------------------------------------------- Stores -->
   iconsStore = useIconsStore();
+  categoriesStore = useCategoryTagsStore();
 
   // <!-- * ------------------------------------------- Lifecycle actions -->
   mounted() {
@@ -68,31 +75,59 @@ export default class CategoryCreateOrEditDialog extends Vue {
     this.categoryTag_local = this.categoryTag
       ? this.categoryTag
       : defaultNewCategory;
+
+    if (this.dialogMode === DialogMode.CREATE && this.area.dominantColor)
+      this.categoryTag_local.color = this.area.dominantColor;
+
+    this.showAdvancedColorPicker = false;
   }
 
   onHide() {
     // No actions so far.
   }
 
-  /**
-   *  TODO --------- Replace with values from the Thief
-   */
-  colorSwatches = [
-    ["#FF0000", "#AA0000", "#550000"],
-    ["#FFFF00", "#AAAA00", "#555500"],
-    ["#00FF00", "#00AA00", "#005500"],
-    ["#00FFFF", "#00AAAA", "#005555"],
-    ["#0000FF", "#0000AA", "#000055"],
-  ];
-
   // ------------------------------------------------ Methods
+  get colorPalette(): string[][] {
+    if (!this.area || !this.area.palette) return [];
+    // return this.colorSwatches;
+
+    // Initialize with empty columns.
+    const swatches: string[][] = [];
+    for (let i = 0; i < this.swatchesMaxColumns; i++) {
+      const emptyArray: string[] = [];
+      swatches.push(emptyArray);
+    }
+
+    // Fill columns
+    let column = 0;
+    for (var color of this.area.palette) {
+      swatches[column].push(color);
+      column = (1 + column) % this.swatchesMaxColumns;
+    }
+
+    console.log("area.palette =" + JSON.stringify(this.area.palette));
+    console.log("swatches =" + JSON.stringify(swatches));
+    return swatches;
+  }
+
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
     if (isConfirmed) {
       this.discard();
-    } else {
-      console.log("NOT DISCARDING");
     }
     this.showDialogForConfirmDiscard = false;
+  }
+
+  triggerDeleteAction(): void {
+    // <!-- TODO P1 ----- Validate category is not attached to any Areas. -->
+    this.showDeleteConfirmDialog = true;
+  }
+
+  respondToDeleteConfirmDialog(isConfirmed: boolean): void {
+    if (isConfirmed) {
+      this.categoriesStore.deleteCategoryTag(this.categoryTag_local);
+    }
+    this.showDeleteConfirmDialog = false;
+    this.discard(); // Ask parent to close.
   }
 
   discard() {
@@ -225,7 +260,15 @@ export default class CategoryCreateOrEditDialog extends Vue {
 
       <!-- ? ------------------ Save / Cancel ---------------------->
       <v-card-actions class="pt-4 pb-4">
+        <!--  -->
+
+        <!-- ? ---------- Delete button -->
+        <v-btn icon @click="triggerDeleteAction">
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
         <v-spacer></v-spacer>
+
+        <!-- ? ---------- Cancel and Save buttons -->
         <v-btn text @click="triggerCancellation"> Cancel </v-btn>
         <v-btn color="primary" @click="saveCategoryTag">
           {{ dialogMode === "CREATE" ? `Create` : `Save` }}
@@ -253,11 +296,11 @@ export default class CategoryCreateOrEditDialog extends Vue {
             v-model="categoryTag_local.color"
             mode="hexa"
             hide-inputs
-            :swatches="colorSwatches"
+            :swatches="colorPalette"
             swatches-max-height="200"
             show-swatches
-            :hide-canvas="showAdvancedColorPicker"
-            :hide-sliders="showAdvancedColorPicker"
+            :hide-canvas="!showAdvancedColorPicker"
+            :hide-sliders="!showAdvancedColorPicker"
           ></v-color-picker>
         </v-card-text>
 
@@ -269,7 +312,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
             text
             @click="showAdvancedColorPicker = !showAdvancedColorPicker"
           >
-            See more
+            See {{ showAdvancedColorPicker ? `less` : `more` }}
           </v-btn>
 
           <v-spacer />
@@ -280,12 +323,19 @@ export default class CategoryCreateOrEditDialog extends Vue {
       </v-card>
     </v-dialog>
 
-    <!-- ? ------------------------ Confirm discard -->
+    <!-- ? ------------------------ Confirm dialogs -->
     <ConfirmationDialog
       v-on:confirm-status-change="respondToConfirmDiscardDialog"
       :showDialog="showDialogForConfirmDiscard"
       messageToDisplay="Sure you want to discard this?"
       yesButtonText="Discard"
+      noButtonText="Cancel"
+    />
+    <ConfirmationDialog
+      v-on:confirm-status-change="respondToDeleteConfirmDialog"
+      :showDialog="showDeleteConfirmDialog"
+      messageToDisplay="Sure want to delete this category?"
+      yesButtonText="Delete"
       noButtonText="Cancel"
     />
   </v-bottom-sheet>

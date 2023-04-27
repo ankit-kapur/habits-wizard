@@ -4,6 +4,7 @@ import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import MeasurableWizard from "@/components/wizards/MeasurableWizard.vue";
 import { defaultNewMeasurable } from "@/constants/DefaultMeasurables";
 import { Area } from "@/model/pojo/definitions/Area";
+import { MeasurableForActivity } from "@/model/pojo/definitions/Activity";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 import { useAreasStore } from "@/store/AreasStore";
 import { deepCopy } from "deep-copy-ts";
@@ -19,9 +20,11 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 export default class MeasurableSelector extends Vue {
   // ------------------------------------------------ Props
   @Prop()
-  area!: Area;
+  measurablesInActivity!: MeasurableForActivity[];
   @Prop()
-  availableMeasurables!: MeasurableDefinition[];
+  areaId!: string;
+  @Prop()
+  alreadySelected!: MeasurableDefinition[];
   @Prop()
   isDisplayed!: boolean;
 
@@ -47,11 +50,29 @@ export default class MeasurableSelector extends Vue {
   showCreateMeasurableDialog = false;
   showEditMeasurableDialog = false;
   showDeleteMeasurableDialog = false;
-  selectedMeasurable: MeasurableDefinition | null = null;
+  selectedMeasurableId: string | null = null;
   isRequired = false;
   newMeasurable: MeasurableDefinition = deepCopy(defaultNewMeasurable);
+  availableMeasurables: MeasurableDefinition[] = [];
 
   // ------------------------------------------------ Computed
+  getArea(): Area {
+    return this.areasStore.getAreaById(this.areaId);
+  }
+  /**
+   * Returns all the Measurables in the Area that are not already in the Activity.
+   */
+  loadAvailableMeasurables() {
+    const activityMeasurableIDList: string[] = this.measurablesInActivity.map(
+      (measurableForActivity) => measurableForActivity.measurableDefinitionId
+    );
+
+    console.log("🐞 AREA = " + JSON.stringify(this.getArea()));
+
+    this.availableMeasurables = this.getArea().measurableDefinitions.filter(
+      (definition) => !activityMeasurableIDList.includes(definition.id)
+    );
+  }
 
   // ------------------------------------------------ Lifecycle management
   mounted() {
@@ -66,15 +87,20 @@ export default class MeasurableSelector extends Vue {
 
   onShow() {
     this.areasStore.subscribeToLoadAllQuery();
+    this.loadAvailableMeasurables();
   }
 
   onHide() {
     this.areasStore.unsubscribeAll();
+    this.resetState();
+  }
+  resetState() {
+    this.selectedMeasurableId = null; // Reset
   }
 
   // ------------------------------------------------ Methods
   createNewMeasurable(measurableDefinition: MeasurableDefinition) {
-    const updatedArea = deepCopy(this.area);
+    const updatedArea = deepCopy(this.getArea());
     updatedArea.measurableDefinitions.push(measurableDefinition);
     // Save to store
     this.areasStore.updateArea(updatedArea);
@@ -84,13 +110,13 @@ export default class MeasurableSelector extends Vue {
 
   triggerEditDialog(measurableDefinition: MeasurableDefinition) {
     console.log("triggerEditDialog");
-    this.selectedMeasurable = measurableDefinition;
+    this.selectedMeasurableId = measurableDefinition.id;
     this.showEditMeasurableDialog = true;
   }
 
   triggerDeleteDialog(measurableDefinition: MeasurableDefinition) {
     console.log("triggerDeleteDialog");
-    this.selectedMeasurable = measurableDefinition;
+    this.selectedMeasurableId = measurableDefinition.id;
     this.showDeleteMeasurableDialog = true;
   }
 
@@ -99,7 +125,7 @@ export default class MeasurableSelector extends Vue {
     // Save to store
     this.areasStore.updateMeasurableDefinition(
       measurableDefinition,
-      this.area.id
+      this.getArea().id
     );
     // Hide dialog
     this.closeWizardDialogs();
@@ -108,28 +134,62 @@ export default class MeasurableSelector extends Vue {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   closeWizardDialogs(irrelevantValue?: boolean) {
     console.log("Discarding");
+    this.resetState();
     this.showCreateMeasurableDialog = false;
     this.showEditMeasurableDialog = false;
-
-    this.selectedMeasurable = deepCopy(defaultNewMeasurable);
   }
 
   // Delete
   respondToConfirmDeleteDialog(isConfirmed: boolean): void {
+    console.log("Inside respondToConfirmDeleteDialog ");
     if (isConfirmed) {
       this.areasStore.deleteMeasurableDefinition(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.selectedMeasurable!.id,
-        this.area.id
+        this.selectedMeasurableId!,
+        this.getArea().id
       );
     }
     this.showDeleteMeasurableDialog = false;
+  }
+
+  discard() {
+    this.$emit("discard", true);
+  }
+
+  confirmSelection() {
+    if (this.selectedMeasurableId) {
+      const newlySelectedMeasurable: MeasurableForActivity = {
+        measurableDefinitionId: this.selectedMeasurableId,
+        isRequired: this.isRequired,
+      };
+      console.log(
+        "type of this.selectedMeasurable =====> " +
+          typeof this.selectedMeasurableId
+      );
+      console.log(
+        "this.selectedMeasurable =====> " +
+          JSON.stringify(this.selectedMeasurableId)
+      );
+      console.log(
+        "confirmSelection() =====> " + JSON.stringify(newlySelectedMeasurable)
+      );
+      this.$emit("save-confirmed", newlySelectedMeasurable);
+    } else {
+      console.log("This is a bug 🐞");
+    }
   }
 }
 </script>
 
 <template>
-  <div>
+  <v-bottom-sheet
+    v-model="isDisplayed"
+    inset
+    max-width="400"
+    overlay-opacity="0.88"
+    persistent
+    @keydown.esc="discard"
+  >
     <v-card flat>
       <!-- * ---------------- Chips -->
       <v-card-text class="pa-0 ma-0">
@@ -137,16 +197,17 @@ export default class MeasurableSelector extends Vue {
         <v-card-title class="pa-2 text-h6 font-weight-light">
           Add a Measurable
         </v-card-title>
-        <v-card-subtitle class="pa-2 pt-3 text-caption font-weight-light">
+        <!-- <v-card-subtitle class="pa-2 pt-3 text-caption font-weight-light">
           Select from the list, or create a new one.
-        </v-card-subtitle>
+        </v-card-subtitle> -->
 
-        <!-- * ------------------------ Selection chips  -------------------------->
+        <!-- * ------------------------ Dropdown  -------------------------->
+        <!-- :disabled="!isInEditMode" -->
         <v-select
           chips
           deletable-chips
-          label="Select a Measurable"
-          v-model="selectedMeasurable"
+          label="Select from the list, or create a new one."
+          v-model="selectedMeasurableId"
           :items="availableMeasurables"
           item-text="title"
           item-value="id"
@@ -155,7 +216,6 @@ export default class MeasurableSelector extends Vue {
             closeOnClick: true,
             openOnClick: false,
           }"
-          :disabled="showEditMeasurableDialog"
           color="primary"
           class="pt-2 px-2"
         >
@@ -164,10 +224,27 @@ export default class MeasurableSelector extends Vue {
             <MeasurableChips
               :measurableDefinitions="[data.item]"
               :hasCloseButton="true"
-              :closeIcon="`mdi-close`"
+              :closeIcon="`mdi-delete`"
               v-on:chip-clicked="triggerEditDialog"
               v-on:chip-closed="triggerDeleteDialog"
             />
+          </template>
+
+          <!-- * ------------ (+) Create button in the list ------------ * -->
+          <template v-slot:prepend-item>
+            <v-list-item
+              ripple
+              @mousedown.prevent
+              @click="showCreateMeasurableDialog = true"
+            >
+              <v-list-item-action>
+                <v-icon> mdi-plus </v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title> <span> Create </span> </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider class="mt-2"></v-divider>
           </template>
 
           <!-- * ------------ List item in dropdown ------------ * -->
@@ -175,10 +252,15 @@ export default class MeasurableSelector extends Vue {
           <!-- eslint-disable vue/no-v-text-v-html-on-component -->
           <template v-slot:item="{ item, attrs, on }">
             <v-list-item v-on="on" v-bind="attrs" #default="{ active }">
+              <!--  -->
+
+              <v-list-item-action>
+                <span>{{ item.baseUnitEmoji }}</span>
+              </v-list-item-action>
+
               <v-list-item-content>
                 <v-list-item-title>
                   <v-row no-gutters align="center">
-                    <span>{{ item.emoji }}</span>
                     <span>{{ item.title }}</span>
                     <v-spacer></v-spacer>
                   </v-row>
@@ -210,13 +292,28 @@ export default class MeasurableSelector extends Vue {
         <v-spacer />
       </v-card-actions>
 
+      <v-divider />
+
+      <!-- ? ------------------ Save / Cancel ---------------------->
+      <v-card-actions class="pt-4 pb-4">
+        <v-spacer></v-spacer>
+        <v-btn text @click="discard"> Cancel </v-btn>
+        <v-btn
+          color="primary"
+          @click="confirmSelection"
+          :disabled="!selectedMeasurableId"
+        >
+          Select
+        </v-btn>
+      </v-card-actions>
+
       <!--  -->
     </v-card>
 
     <!-- * ------------------------ New popup  -------------------------->
     <MeasurableWizard
       :measurableDefinition="newMeasurable"
-      :area="area"
+      :area="getArea"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateMeasurableDialog"
       v-on:save-confirmed="createNewMeasurable"
@@ -225,8 +322,8 @@ export default class MeasurableSelector extends Vue {
 
     <!-- * ------------------------ Edit popup  -------------------------->
     <MeasurableWizard
-      :measurableDefinition="selectedMeasurable"
-      :area="area"
+      :measurableDefinition="selectedMeasurableId"
+      :area="getArea"
       :dialog-mode="`EDIT`"
       :showDialog="showEditMeasurableDialog"
       v-on:save-confirmed="saveExistingMeasurable"
@@ -242,5 +339,5 @@ export default class MeasurableSelector extends Vue {
       yesButtonText="Delete"
       noButtonText="Cancel"
     />
-  </div>
+  </v-bottom-sheet>
 </template>

@@ -6,9 +6,10 @@ import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition"
 import { defaultNewMeasurable } from "@/constants/DefaultMeasurables";
 import MeasurableChips from "../chips/MeasurableChips.vue";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
-import { Picker, EmojiIndex } from "emoji-mart-vue-fast";
+import { Picker, Emoji, EmojiIndex } from "emoji-mart-vue-fast";
 import data from "emoji-mart-vue-fast/data/all.json";
 import "emoji-mart-vue-fast/css/emoji-mart.css";
+import { uuidv4 } from "@firebase/util";
 
 /**
  * TODO P1 ----- Add validations. Block the Save button.
@@ -19,6 +20,7 @@ import "emoji-mart-vue-fast/css/emoji-mart.css";
     ConfirmationDialog: ConfirmationDialog,
     MeasurableChips: MeasurableChips,
     Picker: Picker,
+    Emoji: Emoji,
   },
   methods: {},
 })
@@ -48,7 +50,7 @@ export default class MeasurableWizard extends Vue {
   // <!-- ? ------------------------------------------- Data -->
   measurableDef_local: MeasurableDefinition = deepCopy(defaultNewMeasurable);
   showDialogForConfirmDiscard = false;
-  showColorPicker = false;
+  showEmojiPicker = false;
   showAdvancedColorPicker = false;
 
   emojiIndex = new EmojiIndex(data);
@@ -67,14 +69,20 @@ export default class MeasurableWizard extends Vue {
   }
 
   onShow() {
-    // Reset
-    this.measurableDef_local = this.measurableDefinition
-      ? this.measurableDefinition
-      : defaultNewMeasurable;
+    this.resetToDefaultState();
   }
 
   onHide() {
     // No actions so far.
+  }
+
+  resetToDefaultState() {
+    // Reset
+    this.measurableDef_local = deepCopy(
+      this.measurableDefinition
+        ? this.measurableDefinition
+        : defaultNewMeasurable
+    );
   }
 
   // ------------------------------------------------ Methods
@@ -93,7 +101,8 @@ export default class MeasurableWizard extends Vue {
   }
 
   saveCategoryTag() {
-    // Reset dialog box
+    // Generate UUID
+    this.measurableDef_local.id = uuidv4();
     // Ask the parent to update.
     this.$emit("save-confirmed", this.measurableDef_local);
   }
@@ -113,7 +122,9 @@ export default class MeasurableWizard extends Vue {
   }
 
   selectEmoji(emoji) {
+    console.log("Emoji ==== " + JSON.stringify(emoji));
     this.measurableDef_local.baseUnitEmoji = emoji;
+    this.showEmojiPicker = false;
   }
 }
 </script>
@@ -185,43 +196,23 @@ export default class MeasurableWizard extends Vue {
       <!-- TODO P0 -------- v-select for TYPE -->
       <!-- TODO P0 -------- text-field for base unit name -->
 
-      <!-- TODO: Make an emoji picker component -->
-
       <!-- ? ------------------ Pick an emoji ----------------------->
       <!-- * ----- Source: https://github.com/serebrov/emoji-mart-vue -->
       <v-card-actions class="pl-4 pb-4 pt-0">
         <v-container fluid>
           <!--  -->
 
-          <v-row>
+          <v-row @click="showEmojiPicker = true">
             <v-col class="px-auto pb-0">
               <!--  -->
               <!-- ? -------------- Emoji ------------>
-              <v-text-field
-                label="Emoji"
-                v-model="measurableDef_local.baseUnitEmoji"
-                outlined
-                clearable
-                placeholder=""
-                hint="Pick an emoji"
-                counter="1"
-                class="pa-0"
-              />
-
               <span> Emoji: </span>
+
               <emoji
                 :data="emojiIndex"
                 :emoji="measurableDef_local.baseUnitEmoji"
+                :skin="3"
                 :size="32"
-              />
-
-              <Picker
-                :data="emojiIndex"
-                set="native"
-                @select="selectEmoji"
-                :emojiTooltip="true"
-                title="Pick an emoji"
-                :emojiSize="30"
               />
 
               <!--  -->
@@ -256,5 +247,18 @@ export default class MeasurableWizard extends Vue {
       yesButtonText="Discard"
       noButtonText="Cancel"
     />
+
+    <v-bottom-sheet v-model="showEmojiPicker">
+      <picker
+        :data="emojiIndex"
+        :native="true"
+        set="native"
+        @select="selectEmoji"
+        :emojiTooltip="true"
+        title="Pick an emoji"
+        :emojiSize="30"
+        :defaultSkin="3"
+      />
+    </v-bottom-sheet>
   </v-bottom-sheet>
 </template>

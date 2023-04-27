@@ -1,5 +1,6 @@
 <script lang="ts">
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import { getFillColor } from "@/utils/colors/ColorUtils";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
@@ -23,17 +24,7 @@ export default class CategoryChips extends Vue {
   }
 
   // ------------------------------------------------ Getters
-  getFillColor(categoryTag: CategoryTag) {
-    return (
-      categoryTag.color.substring(0, categoryTag.color.length - 2) +
-      this.getFillOpacityHex()
-    );
-  }
-
-  getFillOpacityHex() {
-    const hex = Math.round((this.fillOpacityPercent / 100) * 255).toString(16);
-    return hex.length > 1 ? hex : 0 + hex;
-  }
+  getFillColor = getFillColor;
 
   // ------------------------------------------------ Actions
   onChipClick(categoryTag: CategoryTag) {
@@ -64,15 +55,14 @@ export default class CategoryChips extends Vue {
       @click:close="onChipCloseButtonClick(categoryTag)"
       :model-value="true"
       :style="`border: 1px solid darkgray; border-radius: 20px`"
-      :color="getFillColor(categoryTag)"
+      :color="getFillColor(categoryTag.color, fillOpacityPercent)"
       class="ma-1 mt-0 ml-0 mr-1"
     >
       <v-icon
-        x-large
-        :color="categoryTag.color"
         small
+        :color="categoryTag.color"
         class="ml-0 mr-2"
-        style="border: 0px solid darkslategray; border-radius: 20px"
+        style="border: 0px solid darkslategray; border-radius: 18px"
       >
         mdi-circle
       </v-icon>

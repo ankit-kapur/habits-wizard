@@ -113,7 +113,7 @@ export default class AreasPage extends Vue {
       :dialog-mode="`EDIT`"
       v-on:close-dialog="closeEditAreaDialog"
       :showDialog="showDialogForEditArea"
-      :providedArea="selectedArea"
+      :area="selectedArea"
     />
   </v-container>
 </template>

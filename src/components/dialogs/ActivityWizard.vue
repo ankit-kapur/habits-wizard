@@ -66,7 +66,7 @@ export default class ActivityWizard extends Vue {
   }
 
   /* <!-- ? ------------------------------ Data ------------------------------> */
-  activity_local = deepCopy(defaultNewActivity);
+  activity_local: Activity = deepCopy(defaultNewActivity);
   selectedCategory: CategoryTag | null = null;
   showDialogForConfirmDiscard = false;
   showMeasurableSelectionDialog = false;
@@ -117,7 +117,7 @@ export default class ActivityWizard extends Vue {
     this.categoryTagsStore.subscribeToStore(); // Subscribe to store
 
     // Reset
-    this.activity_local = this.activity;
+    this.resetToDefaultState();
 
     // Assign category
     this.selectedCategoryId = this.activity_local.categoryId;
@@ -132,7 +132,7 @@ export default class ActivityWizard extends Vue {
     if (this.selectedCategoryId.length > 0) {
       this.activity_local.categoryId = this.selectedCategoryId;
     } else {
-      // TODO: Show error. At least 1 category must be selected.
+      console.log("This is a bug 🐞");
     }
   }
 
@@ -140,8 +140,21 @@ export default class ActivityWizard extends Vue {
     this.activity_local.measurables = measurables;
   }
 
-  resetNewActivityData() {
-    this.activity_local = deepCopy(defaultNewActivity);
+  resetToDefaultState() {
+    // Reset Activity.
+    this.activity_local = deepCopy(
+      this.activity ? this.activity : defaultNewActivity
+    );
+
+    this.activity_local.areaId = this.area.id;
+    console.log(
+      "🐞 area ======" +
+        JSON.stringify(this.area.id) +
+        ". areaId ======= " +
+        JSON.stringify(this.area.id)
+    );
+
+    this.currentStepperPos = 0; // Stepper
   }
 
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
@@ -152,9 +165,7 @@ export default class ActivityWizard extends Vue {
   }
 
   discard() {
-    console.log("DISCARDING");
     this.$emit("discard", true);
-    this.resetNewActivityData();
   }
 
   saveActivity() {
@@ -421,6 +432,7 @@ export default class ActivityWizard extends Vue {
               <ConfigureMeasurablesInActivity
                 :activity="activity_local"
                 :area="area"
+                :isDisplayed="showDialog"
                 v-on:update="saveMeasurablesUpdate"
               />
             </v-window-item>

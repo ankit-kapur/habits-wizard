@@ -88,14 +88,8 @@ export default class ActivitiesInArea extends Vue {
   }
 
   promptForNewActivity() {
-    // Checks if the searchInput text matches something from the dropdown.
-    if (
-      this.activitiesList.filter((e) => e.title.startsWith(this.searchInput))
-        .length == 0
-    ) {
-      this.newActivity.title = this.searchInput;
-      this.showCreateActivityDialog = true;
-    }
+    console.log("🦎 promptForNewActivity ---" + JSON.stringify(this.area));
+    this.showCreateActivityDialog = true;
   }
 
   createNewActivity(newActivity: Activity) {
@@ -116,17 +110,6 @@ export default class ActivitiesInArea extends Vue {
     console.log("triggerDeleteDialog");
     this.selectedActivity = categoryTag;
     this.showDeleteActivityDialog = true;
-  }
-
-  promptForNewCategory() {
-    // Checks if the searchInput text matches something from the dropdown.
-    if (
-      this.activitiesList.filter((e) => e.title.startsWith(this.searchInput))
-        .length == 0
-    ) {
-      this.newActivity.title = this.searchInput;
-      this.showCreateActivityDialog = true;
-    }
   }
 
   saveExistingActivity(updatedActivity: Activity) {
@@ -187,7 +170,7 @@ export default class ActivitiesInArea extends Vue {
       <!-- ? ------------ (+) icon ------------ * -->
       <v-card-actions class="mt-4">
         <v-spacer />
-        <v-btn outlined rounded @click="showCreateActivityDialog = true">
+        <v-btn outlined rounded @click="promptForNewActivity">
           <v-icon class="pr-2"> mdi-plus </v-icon>
           Create
         </v-btn>
