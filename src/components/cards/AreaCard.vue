@@ -11,10 +11,12 @@ import VClamp from "vue-clamp";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
 import CategoryChips from "@/components/chips/CategoryChips.vue";
 import ActivityChips from "@/components/chips/ActivityChips.vue";
+import CategoryWizard from "@/components/dialogs/CategoryWizard.vue";
 
 @Component({
   components: {
     AreaWizard: AreaWizard,
+    CategoryWizard: CategoryWizard,
     ConfirmationDialog: ConfirmationDialog,
     CategoryChips: CategoryChips,
     ActivityChips: ActivityChips,
@@ -36,6 +38,8 @@ export default class AreaCard extends Vue {
   showEditButton = false;
   showDeleteButton = false;
   showDialogForConfirmDelete = false;
+  showCategoryWizard = false;
+  selectedCategoryTag: CategoryTag | undefined = undefined;
 
   MIN_WIDTH_CARD = 320;
   MAX_WIDTH_CARD = 350;
@@ -115,6 +119,16 @@ export default class AreaCard extends Vue {
   // Categories
   get categories(): CategoryTag[] {
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
+  }
+
+  triggerCategoryWizard(categoryTag: CategoryTag) {
+    console.log("triggerCategoryWizard ====" + JSON.stringify(categoryTag));
+    this.selectedCategoryTag = categoryTag;
+    this.showCategoryWizard = true;
+  }
+
+  closeCategoryWizard() {
+    this.showCategoryWizard = false;
   }
 }
 </script>
@@ -256,7 +270,10 @@ export default class AreaCard extends Vue {
 
         <!-- ? -------------------- Category chips ----------------------->
         <v-card-text v-if="categories.length > 0" class="pt-1 pb-2">
-          <CategoryChips :categories="categories" />
+          <CategoryChips
+            :categories="categories"
+            v-on:chip-clicked="triggerCategoryWizard"
+          />
         </v-card-text>
 
         <!-- ? ------------------- Activities section ----------------------->
@@ -297,6 +314,15 @@ export default class AreaCard extends Vue {
         <!-- </v-card> -->
       </div>
     </v-expand-transition>
+
+    <!-- * ------------------------ View category dialog  -------------------------->
+    <CategoryWizard
+      :categoryTag="selectedCategoryTag"
+      :area="area"
+      :dialog-mode="`VIEW`"
+      :showDialog="showCategoryWizard"
+      v-on:close="closeCategoryWizard"
+    />
 
     <!-- CONFIRMATION dialog for deleting this area -->
     <ConfirmationDialog

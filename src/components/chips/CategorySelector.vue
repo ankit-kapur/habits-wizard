@@ -284,6 +284,8 @@ export default class CategorySelector extends Vue {
       v-on:discard="discardCategoryChange"
     />
 
+    <!-- TODO !!!!!!! --------- CategoryWizard should do the saving. Should only return a close event. -->
+
     <CategoryWizard
       :categoryTag="selectedCategoryTag"
       :area="area"

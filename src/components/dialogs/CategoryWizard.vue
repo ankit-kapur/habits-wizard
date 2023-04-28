@@ -56,6 +56,24 @@ export default class CategoryWizard extends Vue {
     return [this.categoryTag_local];
   }
 
+  get boxTitle(): string {
+    if (this.dialogMode === DialogMode.VIEW)
+      return this.categoryTag_local.title;
+    else if (this.dialogMode === DialogMode.CREATE) return "New Category";
+    else if (this.dialogMode === DialogMode.EDIT) return "Editing Category";
+    else return "invalid case. this is a bug.";
+  }
+
+  get boxSubTitle(): string {
+    if (this.dialogMode === DialogMode.VIEW)
+      return "Click edit/delete buttons to modify.";
+    else if (this.dialogMode === DialogMode.CREATE)
+      return "Pick a name & color";
+    else if (this.dialogMode === DialogMode.EDIT)
+      return "Click color or name to edit.";
+    else return "invalid case. this is a bug.";
+  }
+
   // <!-- * ------------------------------------------- Stores -->
   iconsStore = useIconsStore();
   categoriesStore = useCategoryTagsStore();
@@ -115,8 +133,14 @@ export default class CategoryWizard extends Vue {
   }
 
   triggerDeleteAction(): void {
-    // <!-- TODO P1 ----- Validate category is not attached to any Areas. -->
+    // <!-- TODO P1 ----- Validate that the category is not attached to any Areas. -->
     this.showDeleteConfirmDialog = true;
+  }
+
+  switchBetweenViewEditModes(): void {
+    if (this.dialogMode === DialogMode.VIEW) this.dialogMode = DialogMode.EDIT;
+    else if (this.dialogMode === DialogMode.EDIT)
+      this.dialogMode = DialogMode.VIEW;
   }
 
   respondToDeleteConfirmDialog(isConfirmed: boolean): void {
@@ -172,12 +196,29 @@ export default class CategoryWizard extends Vue {
       <!-- ? ----------------- Box title ---------------- * -->
       <v-card-actions class="pa-4 pb-0 ma-0">
         <v-card-title class="pa-0 text-h6 font-weight-light">
-          {{ dialogMode === "CREATE" ? `New` : `Edit` }} Category
+          {{ boxTitle }}
         </v-card-title>
         <v-spacer />
 
-        <!-- ? ---------- Delete button -->
-        <v-btn icon v-if="dialogMode === `EDIT`" @click="triggerDeleteAction">
+        <!-- ? ---------- EDIT button -->
+        <v-btn
+          icon
+          x-small
+          v-if="dialogMode !== `CREATE`"
+          @click="switchBetweenViewEditModes"
+        >
+          <v-icon>
+            {{ dialogMode === `VIEW` ? "mdi-pencil" : "mdi-floppy" }}</v-icon
+          >
+        </v-btn>
+
+        <!-- ? ---------- DELETE button -->
+        <v-btn
+          icon
+          x-small
+          v-if="dialogMode !== `CREATE`"
+          @click="triggerDeleteAction"
+        >
           <v-icon>mdi-delete</v-icon>
         </v-btn>
       </v-card-actions>
@@ -185,14 +226,14 @@ export default class CategoryWizard extends Vue {
       <!-- ? ----------------- Box subtitle ---------------- * -->
       <v-card-text class="pa-0 ma-0">
         <v-card-subtitle class="pt-1 text-body-2 font-weight-light">
-          Pick a name & color
+          {{ boxSubTitle }}
         </v-card-subtitle>
       </v-card-text>
 
       <v-divider></v-divider>
 
       <!-- ? ----------------- Name text-field --------------------->
-      <v-card-text class="pa-0 pt-2">
+      <v-card-text class="pa-0 pt-2" v-if="dialogMode !== `VIEW`">
         <v-container fluid>
           <!--  -->
 
@@ -206,7 +247,7 @@ export default class CategoryWizard extends Vue {
                 outlined
                 clearable
                 placeholder="Category name"
-                hint="Something short and sweet."
+                hint="Pick a short and sweet name."
                 counter="15"
                 class="pa-0"
               />
@@ -218,7 +259,7 @@ export default class CategoryWizard extends Vue {
       </v-card-text>
 
       <!-- ? ------------------ Pick a color ----------------------->
-      <v-card-actions class="pl-4 pb-4 pt-0">
+      <v-card-actions class="pl-4 pb-4 pt-0" v-if="dialogMode !== `VIEW`">
         <v-container fluid>
           <v-row>
             <!-- ? -------------- Hint -->
@@ -246,7 +287,7 @@ export default class CategoryWizard extends Vue {
       <!-- ? --------------------- Preview ------------------------->
       <v-card-actions class="">
         <v-container fluid>
-          <v-row>
+          <v-row v-if="dialogMode !== `VIEW`">
             <span class="mr-4 ml-1 mb-1 text-caption font-weight-light">
               Preview
             </span>
@@ -259,7 +300,7 @@ export default class CategoryWizard extends Vue {
       </v-card-actions>
 
       <!-- ? ------------------ Bottom Actions ---------------------->
-      <v-card-actions class="pt-4 pb-4">
+      <v-card-actions class="pt-4 pb-4" v-if="dialogMode !== `VIEW`">
         <!--  -->
         <v-spacer></v-spacer>
 
