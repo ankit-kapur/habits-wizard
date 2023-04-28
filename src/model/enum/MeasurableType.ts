@@ -1,6 +1,6 @@
 export enum MeasurableType {
-  Boolean,
-  Quantity, // i.e. count
-  Duration,
-  Timestamp,
+  Boolean = "Yes / No",
+  Quantity = "Quantity", // i.e. count
+  Duration = "Duration",
+  Timestamp = "Timestamp",
 }

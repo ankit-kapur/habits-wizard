@@ -155,7 +155,7 @@ export default class ConfigureMeasurablesInActivity extends Vue {
     </v-card-text>
 
     <!-- ? ----------------- For loop on each Measurable --------------------->
-    <v-card-text
+    <v-card-actions
       v-show="measurables && measurables.length > 0"
       v-for="measurable in measurables"
       v-bind:key="measurable.measurableDefinitionId"
@@ -209,7 +209,7 @@ export default class ConfigureMeasurablesInActivity extends Vue {
 
         <!--  -->
       </v-container>
-    </v-card-text>
+    </v-card-actions>
 
     <!-- ? ------------ (+) icon ------------ * -->
     <v-card-actions class="mt-4">

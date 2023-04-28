@@ -2,6 +2,7 @@
 import MyEmoji from "@/components/chips/MyEmoji.vue";
 import { defaultNewMeasurable } from "@/constants/DefaultMeasurables";
 import { DialogMode } from "@/model/enum/DialogMode";
+import { MeasurableType } from "@/model/enum/MeasurableType";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 import { useAreasStore } from "@/store/AreasStore";
 import { useEmojiStore } from "@/store/EmojiStore";
@@ -85,6 +86,16 @@ export default class MeasurableWizard extends Vue {
         : defaultNewMeasurable
     );
     return this.measurableDef_local;
+  }
+
+  // Computed props
+  get typesOfMeasurables() {
+    return Object.entries(MeasurableType).map((entry) => {
+      return {
+        typeID: entry[0],
+        typeDescription: entry[1],
+      };
+    });
   }
 
   // ------------------------------------------------ Methods
@@ -196,59 +207,68 @@ export default class MeasurableWizard extends Vue {
       <!-- TODO P0 ------- Display emoji in a prettier way -->
 
       <!-- ? ----------------- Name text-field --------------------->
-      <v-card-text class="pa-0 pt-2">
+      <v-card-actions class="pa-0 pt-2 pr-3 pb-4">
         <v-container fluid>
-          <!--  -->
-
           <v-row>
-            <v-col class="px-auto pb-0">
+            <!--  -->
+
+            <!-- ? -------------- Emoji ------------>
+            <v-col
+              cols="3"
+              @click="showEmojiPicker = true"
+              class="px-auto pb-0 pl-4 mb-3"
+            >
+              <MyEmoji
+                :emojiString="measurableDef_local.baseUnitEmoji"
+                :emojiSize="37"
+              />
               <!--  -->
-              <!-- ? -------------- Text field ------------>
+            </v-col>
+
+            <!-- ? -------------- Text field ------------>
+            <v-col class="px-auto pb-0">
               <v-text-field
                 label="Name"
                 v-model="measurableDef_local.title"
                 outlined
                 clearable
                 placeholder="Name"
-                hint="Something short and sweet."
+                hint="Pick a good name."
                 counter="15"
                 class="pa-0"
               />
             </v-col>
           </v-row>
 
-          <!--  -->
-        </v-container>
-      </v-card-text>
-
-      <!--  -->
-      <!--  -->
-      <!--  -->
-      <!--  -->
-      <!--  -->
-      <!-- TODO P0 -------- text-field for base unit name -->
-
-      <!-- ? ------------------ Pick an emoji ----------------------->
-      <!-- * ----- Source: https://github.com/serebrov/emoji-mart-vue -->
-      <v-card-actions class="pl-4 pb-4 pt-0">
-        <v-container fluid>
-          <!--  -->
-
-          <v-row @click="showEmojiPicker = true">
+          <!-- ? -------------- Type ------------>
+          <v-row>
             <v-col class="px-auto pb-0">
-              <!--  -->
-              <!-- ? -------------- Emoji ------------>
-              <span> Emoji: </span>
+              <v-select
+                v-model="measurableDef_local.type"
+                :items="typesOfMeasurables"
+                item-text="typeID"
+                item-value="typeDescription"
+                label="Type"
+              />
+            </v-col>
+          </v-row>
 
-              <MyEmoji :emojiString="measurableDef_local.baseUnitEmoji" />
-              <!--  -->
+          <!-- ? -------------- Unit name ------------>
+          <v-row>
+            <v-col class="px-auto pb-0">
+              <v-text-field
+                v-model="measurableDef_local.baseUnitName"
+                label="Unit name"
+                placeholder="Jumps"
+                hint="Optional"
+                counter="10"
+                persistent-hint
+              />
             </v-col>
           </v-row>
 
           <!--  -->
         </v-container>
-
-        <v-spacer />
       </v-card-actions>
 
       <v-divider />

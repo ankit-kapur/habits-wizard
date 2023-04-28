@@ -7,6 +7,9 @@ interface State {
   emojiIndex: EmojiIndex;
 }
 
+/**
+ * Source: https://github.com/serebrov/emoji-mart-vue
+ */
 export const useEmojiStore = defineStore("EmojiStore", {
   // Initial state.
   state: (): State => {

@@ -36,9 +36,6 @@ export default class CategoryWizard extends Vue {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDisplayStateChange(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
-    console.log(
-      "👀 @Watch in CategoryCreateOrEdit. isDialogOpen ===> " + isDialogOpen
-    );
     if (isDialogOpen) {
       this.onShow();
     } else {
@@ -178,8 +175,11 @@ export default class CategoryWizard extends Vue {
           {{ dialogMode === "CREATE" ? `New` : `Edit` }} Category
         </v-card-title>
         <v-spacer />
-        <!-- ? ------------- (x) Close button --------------->
-        <v-icon @click="triggerCancellation">mdi-close</v-icon>
+
+        <!-- ? ---------- Delete button -->
+        <v-btn icon v-if="dialogMode === `EDIT`" @click="triggerDeleteAction">
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
       </v-card-actions>
 
       <!-- ? ----------------- Box subtitle ---------------- * -->
@@ -261,11 +261,6 @@ export default class CategoryWizard extends Vue {
       <!-- ? ------------------ Bottom Actions ---------------------->
       <v-card-actions class="pt-4 pb-4">
         <!--  -->
-
-        <!-- ? ---------- Delete button -->
-        <v-btn icon v-if="dialogMode === `EDIT`" @click="triggerDeleteAction">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
         <v-spacer></v-spacer>
 
         <!-- ? ---------- Cancel and Save buttons -->

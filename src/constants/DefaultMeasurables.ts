@@ -61,7 +61,7 @@ export function getDefaultMeasurables() {
 export const defaultNewMeasurable: MeasurableDefinition = {
   id: "",
   title: "",
-  type: MeasurableType.Quantity,
+  type: MeasurableType.Boolean,
   baseUnitName: "",
   baseUnitEmoji: ":radio_button:",
 };

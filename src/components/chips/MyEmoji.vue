@@ -1,6 +1,6 @@
 <script lang="ts">
 import { useEmojiStore } from "@/store/EmojiStore";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { Emoji } from "emoji-mart-vue-fast";
 
 @Component({
@@ -12,14 +12,14 @@ export default class MyEmoji extends Vue {
   // ------------------------------------------------ Props
   @Prop()
   emojiString!: string;
-
-  @Watch("emojiString")
-  onPropertyChanged(_newValue: string, _oldValue: string) {
-    console.log("👀 _newValue ===> " + _newValue + " ... " + _oldValue);
-  }
+  @Prop()
+  emojiSize?: string;
 
   // ------------------------------------------------ Stores
   emojiStore = useEmojiStore();
+
+  // ------------------------------------------------ Data
+  defaultEmojiSize = 24;
 }
 </script>
 
@@ -28,7 +28,7 @@ export default class MyEmoji extends Vue {
     <Emoji
       :data="emojiStore.getEmojiIndex()"
       :emoji="emojiString"
-      :size="24"
+      :size="emojiSize ? emojiSize : defaultEmojiSize"
       :native="true"
     />
   </div>

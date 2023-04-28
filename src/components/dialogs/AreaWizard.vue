@@ -11,7 +11,6 @@ import CategorySelector from "../chips/CategorySelector.vue";
 import ActivitiesInArea from "../chips/ActivitiesInArea.vue";
 import ImagePicker from "@/components/picker/ImagePicker.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
-import { v4 as uuid } from "uuid";
 import { setColorsFromImage } from "@/utils/colors/ColorUtils";
 
 /**
