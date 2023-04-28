@@ -43,7 +43,6 @@ export default class CategoryChips extends Vue {
 <!-- :style="`border: 1px solid${categoryTag.color}; border-radius: 20px`" -->
 
 <template>
-  <!-- <v-chip-group column multiple> -->
   <v-card tile flat class="ma-0 pa-0">
     <v-chip
       v-for="(categoryTag, index) in categories"
@@ -68,6 +67,5 @@ export default class CategoryChips extends Vue {
       </v-icon>
       {{ categoryTag.title }}
     </v-chip>
-    <!-- </v-chip-group> -->
   </v-card>
 </template>

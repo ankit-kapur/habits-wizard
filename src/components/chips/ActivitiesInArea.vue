@@ -78,12 +78,17 @@ export default class ActivitiesInArea extends Vue {
 
   // ------------------------------------------------ Methods
   onShow() {
-    this.activitiesStore.subscribeToStore(); // Subscribe to store
+    // Subscribe to stores
+    this.activitiesStore.subscribeToStore();
     this.categoriesStore.subscribeToStore();
+
+    // Reset
+    this.selectedActivity = deepCopy(defaultNewActivity);
   }
 
   onHide() {
-    this.activitiesStore.unsubscribe(); // Unsubscribe from store
+    // Unsubscribe from stores
+    this.activitiesStore.unsubscribe();
     this.categoriesStore.unsubscribe();
   }
 
@@ -92,39 +97,21 @@ export default class ActivitiesInArea extends Vue {
     this.showCreateActivityDialog = true;
   }
 
-  createNewActivity(newActivity: Activity) {
-    // Save to store
-    this.activitiesStore.createActivity(newActivity, this.area.id);
-
-    // Hide dialog
-    this.closeActivityDialog();
-  }
-
-  triggerEditDialog(categoryTag: Activity) {
+  triggerEditDialog(activity: Activity) {
     console.log("triggerEditDialog");
-    this.selectedActivity = categoryTag;
+    this.selectedActivity = activity;
     this.showEditActivityDialog = true;
   }
 
-  triggerDeleteDialog(categoryTag: Activity) {
+  triggerDeleteDialog(activity: Activity) {
     console.log("triggerDeleteDialog");
-    this.selectedActivity = categoryTag;
+    this.selectedActivity = activity;
     this.showDeleteActivityDialog = true;
   }
 
-  saveExistingActivity(updatedActivity: Activity) {
-    console.log("Saving new category");
-    this.activitiesStore.updateActivity(updatedActivity);
-    this.closeActivityDialog();
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  closeActivityDialog(irrelevantValue?: boolean) {
-    console.log("Discarding");
+  closeActivityDialog() {
     this.showCreateActivityDialog = false;
     this.showEditActivityDialog = false;
-
-    this.selectedActivity = deepCopy(defaultNewActivity);
   }
 
   // Delete
@@ -186,8 +173,7 @@ export default class ActivitiesInArea extends Vue {
       :area="area"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateActivityDialog"
-      v-on:save-confirmed="createNewActivity"
-      v-on:discard="closeActivityDialog"
+      v-on:close="closeActivityDialog"
     />
 
     <!-- * ------------------------ Edit popup  -------------------------->
@@ -196,8 +182,7 @@ export default class ActivitiesInArea extends Vue {
       :area="area"
       :dialog-mode="`EDIT`"
       :showDialog="showEditActivityDialog"
-      v-on:save-confirmed="saveExistingActivity"
-      v-on:discard="closeActivityDialog"
+      v-on:close="closeActivityDialog"
     />
 
     <!-- * ------------------------ Delete popup  -------------------------->

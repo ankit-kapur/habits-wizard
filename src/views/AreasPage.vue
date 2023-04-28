@@ -24,7 +24,7 @@ export default class AreasPage extends Vue {
   showDialogForEditArea = false;
 
   // State
-  selectedArea: Area | null = null;
+  selectedAreaId: string | null = null;
   expandedCardIndices: Set<string> = new Set<string>([]);
 
   // ------------------------------------------------ Mounted
@@ -44,14 +44,20 @@ export default class AreasPage extends Vue {
     console.log("🐪 🐪 🐪  UN-mounted AreasPage");
   }
 
+  get selectedArea(): Area | undefined {
+    return this.selectedAreaId
+      ? this.areasStore.getAreaById(this.selectedAreaId)
+      : undefined;
+  }
+
   // ------------------------------------------------ Methods
 
   closeNewAreaDialog(showNewAreaDialog: boolean): void {
     this.showDialogForNewArea = showNewAreaDialog;
   }
 
-  triggerEditMode(selectedArea: Area): void {
-    this.selectedArea = selectedArea;
+  triggerEditMode(selectedAreaId: string): void {
+    this.selectedAreaId = selectedAreaId;
     this.showDialogForEditArea = true;
   }
 
@@ -73,7 +79,7 @@ export default class AreasPage extends Vue {
         <!------------------- Area cards -------------------->
 
         <AreaCard
-          v-bind:area="area"
+          v-bind:areaId="area.id"
           v-bind:index="index"
           v-bind:key="area.id"
           v-on:edit-area="triggerEditMode"

@@ -135,11 +135,11 @@ export const useAreasStore = defineStore("AreasStore", {
 
     /**
      * Deletes the given Area from Firestore.
-     * @param area
+     * @param areaId
      */
-    deleteArea(area: Area) {
-      console.log("Deleting area: " + JSON.stringify(area));
-      deleteDoc(doc(firestoreCollection, area.id));
+    deleteArea(areaId: string) {
+      console.log("Deleting area: " + areaId);
+      deleteDoc(doc(firestoreCollection, areaId));
     },
 
     // ? ------------------------------------ MEASURABLES ------------------------------------

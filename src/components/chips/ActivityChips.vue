@@ -56,7 +56,7 @@ export default class ActivityChips extends Vue {
 </script>
 
 <template>
-  <v-chip-group column multiple>
+  <v-card tile flat class="ma-0 pa-0">
     <v-chip
       v-for="(activity, index) in activities"
       v-bind:activity="activity"
@@ -84,5 +84,5 @@ export default class ActivityChips extends Vue {
       >
       <span style="">{{ activity.title }}</span>
     </v-chip>
-  </v-chip-group>
+  </v-card>
 </template>

@@ -166,7 +166,7 @@ export default class AreaWizard extends Vue {
     if (isConfirmed) {
       if (this.dialogMode === DialogMode.CREATE) {
         // Delete from the store.
-        this.areasStore.deleteArea(this.area_local);
+        this.areasStore.deleteArea(this.area_local.id);
       }
       this.closeThisDialog();
     }

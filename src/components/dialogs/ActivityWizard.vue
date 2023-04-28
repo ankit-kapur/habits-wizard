@@ -18,7 +18,7 @@ import ConfigureMeasurablesInActivity from "../configure/ConfigureMeasurablesInA
 import { useActivitiesStore } from "@/store/ActivitiesStore";
 
 /**
- * TODO P0 ----- Step 1 & 2 should be to select an Area and Category if not provided.
+ * TODO P2 ----- Step 1 & 2 should be to select an Area and Category if not provided.
  * TODO P1 ----- Add validations. Especially when a Category is not selected. Block the Save button.
  * TODO P1 ----- Validate that category selected must exist in Area. (or should it get auto-added?)
  **/
@@ -57,6 +57,15 @@ export default class ActivityWizard extends Vue {
       this.onHide();
     }
   }
+
+  // Workaround for when space above bottom-sheet is tapped.
+  @Watch("showDialog_local")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onLocalDisplayStateChange(_newValue: string, _oldValue: string) {
+    const isDialogOpen = !!_newValue;
+    if (!isDialogOpen) this.closeViaParent();
+  }
+
   /* <!-- ? ------------------------------ Stores ------------------------------> */
   iconsStore = useIconsStore();
   categoryTagsStore = useCategoryTagsStore();
@@ -69,6 +78,7 @@ export default class ActivityWizard extends Vue {
 
   /* <!-- ? ------------------------------ Data ------------------------------> */
   activity_local: Activity = deepCopy(defaultNewActivity);
+  showDialog_local = false;
   selectedCategory: CategoryTag | null = null;
   showDialogForConfirmDiscard = false;
   showMeasurableSelectionDialog = false;
@@ -109,12 +119,13 @@ export default class ActivityWizard extends Vue {
     return this.dialogMode && this.dialogMode === DialogMode.CREATE;
   }
 
-  /* <!-- ? ------------------------------ State Management ------------------------------> */
+  // <!-- * ---------------------------- Lifecycle ---------------------------->
   onShow() {
     this.categoryTagsStore.subscribeToStore(); // Subscribe to store
 
     // Reset
     this.resetToDefaultState();
+    this.showDialog_local = this.showDialog;
 
     // Assign category
     this.selectedCategoryId = this.activity_local.categoryId;
@@ -122,7 +133,10 @@ export default class ActivityWizard extends Vue {
 
   onHide() {
     // Unsubscribe from stores.
-    this.categoryTagsStore.unsubscribe(); // Unsubscribe from store
+    this.categoryTagsStore.unsubscribe();
+
+    // Not sure if this is needed.
+    this.showDialog_local = false;
   }
 
   onSelectionChange() {
@@ -138,50 +152,70 @@ export default class ActivityWizard extends Vue {
   }
 
   resetToDefaultState() {
+    // Stepper
+    this.currentStepperPos = 0;
+
     // Reset Activity.
-    this.activity_local = deepCopy(
-      this.activity ? this.activity : defaultNewActivity
-    );
-
-    this.activity_local.areaId = this.area.id;
-    console.log(
-      "🐞 area ======" +
-        JSON.stringify(this.area.id) +
-        ". areaId ======= " +
-        JSON.stringify(this.area.id)
-    );
-
-    this.currentStepperPos = 0; // Stepper
+    if (this.dialogMode === DialogMode.CREATE) {
+      this.activity_local = deepCopy(
+        this.activity ? this.activity : defaultNewActivity
+      );
+      this.activity_local.areaId = this.area.id;
+    } else {
+      this.activity_local = deepCopy(this.activity);
+    }
   }
 
-  respondToConfirmDiscardDialog(isConfirmed: boolean): void {
+  respondToDiscardConfirm(isConfirmed: boolean): void {
     if (isConfirmed) {
-      this.discard();
+      this.closeViaParent();
     }
     this.showDialogForConfirmDiscard = false;
   }
 
-  discard() {
-    this.$emit("discard", true);
+  switchBetweenViewEditModes(): void {
+    if (this.dialogMode === DialogMode.VIEW)
+      this.$emit("change-mode", DialogMode.EDIT);
+    else if (this.dialogMode === DialogMode.EDIT) {
+      // Save because 💾 floppy-disk icon was clicked.
+      this.saveActivity();
+      this.$emit("change-mode", DialogMode.VIEW);
+    }
   }
 
+  closeViaParent() {
+    this.$emit("close", true);
+  }
+
+  // <!-- * ---------------------------- Store actions ---------------------------->
   saveActivity() {
-    this.$emit("save-confirmed", this.activity_local);
+    if (this.dialogMode === DialogMode.EDIT) {
+      this.activitiesStore.updateActivity(this.activity_local);
+    } else if (this.dialogMode === DialogMode.CREATE) {
+      this.activitiesStore.createActivity(this.activity_local, this.area.id);
+    }
+    this.closeViaParent();
+  }
+
+  // <!-- * ---------------------------- Cancel ---------------------------->
+  get hasChanged() {
+    return !(
+      JSON.stringify(this.activity_local) === JSON.stringify(this.activity) ||
+      JSON.stringify(this.activity_local) === JSON.stringify(defaultNewActivity)
+    );
   }
 
   triggerCancellation() {
     // If nothing's changed, discard without confirmation
-    if (
-      JSON.stringify(this.activity_local) === JSON.stringify(this.activity) ||
-      JSON.stringify(this.activity_local) === JSON.stringify(defaultNewActivity)
-    ) {
-      this.discard();
-    } else {
+    if (this.hasChanged) {
       this.showDialogForConfirmDiscard = true;
+    } else {
+      this.closeViaParent();
     }
   }
 
-  /* <!-- ? ----------------------------- Delete actions ------------------------------> */
+  /* <!-- * ----------------------------- Delete actions ------------------------------> */
+
   triggerDeleteAction(): void {
     // <!-- TODO P2 ----- Validate its safe to delete -->
     this.showDeleteConfirmDialog = true;
@@ -192,7 +226,7 @@ export default class ActivityWizard extends Vue {
       this.activitiesStore.deleteActivity(this.activity_local);
     }
     this.showDeleteConfirmDialog = false;
-    this.discard(); // Ask parent to close.
+    this.closeViaParent(); // Ask parent to close.
   }
 
   /* <!-- ? ----------------------------- Icon picker ------------------------------> */
@@ -246,11 +280,11 @@ export default class ActivityWizard extends Vue {
 <template>
   <div class="">
     <v-bottom-sheet
-      v-model="showDialog"
+      v-model="showDialog_local"
       inset
       max-width="400"
       overlay-opacity="0.88"
-      persistent
+      :persistent="hasChanged"
       @keydown.esc="triggerCancellation"
     >
       <!-- @keydown.enter="saveActivity" -->
@@ -261,11 +295,31 @@ export default class ActivityWizard extends Vue {
         <v-card-actions class="pa-3 pb-0 ma-0">
           <!-- ? ----------------- Box title ---------------- * -->
           <v-card-title class="pa-0 text-h6 font-weight-light">
-            {{ isInCreateMode ? `New` : `Edit` }} Activity
+            {{ isInCreateMode ? `New` : `Editing` }} Activity
           </v-card-title>
           <v-spacer />
-          <!-- ? ------------- (x) Close button --------------->
-          <v-icon @click="triggerCancellation">mdi-close</v-icon>
+
+          <!-- ? ---------- EDIT button -->
+          <v-btn
+            icon
+            x-small
+            v-if="dialogMode !== `CREATE`"
+            @click="switchBetweenViewEditModes"
+          >
+            <v-icon>
+              {{ dialogMode === `EDIT` ? "mdi-floppy" : "mdi-pencil" }}</v-icon
+            >
+          </v-btn>
+
+          <!-- ? ---------- DELETE button -->
+          <v-btn
+            icon
+            x-small
+            v-if="dialogMode !== `CREATE`"
+            @click="triggerDeleteAction"
+          >
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
         </v-card-actions>
 
         <!-- ? ----------------- Box subtitle ---------------- * -->
@@ -462,6 +516,8 @@ export default class ActivityWizard extends Vue {
                       >
                         Preview
                       </span>
+                    </v-row>
+                    <v-row>
                       <ActivityChips
                         :activities="[activity_local]"
                         :categories="categories"
@@ -535,12 +591,6 @@ export default class ActivityWizard extends Vue {
 
         <!-- ? ------------------ Bottom Actions ---------------------->
         <v-card-actions class="pt-4 pb-4">
-          <!--  -->
-
-          <!-- ? ---------- Delete button -->
-          <v-btn icon v-if="dialogMode === `EDIT`" @click="triggerDeleteAction">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
           <v-spacer></v-spacer>
 
           <!-- ? ---------- Cancel and Save buttons -->
@@ -555,7 +605,7 @@ export default class ActivityWizard extends Vue {
 
       <!-- ? ---------------- Confirm discard  ------------------->
       <ConfirmationDialog
-        v-on:confirm-status-change="respondToConfirmDiscardDialog"
+        v-on:confirm-status-change="respondToDiscardConfirm"
         :showDialog="showDialogForConfirmDiscard"
         messageToDisplay="Sure you want to discard this?"
         yesButtonText="Discard"

@@ -1,5 +1,4 @@
 <script lang="ts">
-import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useAreasStore } from "@/store/AreasStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
@@ -13,11 +12,14 @@ import CategoryChips from "@/components/chips/CategoryChips.vue";
 import ActivityChips from "@/components/chips/ActivityChips.vue";
 import CategoryWizard from "@/components/dialogs/CategoryWizard.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
+import Activity from "@/model/pojo/definitions/Activity";
+import ActivityWizard from "@/components/dialogs/ActivityWizard.vue";
 
 @Component({
   components: {
     AreaWizard: AreaWizard,
     CategoryWizard: CategoryWizard,
+    ActivityWizard: ActivityWizard,
     ConfirmationDialog: ConfirmationDialog,
     CategoryChips: CategoryChips,
     ActivityChips: ActivityChips,
@@ -27,7 +29,7 @@ import { DialogMode } from "@/model/enum/DialogMode";
 export default class AreaCard extends Vue {
   // ------------------------------------------------ Props
   @Prop()
-  area!: Area;
+  areaId!: string;
 
   // ------------------------------------------------ Stores
   areasStore = useAreasStore();
@@ -40,8 +42,11 @@ export default class AreaCard extends Vue {
   showDeleteButton = false;
   showDialogForConfirmDelete = false;
   showCategoryWizard = false;
+  showActivityWizard = false;
   selectedCategoryTag: CategoryTag | null = null;
+  selectedActivity: Activity | null = null;
   categoryWizardDialogMode = DialogMode.VIEW;
+  activityWizardDialogMode = DialogMode.EDIT;
 
   MIN_WIDTH_CARD = 320;
   MAX_WIDTH_CARD = 350;
@@ -52,8 +57,11 @@ export default class AreaCard extends Vue {
   // ------------------------------------------------ Method imports
   getPrettyTimestamp = getPrettyTimestamp;
 
+  // <!-- TODO P1 -------- Make show() and hide() functions. -->
+
   // ------------------------------------------------ Mounted
   mounted() {
+    this.areasStore.subscribeToLoadAllQuery();
     this.categoryTagsStore.subscribeToStore();
     console.log("🐪 🐪 🐪  Mounted AreaCard");
   }
@@ -61,15 +69,20 @@ export default class AreaCard extends Vue {
   unmounted() {
     // TODO -- not the right place to unsubscribe. not getting called.
     this.categoryTagsStore.unsubscribe();
+    this.areasStore.unsubscribeAll();
     console.log("🐪 🐪 🐪  UN-mounted AreaCard");
   }
 
-  // ------------------------------------------------ Computer props
+  // ------------------------------------------------ Computed props
   get activities() {
-    return this.activitiesStore.getActivitiesByArea(this.area.id);
+    return this.activitiesStore.getActivitiesByArea(this.areaId);
   }
 
   // ------------------------------------------------ Methods
+  get area() {
+    return this.areasStore.getAreaById(this.areaId);
+  }
+
   expandAreaClicked() {
     const isExpanded = !this.isCardExpanded;
     this.isCardExpanded = isExpanded;
@@ -87,7 +100,7 @@ export default class AreaCard extends Vue {
   // Edits
   showEditDialog() {
     // Ask parent to show edit dialog
-    this.$emit("edit-area", this.area);
+    this.$emit("edit-area", this.areaId);
   }
 
   editMode() {
@@ -108,7 +121,7 @@ export default class AreaCard extends Vue {
   }
 
   performDelete() {
-    this.areasStore.deleteArea(this.area);
+    this.areasStore.deleteArea(this.areaId);
   }
 
   respondToConfirmDeleteDialog(isConfirmed: boolean): void {
@@ -118,7 +131,7 @@ export default class AreaCard extends Vue {
     this.showDialogForConfirmDelete = false;
   }
 
-  // Categories
+  // <!-- * ---------------------------- Categories ---------------------------->
   get categories(): CategoryTag[] {
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
   }
@@ -137,6 +150,26 @@ export default class AreaCard extends Vue {
 
   changeCategoryWizardMode(newDialogMode: DialogMode) {
     this.categoryWizardDialogMode = newDialogMode;
+  }
+
+  // <!-- * ---------------------------- Activities ---------------------------->
+
+  triggerActivityWizard(activity: Activity) {
+    console.log("triggerCategoryWizard ====" + JSON.stringify(activity));
+    this.selectedActivity = activity;
+    this.showActivityWizard = true;
+  }
+
+  closeActivityWizard() {
+    this.showActivityWizard = false;
+    this.activityWizardDialogMode = DialogMode.EDIT; // Default
+    this.selectedActivity = null;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  changeActivityWizardMode(newDialogMode: DialogMode) {
+    // TODO P2 --- Enable VIEW mode on ActivityWizard.
+    // this.activityWizardDialogMode = newDialogMode;
   }
 }
 </script>
@@ -293,9 +326,13 @@ export default class AreaCard extends Vue {
           </v-card-text>
 
           <!-- ? -------------------- Activity chips ----------------------->
-          <v-card-text class="pt-1 pb-2">
-            <ActivityChips :activities="activities" :categories="categories" />
-          </v-card-text>
+          <v-card-actions class="pt-1 pb-2">
+            <ActivityChips
+              :activities="activities"
+              :categories="categories"
+              v-on:chip-clicked="triggerActivityWizard"
+            />
+          </v-card-actions>
         </div>
 
         <!-- ? ------------------- Timestamps ----------------------->
@@ -331,6 +368,15 @@ export default class AreaCard extends Vue {
       :showDialog="showCategoryWizard"
       v-on:close="closeCategoryWizard"
       v-on:change-mode="changeCategoryWizardMode"
+    />
+
+    <ActivityWizard
+      :activity="selectedActivity"
+      :area="area"
+      :dialog-mode="activityWizardDialogMode"
+      :showDialog="showActivityWizard"
+      v-on:close="closeActivityWizard"
+      v-on:change-mode="changeActivityWizardMode"
     />
 
     <!-- CONFIRMATION dialog for deleting this area -->

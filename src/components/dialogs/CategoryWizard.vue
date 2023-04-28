@@ -50,7 +50,7 @@ export default class CategoryWizard extends Vue {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onLocalDisplayStateChange(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
-    if (!isDialogOpen) this.closeThroughParent();
+    if (!isDialogOpen) this.closeViaParent();
   }
 
   // <!-- * ------------------------------------------- Data -->
@@ -110,7 +110,7 @@ export default class CategoryWizard extends Vue {
   }
 
   onHide() {
-    // No actions so far.
+    // Not sure if this is needed.
     this.showDialog_local = false;
   }
 
@@ -141,7 +141,7 @@ export default class CategoryWizard extends Vue {
   // <!-- * ---------------------------- Behavioral actions ---------------------------->
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
     if (isConfirmed) {
-      this.closeThroughParent();
+      this.closeViaParent();
     }
     this.showDialogForConfirmDiscard = false;
   }
@@ -156,17 +156,17 @@ export default class CategoryWizard extends Vue {
       this.$emit("change-mode", DialogMode.EDIT);
     else if (this.dialogMode === DialogMode.EDIT) {
       // Save because 💾 floppy-disk icon was clicked.
-      this.save();
+      this.saveCategory();
       this.$emit("change-mode", DialogMode.VIEW);
     }
   }
 
-  respondToDeleteConfirmDialog(isConfirmed: boolean): void {
+  respondToDeleteConfirm(isConfirmed: boolean): void {
     if (isConfirmed) {
       this.categoriesStore.deleteCategoryTag(this.categoryTag_local);
     }
     this.showDeleteConfirmDialog = false;
-    this.closeThroughParent(); // Ask parent to close.
+    this.closeViaParent(); // Ask parent to close.
   }
 
   triggerCancellation() {
@@ -178,26 +178,26 @@ export default class CategoryWizard extends Vue {
         JSON.stringify(defaultNewCategory)
     ) {
       console.log("🐞 discard");
-      this.closeThroughParent();
+      this.closeViaParent();
     } else {
       console.log("🐞 showDialogForConfirmDiscard");
       this.showDialogForConfirmDiscard = true;
     }
   }
 
-  closeThroughParent() {
+  closeViaParent() {
     this.$emit("close", true);
   }
 
   // <!-- * ---------------------------- Store actions ---------------------------->
 
-  save() {
+  saveCategory() {
     if (this.dialogMode === DialogMode.EDIT) {
       this.categoriesStore.updateCategoryTag(this.categoryTag_local);
     } else if (this.dialogMode === DialogMode.CREATE) {
       this.categoriesStore.createCategoryTag(this.categoryTag_local);
     }
-    this.closeThroughParent();
+    this.closeViaParent();
   }
 }
 </script>
@@ -210,7 +210,7 @@ export default class CategoryWizard extends Vue {
     v-model="showDialog_local"
     :persistent="dialogMode !== `VIEW`"
     @keydown.esc="triggerCancellation"
-    @keydown.enter="save"
+    @keydown.enter="saveCategory"
   >
     <v-card flat class="px-2">
       <!--  -->
@@ -328,7 +328,7 @@ export default class CategoryWizard extends Vue {
 
         <!-- ? ---------- Cancel and Save buttons -->
         <v-btn text @click="triggerCancellation"> Cancel </v-btn>
-        <v-btn color="primary" @click="save">
+        <v-btn color="primary" @click="saveCategory">
           {{ dialogMode === "CREATE" ? `Create` : `Save` }}
         </v-btn>
       </v-card-actions>
@@ -389,7 +389,7 @@ export default class CategoryWizard extends Vue {
       noButtonText="Cancel"
     />
     <ConfirmationDialog
-      v-on:confirm-status-change="respondToDeleteConfirmDialog"
+      v-on:confirm-status-change="respondToDeleteConfirm"
       :showDialog="showDeleteConfirmDialog"
       messageToDisplay="Sure want to delete this category?"
       yesButtonText="Delete"
