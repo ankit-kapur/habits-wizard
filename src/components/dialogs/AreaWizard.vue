@@ -62,7 +62,7 @@ export default class AreaWizard extends Vue {
 
   // ------------------------------------------------ Data
   // State
-  area_local: Area = deepCopy(defaultNewArea);
+  area_local: Area = this.resetToDefaultState();
 
   // Toggles for displays
   showDiscardConfirmationDialog = false;
@@ -99,8 +99,6 @@ export default class AreaWizard extends Vue {
     this.resetToDefaultState();
 
     if (this.dialogMode === DialogMode.CREATE) {
-      this.area_local.id = uuid(); // Generate a new ID
-
       // ! ---- In the future, I might want to clean up DANGLING new things automatically.
       this.areasStore.createArea(this.area_local); // Write to store.
     }
@@ -137,11 +135,11 @@ export default class AreaWizard extends Vue {
     this.$emit("close-dialog", false);
   }
 
-  resetToDefaultState() {
+  resetToDefaultState(): Area {
     // Reset Area
     this.area_local = this.area
       ? deepCopy(this.area)
-      : deepCopy(defaultNewArea);
+      : deepCopy(defaultNewArea());
 
     // Hide dialogs and windows
     this.showDiscardConfirmationDialog = false;
@@ -149,13 +147,15 @@ export default class AreaWizard extends Vue {
 
     // Stepper
     this.currentStepperPos = 0;
+
+    return this.area_local;
   }
 
   triggerCancellation() {
     // If nothing's changed, discard without confirmation
     if (
       JSON.stringify(this.area) == JSON.stringify(this.area_local) ||
-      JSON.stringify(defaultNewArea) == JSON.stringify(this.area_local)
+      JSON.stringify(defaultNewArea()) == JSON.stringify(this.area_local)
     ) {
       this.closeThisDialog();
     } else {

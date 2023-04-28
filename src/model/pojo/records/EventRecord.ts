@@ -5,8 +5,8 @@ export default interface EventRecord {
 
   // ? ------------------------------ Association
   activityId: string;
-  categoryId: string; // TODO P0 ------- Make this into a list. of tags.
-  // ! ^^^^^ do this ASAP.
+  categoryId: string;
+  // TODO P0 ------- SHOULD CATEGORIES BE A LIST?
   areaId: string;
 
   /*

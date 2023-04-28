@@ -1,25 +1,21 @@
+import { getDefaultMeasurables } from "@/constants/DefaultMeasurables";
 import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
-import {
-  count,
-  duration,
-  endTime,
-  isDone,
-  startTime,
-} from "./DefaultMeasurables";
 
-export const defaultNewArea: Area = {
-  id: "",
-  title: "New Area",
-  imageUrl: "https://cdn.vuetifyjs.com/images/cards/sunshine.jpg",
-  color: "#8686D6",
-  userId: "",
-  description:
-    "late 16th century from medieval Latin eleemosynarius, from late Latin eleemosyna‘alms",
-  categoryTags: [],
-  measurableDefinitions: [duration, count, isDone, startTime, endTime],
-};
+export function defaultNewArea(): Area {
+  return {
+    id: "",
+    title: "New Area",
+    imageUrl: "https://cdn.vuetifyjs.com/images/cards/sunshine.jpg",
+    color: "#8686D6",
+    userId: "",
+    description:
+      "late 16th century from medieval Latin eleemosynarius, from late Latin eleemosyna‘alms",
+    categoryTags: [],
+    measurableDefinitions: getDefaultMeasurables(),
+  };
+}
 
 export const defaultNewCategory: CategoryTag = {
   id: "",

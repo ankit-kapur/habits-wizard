@@ -4,12 +4,12 @@ import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import CategoryCreateOrEditDialog from "@/components/dialogs/CategoryCreateOrEditDialog.vue";
+import CategoryWizard from "@/components/dialogs/CategoryWizard.vue";
 import CategoryChips from "@/components/chips/CategoryChips.vue";
 
 @Component({
   components: {
-    CategoryCreateOrEditDialog: CategoryCreateOrEditDialog,
+    CategoryWizard: CategoryWizard,
     CategoryChips: CategoryChips,
   },
 })
@@ -275,7 +275,7 @@ export default class CategorySelector extends Vue {
     </v-card>
 
     <!-- * ------------------------ New category popup  -------------------------->
-    <CategoryCreateOrEditDialog
+    <CategoryWizard
       :categoryTag="newCategoryTag"
       :area="area"
       :dialog-mode="`CREATE`"
@@ -284,7 +284,7 @@ export default class CategorySelector extends Vue {
       v-on:discard="discardCategoryChange"
     />
 
-    <CategoryCreateOrEditDialog
+    <CategoryWizard
       :categoryTag="selectedCategoryTag"
       :area="area"
       :dialog-mode="`EDIT`"

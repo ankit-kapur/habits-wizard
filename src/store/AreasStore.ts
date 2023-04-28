@@ -20,6 +20,7 @@ import { defineStore } from "pinia";
 import { getDocReference } from "@/utils/firebase/FirestoreUtils";
 import { getCurrentUserId } from "@/utils/firebase/GoogleAuthUtils";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
+import { v4 as uuid } from "uuid";
 
 interface State {
   allDocs: Area[];
@@ -103,6 +104,8 @@ export const useAreasStore = defineStore("AreasStore", {
      * @param area
      */
     createArea(area: Area) {
+      // Generate a new ID
+      area.id = uuid();
       // Set user ID
       area.userId = this.userId;
 
@@ -139,6 +142,13 @@ export const useAreasStore = defineStore("AreasStore", {
       deleteDoc(doc(firestoreCollection, area.id));
     },
 
+    // ? ------------------------------------ MEASURABLES ------------------------------------
+
+    getMeasurablesInArea(areaId: string): MeasurableDefinition[] {
+      const area: Area = this.getAreaById(areaId);
+      return area.measurableDefinitions;
+    },
+
     /**
      * Measurables-related operations
      */
@@ -156,6 +166,18 @@ export const useAreasStore = defineStore("AreasStore", {
       // Push new one
       area.measurableDefinitions.push(measurableDefinition);
       this.updateArea(area);
+    },
+
+    createMeasurableDefinition(
+      measurableDefinition: MeasurableDefinition,
+      areaId: string
+    ) {
+      // Generate UUID
+      measurableDefinition.id = uuid();
+      const area: Area = this.getAreaById(areaId);
+      // Push the new one.
+      area.measurableDefinitions.push(measurableDefinition);
+      this.updateArea(area); // Save
     },
 
     deleteMeasurableDefinition(measurableDefinitionId: string, areaId: string) {

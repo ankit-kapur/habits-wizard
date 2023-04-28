@@ -1,8 +1,13 @@
 <script lang="ts">
+import MyEmoji from "@/components/chips/MyEmoji.vue";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-@Component
+@Component({
+  components: {
+    MyEmoji: MyEmoji,
+  },
+})
 export default class MeasurableChips extends Vue {
   // ------------------------------------------------ Props
   @Prop()
@@ -51,7 +56,8 @@ export default class MeasurableChips extends Vue {
       :style="`border-radius: 18px`"
       class="pa-3 ma-1"
     >
-      {{ measurableDefinition.baseUnitEmoji }}
+      <MyEmoji :emojiString="measurableDefinition.baseUnitEmoji" />
+
       <span class="pl-2">{{ measurableDefinition.title }}</span>
     </v-chip>
   </v-chip-group>

@@ -2,19 +2,19 @@
 import MeasurableChips from "@/components/chips/MeasurableChips.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import MeasurableWizard from "@/components/wizards/MeasurableWizard.vue";
-import { defaultNewMeasurable } from "@/constants/DefaultMeasurables";
 import { Area } from "@/model/pojo/definitions/Area";
 import { MeasurableForActivity } from "@/model/pojo/definitions/Activity";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 import { useAreasStore } from "@/store/AreasStore";
-import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import MyEmoji from "@/components/chips/MyEmoji.vue";
 
 @Component({
   components: {
     MeasurableWizard: MeasurableWizard,
     ConfirmationDialog: ConfirmationDialog,
     MeasurableChips: MeasurableChips,
+    MyEmoji: MyEmoji,
   },
 })
 export default class MeasurableSelector extends Vue {
@@ -31,7 +31,7 @@ export default class MeasurableSelector extends Vue {
   // ------------------------------------------------ Watchers
   @Watch("isDisplayed")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onPropertyChanged(_newValue: string, _oldValue: string) {
+  onDisplayStateChange(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
     console.log(
       "👀 @Watch in MeasurableSelector. isDialogOpen ===> " + isDialogOpen
@@ -52,27 +52,47 @@ export default class MeasurableSelector extends Vue {
   showDeleteMeasurableDialog = false;
   selectedMeasurableId: string | null = null;
   isRequired = false;
-  newMeasurable: MeasurableDefinition = deepCopy(defaultNewMeasurable);
-  availableMeasurables: MeasurableDefinition[] = [];
 
   // ------------------------------------------------ Computed
-  getArea(): Area {
+  get area(): Area {
     return this.areasStore.getAreaById(this.areaId);
   }
+
+  get selectedMeasurable(): MeasurableDefinition | undefined {
+    if (!this.selectedMeasurableId) return undefined;
+    return this.availableMeasurables.find(
+      (m) => m.id === this.selectedMeasurableId
+    );
+  }
+
   /**
    * Returns all the Measurables in the Area that are not already in the Activity.
    */
-  loadAvailableMeasurables() {
+  get availableMeasurables(): MeasurableDefinition[] {
+    if (!this.areaId) return [];
+
     const activityMeasurableIDList: string[] = this.measurablesInActivity.map(
       (measurableForActivity) => measurableForActivity.measurableDefinitionId
     );
 
-    console.log("🐞 AREA = " + JSON.stringify(this.getArea()));
-
-    this.availableMeasurables = this.getArea().measurableDefinitions.filter(
-      (definition) => !activityMeasurableIDList.includes(definition.id)
-    );
+    return this.areasStore
+      .getMeasurablesInArea(this.areaId)
+      .filter(
+        (definition) => !activityMeasurableIDList.includes(definition.id)
+      );
   }
+
+  // loadAvailableMeasurables() {
+  //   const activityMeasurableIDList: string[] = this.measurablesInActivity.map(
+  //     (measurableForActivity) => measurableForActivity.measurableDefinitionId
+  //   );
+
+  //   console.log("🐞 AREA = " + JSON.stringify(this.getArea()));
+
+  //   this.availableMeasurables = this.getArea().measurableDefinitions.filter(
+  //     (definition) => !activityMeasurableIDList.includes(definition.id)
+  //   );
+  // }
 
   // ------------------------------------------------ Lifecycle management
   mounted() {
@@ -87,7 +107,6 @@ export default class MeasurableSelector extends Vue {
 
   onShow() {
     this.areasStore.subscribeToLoadAllQuery();
-    this.loadAvailableMeasurables();
   }
 
   onHide() {
@@ -99,15 +118,6 @@ export default class MeasurableSelector extends Vue {
   }
 
   // ------------------------------------------------ Methods
-  createNewMeasurable(measurableDefinition: MeasurableDefinition) {
-    const updatedArea = deepCopy(this.getArea());
-    updatedArea.measurableDefinitions.push(measurableDefinition);
-    // Save to store
-    this.areasStore.updateArea(updatedArea);
-    // Hide dialog
-    this.closeWizardDialogs();
-  }
-
   triggerEditDialog(measurableDefinition: MeasurableDefinition) {
     console.log("triggerEditDialog");
     this.selectedMeasurableId = measurableDefinition.id;
@@ -118,17 +128,6 @@ export default class MeasurableSelector extends Vue {
     console.log("triggerDeleteDialog");
     this.selectedMeasurableId = measurableDefinition.id;
     this.showDeleteMeasurableDialog = true;
-  }
-
-  saveExistingMeasurable(measurableDefinition: MeasurableDefinition) {
-    console.log("Saving existing measurable");
-    // Save to store
-    this.areasStore.updateMeasurableDefinition(
-      measurableDefinition,
-      this.getArea().id
-    );
-    // Hide dialog
-    this.closeWizardDialogs();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -146,7 +145,7 @@ export default class MeasurableSelector extends Vue {
       this.areasStore.deleteMeasurableDefinition(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.selectedMeasurableId!,
-        this.getArea().id
+        this.areaId
       );
     }
     this.showDeleteMeasurableDialog = false;
@@ -162,17 +161,6 @@ export default class MeasurableSelector extends Vue {
         measurableDefinitionId: this.selectedMeasurableId,
         isRequired: this.isRequired,
       };
-      console.log(
-        "type of this.selectedMeasurable =====> " +
-          typeof this.selectedMeasurableId
-      );
-      console.log(
-        "this.selectedMeasurable =====> " +
-          JSON.stringify(this.selectedMeasurableId)
-      );
-      console.log(
-        "confirmSelection() =====> " + JSON.stringify(newlySelectedMeasurable)
-      );
       this.$emit("save-confirmed", newlySelectedMeasurable);
     } else {
       console.log("This is a bug 🐞");
@@ -227,6 +215,7 @@ export default class MeasurableSelector extends Vue {
               :closeIcon="`mdi-delete`"
               v-on:chip-clicked="triggerEditDialog"
               v-on:chip-closed="triggerDeleteDialog"
+              @mousedown.prevent
             />
           </template>
 
@@ -255,7 +244,7 @@ export default class MeasurableSelector extends Vue {
               <!--  -->
 
               <v-list-item-action>
-                <span>{{ item.baseUnitEmoji }}</span>
+                <MyEmoji :emojiString="item.baseUnitEmoji" />
               </v-list-item-action>
 
               <v-list-item-content>
@@ -312,22 +301,19 @@ export default class MeasurableSelector extends Vue {
 
     <!-- * ------------------------ New popup  -------------------------->
     <MeasurableWizard
-      :measurableDefinition="newMeasurable"
-      :area="getArea"
+      :areaId="area.id"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateMeasurableDialog"
-      v-on:save-confirmed="createNewMeasurable"
-      v-on:discard="closeWizardDialogs"
+      v-on:close="closeWizardDialogs"
     />
 
     <!-- * ------------------------ Edit popup  -------------------------->
     <MeasurableWizard
-      :measurableDefinition="selectedMeasurableId"
-      :area="getArea"
+      :measurableDefinition="selectedMeasurable"
+      :areaId="area.id"
       :dialog-mode="`EDIT`"
       :showDialog="showEditMeasurableDialog"
-      v-on:save-confirmed="saveExistingMeasurable"
-      v-on:discard="closeWizardDialogs"
+      v-on:close="closeWizardDialogs"
     />
 
     <!-- * ------------------------ Delete popup  -------------------------->

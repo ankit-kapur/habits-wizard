@@ -6,8 +6,12 @@ export default interface Activity {
 
   // ? --------------- Association
   areaId: string;
-  categoryId: string; // TODO P0 ------- Make this into a list. of tags.
-  // ! ^^^^^ do this ASAP.
+  categoryId: string;
+
+  // TODO P0 ------- SHOULD CATEGORIES BE A LIST?
+  // For eg. A workout could be both Cardio & Strength.
+  // But then how do I color the Activity chip?
+  // ! ^^^^^ DECIDE THIS ASAP.
 
   // ? --------------- Display
   title: string;

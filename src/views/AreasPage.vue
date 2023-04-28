@@ -5,7 +5,6 @@ import { useAreasStore } from "@/store/AreasStore";
 import AreaCard from "@/components/cards/AreaCard.vue";
 import { Area } from "@/model/pojo/definitions/Area";
 import AreaWizard from "@/components/dialogs/AreaWizard.vue";
-import { defaultNewArea } from "@/constants/DefaultDataForForms";
 
 // See documentation on class-components:
 // 👉🏽 https://class-component.vuejs.org/guide/class-component.html#computed-properties
@@ -25,7 +24,7 @@ export default class AreasPage extends Vue {
   showDialogForEditArea = false;
 
   // State
-  selectedArea: Area = defaultNewArea;
+  selectedArea: Area | null = null;
   expandedCardIndices: Set<string> = new Set<string>([]);
 
   // ------------------------------------------------ Mounted

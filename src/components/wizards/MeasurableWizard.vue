@@ -1,15 +1,15 @@
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { deepCopy } from "deep-copy-ts";
+import MyEmoji from "@/components/chips/MyEmoji.vue";
+import { defaultNewMeasurable } from "@/constants/DefaultMeasurables";
 import { DialogMode } from "@/model/enum/DialogMode";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
-import { defaultNewMeasurable } from "@/constants/DefaultMeasurables";
-import MeasurableChips from "../chips/MeasurableChips.vue";
-import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
-import { Picker, Emoji, EmojiIndex } from "emoji-mart-vue-fast";
-import data from "emoji-mart-vue-fast/data/all.json";
+import { useAreasStore } from "@/store/AreasStore";
+import { useEmojiStore } from "@/store/EmojiStore";
+import { deepCopy } from "deep-copy-ts";
+import { Emoji, Picker } from "emoji-mart-vue-fast";
 import "emoji-mart-vue-fast/css/emoji-mart.css";
-import { uuidv4 } from "@firebase/util";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
 
 /**
  * TODO P1 ----- Add validations. Block the Save button.
@@ -18,15 +18,17 @@ import { uuidv4 } from "@firebase/util";
 @Component({
   components: {
     ConfirmationDialog: ConfirmationDialog,
-    MeasurableChips: MeasurableChips,
     Picker: Picker,
     Emoji: Emoji,
+    MyEmoji: MyEmoji,
   },
   methods: {},
 })
 export default class MeasurableWizard extends Vue {
   @Prop()
-  measurableDefinition!: MeasurableDefinition;
+  measurableDefinition?: MeasurableDefinition;
+  @Prop()
+  areaId!: string;
   @Prop()
   showDialog!: boolean;
   @Prop()
@@ -37,9 +39,6 @@ export default class MeasurableWizard extends Vue {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDisplayStateChange(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
-    console.log(
-      "👀 @Watch in CategoryCreateOrEdit. isDialogOpen ===> " + isDialogOpen
-    );
     if (isDialogOpen) {
       this.onShow();
     } else {
@@ -48,19 +47,16 @@ export default class MeasurableWizard extends Vue {
   }
 
   // <!-- ? ------------------------------------------- Data -->
-  measurableDef_local: MeasurableDefinition = deepCopy(defaultNewMeasurable);
+  measurableDef_local: MeasurableDefinition = this.resetToDefaultState();
   showDialogForConfirmDiscard = false;
   showEmojiPicker = false;
   showAdvancedColorPicker = false;
 
-  emojiIndex = new EmojiIndex(data);
-
   // <!-- ? ------------------------------------------- Computed props -->
-  get categoriesList() {
-    return [this.measurableDef_local];
-  }
 
   // <!-- ? ------------------------------------------- Stores -->
+  emojiStore = useEmojiStore();
+  areasStore = useAreasStore();
 
   // <!-- ? ------------------------------------------- Lifecycle actions -->
   mounted() {
@@ -77,53 +73,85 @@ export default class MeasurableWizard extends Vue {
   }
 
   resetToDefaultState() {
+    console.log(
+      "Inside MeasurableWizard. this.measurableDefinition = " +
+        JSON.stringify(this.measurableDefinition)
+    );
+
     // Reset
     this.measurableDef_local = deepCopy(
       this.measurableDefinition
         ? this.measurableDefinition
         : defaultNewMeasurable
     );
+    return this.measurableDef_local;
   }
 
   // ------------------------------------------------ Methods
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
     if (isConfirmed) {
-      this.discard();
-    } else {
-      console.log("NOT DISCARDING");
+      this.close();
     }
     this.showDialogForConfirmDiscard = false;
   }
 
-  discard() {
-    console.log("DISCARDING");
-    this.$emit("discard", true);
+  close() {
+    this.$emit("close", true);
   }
 
-  saveCategoryTag() {
-    // Generate UUID
-    this.measurableDef_local.id = uuidv4();
+  save() {
+    if (this.dialogMode === DialogMode.CREATE) {
+      this.createNewMeasurable();
+    } else {
+      this.saveExistingMeasurable();
+    }
     // Ask the parent to update.
-    this.$emit("save-confirmed", this.measurableDef_local);
+    this.close();
+  }
+
+  createNewMeasurable() {
+    this.areasStore.createMeasurableDefinition(
+      this.measurableDef_local,
+      this.areaId
+    );
+  }
+
+  saveExistingMeasurable() {
+    console.log("Saving existing measurable");
+    // Save to store
+    this.areasStore.updateMeasurableDefinition(
+      this.measurableDef_local,
+      this.areaId
+    );
   }
 
   triggerCancellation() {
     // If nothing's changed, discard without confirmation
-    if (
-      JSON.stringify(this.measurableDef_local) ===
-        JSON.stringify(this.measurableDefinition) ||
-      JSON.stringify(this.measurableDef_local) ===
-        JSON.stringify(defaultNewMeasurable)
-    ) {
-      this.discard();
-    } else {
+    if (this.hasChanged()) {
       this.showDialogForConfirmDiscard = true;
+    } else {
+      this.close();
     }
   }
 
-  selectEmoji(emoji) {
-    console.log("Emoji ==== " + JSON.stringify(emoji));
-    this.measurableDef_local.baseUnitEmoji = emoji;
+  hasChanged(): boolean {
+    return (
+      (this.measurableDefinition &&
+        JSON.stringify(this.measurableDef_local) ===
+          JSON.stringify(this.measurableDefinition)) ||
+      JSON.stringify(this.measurableDef_local) ===
+        JSON.stringify(defaultNewMeasurable)
+    );
+  }
+
+  /**
+   * Saves the selected Emoji object as a string.
+   * @param emoji
+   */
+  selectEmoji(emoji: Emoji) {
+    // const emojiString = this.emojiStore.convertEmojiToString(emoji);
+    console.log("SELECTED emoji.colons ==== " + emoji.colons);
+    this.measurableDef_local.baseUnitEmoji = emoji.colons;
     this.showEmojiPicker = false;
   }
 }
@@ -137,7 +165,7 @@ export default class MeasurableWizard extends Vue {
     v-model="showDialog"
     persistent
     @keydown.esc="triggerCancellation"
-    @keydown.enter="saveCategoryTag"
+    @keydown.enter="save"
   >
     <v-card flat class="px-2">
       <!--  -->
@@ -160,6 +188,12 @@ export default class MeasurableWizard extends Vue {
       </v-card-text>
 
       <v-divider></v-divider>
+
+      <!-- TODO P0 ------- Add V-SELECT for MeasurableType -->
+
+      <!-- TODO P0 ------- Add text-field for baseUnitName -->
+
+      <!-- TODO P0 ------- Display emoji in a prettier way -->
 
       <!-- ? ----------------- Name text-field --------------------->
       <v-card-text class="pa-0 pt-2">
@@ -192,8 +226,6 @@ export default class MeasurableWizard extends Vue {
       <!--  -->
       <!--  -->
       <!--  -->
-      <!-- TODO P0 -------- Generate UUID for CREATE mode. -->
-      <!-- TODO P0 -------- v-select for TYPE -->
       <!-- TODO P0 -------- text-field for base unit name -->
 
       <!-- ? ------------------ Pick an emoji ----------------------->
@@ -208,13 +240,7 @@ export default class MeasurableWizard extends Vue {
               <!-- ? -------------- Emoji ------------>
               <span> Emoji: </span>
 
-              <emoji
-                :data="emojiIndex"
-                :emoji="measurableDef_local.baseUnitEmoji"
-                :skin="3"
-                :size="32"
-              />
-
+              <MyEmoji :emojiString="measurableDef_local.baseUnitEmoji" />
               <!--  -->
             </v-col>
           </v-row>
@@ -231,7 +257,7 @@ export default class MeasurableWizard extends Vue {
       <v-card-actions class="pt-4 pb-4">
         <v-spacer></v-spacer>
         <v-btn text @click="triggerCancellation"> Cancel </v-btn>
-        <v-btn color="primary" @click="saveCategoryTag">
+        <v-btn color="primary" @click="save">
           {{ dialogMode === "CREATE" ? `Create` : `Save` }}
         </v-btn>
       </v-card-actions>
@@ -250,15 +276,19 @@ export default class MeasurableWizard extends Vue {
 
     <v-bottom-sheet v-model="showEmojiPicker">
       <picker
-        :data="emojiIndex"
+        :data="emojiStore.getEmojiIndex()"
         :native="true"
         set="native"
         @select="selectEmoji"
         :emojiTooltip="true"
         title="Pick an emoji"
         :emojiSize="30"
-        :defaultSkin="3"
+        :skin="4"
       />
+
+      <!-- :defaultSkin="5" -->
+
+      <!--  -->
     </v-bottom-sheet>
   </v-bottom-sheet>
 </template>

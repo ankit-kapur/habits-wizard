@@ -4,7 +4,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { routerPush } from "@/utils/nav/NavigationUtils";
 
 @Component
-export default class CategoryCreateOrEditDialog extends Vue {
+export default class ConfigurationPage extends Vue {
   // ------------------------------------------------ Methods
   signout() {
     const auth = getAuth();

@@ -15,6 +15,7 @@ import CategoryChips from "../chips/CategoryChips.vue";
 import ActivityChips from "../chips/ActivityChips.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
 import ConfigureMeasurablesInActivity from "../configure/ConfigureMeasurablesInActivity.vue";
+import { useActivitiesStore } from "@/store/ActivitiesStore";
 
 /**
  * TODO P0 ----- Step 1 & 2 should be to select an Area and Category if not provided.
@@ -59,6 +60,7 @@ export default class ActivityWizard extends Vue {
   /* <!-- ? ------------------------------ Stores ------------------------------> */
   iconsStore = useIconsStore();
   categoryTagsStore = useCategoryTagsStore();
+  activitiesStore = useActivitiesStore();
 
   mounted() {
     console.log("🐪 Mounted ActivityWizard");
@@ -70,6 +72,7 @@ export default class ActivityWizard extends Vue {
   selectedCategory: CategoryTag | null = null;
   showDialogForConfirmDiscard = false;
   showMeasurableSelectionDialog = false;
+  showDeleteConfirmDialog = false;
   showIconPicker = false;
   showSearchBar = false;
   searchInput = "";
@@ -80,7 +83,7 @@ export default class ActivityWizard extends Vue {
   previous_step_icon = "mdi-chevon-left";
   next_step_icon = "mdi-chevon-right";
 
-  // TODO: Insert step for selecting an Area.
+  // TODO P2: Insert step for selecting an Area.
   stepTitles: Map<number, string> = new Map([
     [1, "Pick a name & icon"],
     [2, "Select Category"],
@@ -90,12 +93,6 @@ export default class ActivityWizard extends Vue {
 
   /* <!-- ? ------------------------------- Computed pros ------------------------------> */
   get categories(): CategoryTag[] {
-    console.log(
-      "🏏 ---- categories = " +
-        JSON.stringify(
-          this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags)
-        )
-    );
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
   }
 
@@ -182,6 +179,20 @@ export default class ActivityWizard extends Vue {
     } else {
       this.showDialogForConfirmDiscard = true;
     }
+  }
+
+  /* <!-- ? ----------------------------- Delete actions ------------------------------> */
+  triggerDeleteAction(): void {
+    // <!-- TODO P2 ----- Validate its safe to delete -->
+    this.showDeleteConfirmDialog = true;
+  }
+
+  respondToDeleteConfirmDialog(isConfirmed: boolean): void {
+    if (isConfirmed) {
+      this.activitiesStore.deleteActivity(this.activity_local);
+    }
+    this.showDeleteConfirmDialog = false;
+    this.discard(); // Ask parent to close.
   }
 
   /* <!-- ? ----------------------------- Icon picker ------------------------------> */
@@ -431,7 +442,7 @@ export default class ActivityWizard extends Vue {
 
               <ConfigureMeasurablesInActivity
                 :activity="activity_local"
-                :area="area"
+                :areaId="area.id"
                 :isDisplayed="showDialog"
                 v-on:update="saveMeasurablesUpdate"
               />
@@ -522,9 +533,17 @@ export default class ActivityWizard extends Vue {
           <!--  -->
         </v-card-actions>
 
-        <!-- ? ------------------ Save / Cancel ---------------- * -->
-        <v-card-actions>
+        <!-- ? ------------------ Bottom Actions ---------------------->
+        <v-card-actions class="pt-4 pb-4">
+          <!--  -->
+
+          <!-- ? ---------- Delete button -->
+          <v-btn icon v-if="dialogMode === `EDIT`" @click="triggerDeleteAction">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
           <v-spacer></v-spacer>
+
+          <!-- ? ---------- Cancel and Save buttons -->
           <v-btn text @click="triggerCancellation"> Cancel </v-btn>
           <v-btn color="primary" @click="saveActivity">
             {{ isInCreateMode ? `Create` : `Save` }}
@@ -540,6 +559,14 @@ export default class ActivityWizard extends Vue {
         :showDialog="showDialogForConfirmDiscard"
         messageToDisplay="Sure you want to discard this?"
         yesButtonText="Discard"
+        noButtonText="Cancel"
+      />
+
+      <ConfirmationDialog
+        v-on:confirm-status-change="respondToDeleteConfirmDialog"
+        :showDialog="showDeleteConfirmDialog"
+        messageToDisplay="Sure want to delete this Activity?"
+        yesButtonText="Delete"
         noButtonText="Cancel"
       />
 

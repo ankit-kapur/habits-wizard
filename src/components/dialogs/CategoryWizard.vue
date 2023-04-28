@@ -21,7 +21,7 @@ import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
   },
   methods: {},
 })
-export default class CategoryCreateOrEditDialog extends Vue {
+export default class CategoryWizard extends Vue {
   @Prop()
   categoryTag?: CategoryTag;
   @Prop()
@@ -67,7 +67,7 @@ export default class CategoryCreateOrEditDialog extends Vue {
   mounted() {
     this.iconsStore.loadIcons();
     this.onShow();
-    console.log("🐪 Mounted CategoryCreateOrEditDialog");
+    console.log("🐪 Mounted CategoryWizard");
   }
 
   onShow() {
@@ -258,12 +258,12 @@ export default class CategoryCreateOrEditDialog extends Vue {
         <v-spacer />
       </v-card-actions>
 
-      <!-- ? ------------------ Save / Cancel ---------------------->
+      <!-- ? ------------------ Bottom Actions ---------------------->
       <v-card-actions class="pt-4 pb-4">
         <!--  -->
 
         <!-- ? ---------- Delete button -->
-        <v-btn icon @click="triggerDeleteAction">
+        <v-btn icon v-if="dialogMode === `EDIT`" @click="triggerDeleteAction">
           <v-icon>mdi-delete</v-icon>
         </v-btn>
         <v-spacer></v-spacer>
@@ -290,7 +290,6 @@ export default class CategoryCreateOrEditDialog extends Vue {
         </v-card-actions>
 
         <!-- ? ----------------------- Color picker -->
-        <!-- TODO P0 --------- Set palette from Area -->
         <v-card-text>
           <v-color-picker
             v-model="categoryTag_local.color"

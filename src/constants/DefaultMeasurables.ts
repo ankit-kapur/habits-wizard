@@ -1,67 +1,67 @@
 import { MeasurableType } from "@/model/enum/MeasurableType";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 
-export const duration: MeasurableDefinition = {
-  id: "duration",
-  title: "Duration",
-  type: MeasurableType.Duration,
-  baseUnitName: "minutes",
-  baseUnitEmoji: "⏳",
-  alternateUnits: [
+export function getDefaultMeasurables() {
+  return [
     {
-      title: "seconds",
-      conversionFactor: 1 / 60,
-      emoji: "⏲️",
+      id: "duration",
+      title: "Duration",
+      type: MeasurableType.Duration,
+      baseUnitName: "minutes",
+      baseUnitEmoji: ":timer_clock:", // ⏲️
+      alternateUnits: [
+        {
+          title: "seconds",
+          conversionFactor: 1 / 60,
+          emoji: ":clock12:", // 🕛
+        },
+        {
+          title: "hours",
+          conversionFactor: 60,
+          emoji: ":mantelpiece_clock:", // 🕰️
+        },
+        {
+          title: "pomodoro",
+          conversionFactor: 25,
+          emoji: ":tomato:", // 🍅
+        },
+      ],
     },
     {
-      title: "hours",
-      conversionFactor: 60,
-      emoji: "⏰",
+      id: "count",
+      title: "Count",
+      type: MeasurableType.Quantity,
+      baseUnitName: "count",
+      baseUnitEmoji: ":radio_button:", // 🔘
     },
     {
-      title: "pomodoro",
-      conversionFactor: 25,
-      emoji: "🍅",
+      id: "startTime",
+      title: "Start Time",
+      type: MeasurableType.Timestamp,
+      baseUnitName: "",
+      baseUnitEmoji: ":hourglass_flowing_sand:", // ⏳
     },
-  ],
-};
-
-export const count: MeasurableDefinition = {
-  id: "count",
-  title: "Count",
-  type: MeasurableType.Quantity,
-  baseUnitName: "count",
-  baseUnitEmoji: "🔵",
-};
-
-export const startTime: MeasurableDefinition = {
-  id: "startTime",
-  title: "Start Time",
-  type: MeasurableType.Timestamp,
-  baseUnitName: "",
-  baseUnitEmoji: "⏱️",
-};
-
-export const endTime: MeasurableDefinition = {
-  id: "endTime",
-  title: "End Time",
-  type: MeasurableType.Timestamp,
-  baseUnitName: "",
-  baseUnitEmoji: "⏱️",
-};
-
-export const isDone: MeasurableDefinition = {
-  id: "isDone",
-  title: "Completed",
-  type: MeasurableType.Boolean,
-  baseUnitName: "",
-  baseUnitEmoji: "✓",
-};
+    {
+      id: "endTime",
+      title: "End Time",
+      type: MeasurableType.Timestamp,
+      baseUnitName: "",
+      baseUnitEmoji: ":hourglass:", // ⌛️
+    },
+    {
+      id: "isDone",
+      title: "Completed",
+      type: MeasurableType.Boolean,
+      baseUnitName: "",
+      baseUnitEmoji: ":ballot_box_with_check:", // ☑️
+    },
+  ];
+}
 
 export const defaultNewMeasurable: MeasurableDefinition = {
   id: "",
   title: "",
   type: MeasurableType.Quantity,
   baseUnitName: "",
-  baseUnitEmoji: "",
+  baseUnitEmoji: ":radio_button:",
 };
