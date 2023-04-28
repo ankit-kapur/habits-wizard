@@ -3,7 +3,6 @@ import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useAreasStore } from "@/store/AreasStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
-import AreaWizard from "@/components/dialogs/AreaWizard.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { getPrettyTimestamp } from "@/utils/time/TimestampConversionUtils";
 import VClamp from "vue-clamp";
@@ -17,7 +16,6 @@ import ActivityWizard from "@/components/dialogs/ActivityWizard.vue";
 
 @Component({
   components: {
-    AreaWizard: AreaWizard,
     CategoryWizard: CategoryWizard,
     ActivityWizard: ActivityWizard,
     ConfirmationDialog: ConfirmationDialog,
@@ -63,13 +61,15 @@ export default class AreaCard extends Vue {
   mounted() {
     this.areasStore.subscribeToLoadAllQuery();
     this.categoryTagsStore.subscribeToStore();
+    this.activitiesStore.subscribeToStore(); // Subscribe to store
     console.log("🐪 🐪 🐪  Mounted AreaCard");
   }
 
   unmounted() {
     // TODO -- not the right place to unsubscribe. not getting called.
-    this.categoryTagsStore.unsubscribe();
     this.areasStore.unsubscribeAll();
+    this.categoryTagsStore.unsubscribe();
+    this.activitiesStore.unsubscribe();
     console.log("🐪 🐪 🐪  UN-mounted AreaCard");
   }
 
@@ -90,11 +90,6 @@ export default class AreaCard extends Vue {
     // Whether the buttons show.
     this.showDeleteButton = isExpanded;
     this.showEditButton = isExpanded;
-
-    // Subscribe to stores here
-    if (isExpanded)
-      this.activitiesStore.subscribeToStore(); // Subscribe to store
-    else this.activitiesStore.unsubscribe();
   }
 
   // Edits
@@ -133,6 +128,7 @@ export default class AreaCard extends Vue {
 
   // <!-- * ---------------------------- Categories ---------------------------->
   get categories(): CategoryTag[] {
+    console.log("💾 💾 💾 💾 💾 💾Snapshot updated. Refreshed category tags.");
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
   }
 
@@ -317,7 +313,7 @@ export default class AreaCard extends Vue {
           />
         </v-card-text>
 
-        <!-- ? ------------------- Activities section ----------------------->
+        <!-- * ------------------- Activities section ----------------------->
         <div v-if="activities.length > 0">
           <v-divider class="mx-4 mb-1"></v-divider>
 
@@ -355,12 +351,10 @@ export default class AreaCard extends Vue {
           </span>
           <!-- Other colors: #888a89 (medium-gray) -->
         </v-card-text>
-
-        <!-- </v-card> -->
       </div>
     </v-expand-transition>
 
-    <!-- * ------------------------ View category dialog  -------------------------->
+    <!-- * ------------------------ Wizards  -------------------------->
     <CategoryWizard
       :categoryTag="selectedCategoryTag"
       :area="area"
@@ -379,7 +373,7 @@ export default class AreaCard extends Vue {
       v-on:change-mode="changeActivityWizardMode"
     />
 
-    <!-- CONFIRMATION dialog for deleting this area -->
+    <!-- * ------------------ Confirmation for delete  --------------------->
     <ConfirmationDialog
       v-on:confirm-status-change="respondToConfirmDeleteDialog"
       :showDialog="showDialogForConfirmDelete"
