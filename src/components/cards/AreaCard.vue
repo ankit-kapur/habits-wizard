@@ -12,6 +12,7 @@ import { useActivitiesStore } from "@/store/ActivitiesStore";
 import CategoryChips from "@/components/chips/CategoryChips.vue";
 import ActivityChips from "@/components/chips/ActivityChips.vue";
 import CategoryWizard from "@/components/dialogs/CategoryWizard.vue";
+import { DialogMode } from "@/model/enum/DialogMode";
 
 @Component({
   components: {
@@ -39,7 +40,8 @@ export default class AreaCard extends Vue {
   showDeleteButton = false;
   showDialogForConfirmDelete = false;
   showCategoryWizard = false;
-  selectedCategoryTag: CategoryTag | undefined = undefined;
+  selectedCategoryTag: CategoryTag | null = null;
+  categoryWizardDialogMode = DialogMode.VIEW;
 
   MIN_WIDTH_CARD = 320;
   MAX_WIDTH_CARD = 350;
@@ -129,6 +131,12 @@ export default class AreaCard extends Vue {
 
   closeCategoryWizard() {
     this.showCategoryWizard = false;
+    this.categoryWizardDialogMode = DialogMode.VIEW; // Default
+    this.selectedCategoryTag = null;
+  }
+
+  changeCategoryWizardMode(newDialogMode: DialogMode) {
+    this.categoryWizardDialogMode = newDialogMode;
   }
 }
 </script>
@@ -319,9 +327,10 @@ export default class AreaCard extends Vue {
     <CategoryWizard
       :categoryTag="selectedCategoryTag"
       :area="area"
-      :dialog-mode="`VIEW`"
+      :dialog-mode="categoryWizardDialogMode"
       :showDialog="showCategoryWizard"
       v-on:close="closeCategoryWizard"
+      v-on:change-mode="changeCategoryWizardMode"
     />
 
     <!-- CONFIRMATION dialog for deleting this area -->

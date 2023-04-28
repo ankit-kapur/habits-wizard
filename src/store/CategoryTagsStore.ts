@@ -95,7 +95,7 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
     },
 
     // -------------------------------------------- Create
-    createCategoryTag(categoryTag: CategoryTag): string {
+    createCategoryTag(categoryTag: CategoryTag): void {
       // Generate doc ID
       const newID: string = uuid();
       categoryTag.id = newID;
@@ -112,7 +112,6 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
 
       // Save to Firestore
       setDoc(getDocReference(newID, collectionName, firestoreDB), categoryTag);
-      return newID;
     },
 
     // -------------------------------------------- Update

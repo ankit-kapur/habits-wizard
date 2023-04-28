@@ -36,6 +36,8 @@ export default class CategoryWizard extends Vue {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDisplayStateChange(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
+    console.log("isDialogOpen " + isDialogOpen);
+
     if (isDialogOpen) {
       this.onShow();
     } else {
@@ -43,8 +45,17 @@ export default class CategoryWizard extends Vue {
     }
   }
 
+  // Workaround for when space above bottom-sheet is tapped.
+  @Watch("showDialog_local")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onLocalDisplayStateChange(_newValue: string, _oldValue: string) {
+    const isDialogOpen = !!_newValue;
+    if (!isDialogOpen) this.closeThroughParent();
+  }
+
   // <!-- * ------------------------------------------- Data -->
   categoryTag_local = deepCopy(defaultNewCategory);
+  showDialog_local = false;
   showDialogForConfirmDiscard = false;
   showDeleteConfirmDialog = false;
   showColorPicker = false;
@@ -74,11 +85,11 @@ export default class CategoryWizard extends Vue {
     else return "invalid case. this is a bug.";
   }
 
-  // <!-- * ------------------------------------------- Stores -->
+  // <!-- * ---------------------------- Stores ---------------------------->
   iconsStore = useIconsStore();
   categoriesStore = useCategoryTagsStore();
 
-  // <!-- * ------------------------------------------- Lifecycle actions -->
+  // <!-- * ---------------------------- Lifecycle actions ---------------------------->
   mounted() {
     this.iconsStore.loadIcons();
     this.onShow();
@@ -87,21 +98,23 @@ export default class CategoryWizard extends Vue {
 
   onShow() {
     // Reset
-    this.categoryTag_local = this.categoryTag
-      ? this.categoryTag
-      : defaultNewCategory;
+    this.categoryTag_local = deepCopy(
+      this.categoryTag ? this.categoryTag : defaultNewCategory
+    );
+
+    this.showDialog_local = this.showDialog;
+    this.showAdvancedColorPicker = false;
 
     if (this.dialogMode === DialogMode.CREATE && this.area.dominantColor)
       this.categoryTag_local.color = this.area.dominantColor;
-
-    this.showAdvancedColorPicker = false;
   }
 
   onHide() {
     // No actions so far.
+    this.showDialog_local = false;
   }
 
-  // ------------------------------------------------ Methods
+  // <!-- * ---------------------------- Computed Props ---------------------------->
   get colorPalette(): string[][] {
     if (!this.area || !this.area.palette) return [];
     // return this.colorSwatches;
@@ -125,9 +138,10 @@ export default class CategoryWizard extends Vue {
     return swatches;
   }
 
+  // <!-- * ---------------------------- Behavioral actions ---------------------------->
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
     if (isConfirmed) {
-      this.discard();
+      this.closeThroughParent();
     }
     this.showDialogForConfirmDiscard = false;
   }
@@ -138,9 +152,13 @@ export default class CategoryWizard extends Vue {
   }
 
   switchBetweenViewEditModes(): void {
-    if (this.dialogMode === DialogMode.VIEW) this.dialogMode = DialogMode.EDIT;
-    else if (this.dialogMode === DialogMode.EDIT)
-      this.dialogMode = DialogMode.VIEW;
+    if (this.dialogMode === DialogMode.VIEW)
+      this.$emit("change-mode", DialogMode.EDIT);
+    else if (this.dialogMode === DialogMode.EDIT) {
+      // Save because 💾 floppy-disk icon was clicked.
+      this.save();
+      this.$emit("change-mode", DialogMode.VIEW);
+    }
   }
 
   respondToDeleteConfirmDialog(isConfirmed: boolean): void {
@@ -148,18 +166,7 @@ export default class CategoryWizard extends Vue {
       this.categoriesStore.deleteCategoryTag(this.categoryTag_local);
     }
     this.showDeleteConfirmDialog = false;
-    this.discard(); // Ask parent to close.
-  }
-
-  discard() {
-    console.log("DISCARDING");
-    this.$emit("discard", true);
-  }
-
-  saveCategoryTag() {
-    // Reset dialog box
-    // Ask the parent to update.
-    this.$emit("save-confirmed", this.categoryTag_local);
+    this.closeThroughParent(); // Ask parent to close.
   }
 
   triggerCancellation() {
@@ -171,11 +178,26 @@ export default class CategoryWizard extends Vue {
         JSON.stringify(defaultNewCategory)
     ) {
       console.log("🐞 discard");
-      this.discard();
+      this.closeThroughParent();
     } else {
       console.log("🐞 showDialogForConfirmDiscard");
       this.showDialogForConfirmDiscard = true;
     }
+  }
+
+  closeThroughParent() {
+    this.$emit("close", true);
+  }
+
+  // <!-- * ---------------------------- Store actions ---------------------------->
+
+  save() {
+    if (this.dialogMode === DialogMode.EDIT) {
+      this.categoriesStore.updateCategoryTag(this.categoryTag_local);
+    } else if (this.dialogMode === DialogMode.CREATE) {
+      this.categoriesStore.createCategoryTag(this.categoryTag_local);
+    }
+    this.closeThroughParent();
   }
 }
 </script>
@@ -185,10 +207,10 @@ export default class CategoryWizard extends Vue {
     max-width="300"
     overlay-opacity="0.88"
     inset
-    v-model="showDialog"
-    persistent
+    v-model="showDialog_local"
+    :persistent="dialogMode !== `VIEW`"
     @keydown.esc="triggerCancellation"
-    @keydown.enter="saveCategoryTag"
+    @keydown.enter="save"
   >
     <v-card flat class="px-2">
       <!--  -->
@@ -306,7 +328,7 @@ export default class CategoryWizard extends Vue {
 
         <!-- ? ---------- Cancel and Save buttons -->
         <v-btn text @click="triggerCancellation"> Cancel </v-btn>
-        <v-btn color="primary" @click="saveCategoryTag">
+        <v-btn color="primary" @click="save">
           {{ dialogMode === "CREATE" ? `Create` : `Save` }}
         </v-btn>
       </v-card-actions>

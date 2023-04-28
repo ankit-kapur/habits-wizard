@@ -111,30 +111,13 @@ export default class CategorySelector extends Vue {
     }
   }
 
-  createNewCategory(newCategoryTag: CategoryTag) {
-    console.log("Saving new category...");
-    const newId: string =
-      this.categoryTagsStore.createCategoryTag(newCategoryTag);
-    this.selectedItemIdList_local.push(newId);
-    this.showCreateCategoryDialog = false;
-  }
-
   triggerEditDialog(categoryTag: CategoryTag) {
     console.log("triggerEditDialog");
     this.selectedCategoryTag = categoryTag;
     this.showEditCategoryDialog = true;
   }
 
-  saveExistingCategory(updatedCategoryTag: CategoryTag) {
-    console.log("Saving new category");
-    this.categoryTagsStore.updateCategoryTag(updatedCategoryTag);
-    // Reset things.
-    this.showEditCategoryDialog = false;
-    this.selectedCategoryTag = null;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  discardCategoryChange(irrelevantValue: boolean) {
+  closeCategoryWizard() {
     console.log("Discardddding");
     this.showCreateCategoryDialog = false;
     this.showEditCategoryDialog = false;
@@ -280,19 +263,15 @@ export default class CategorySelector extends Vue {
       :area="area"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateCategoryDialog"
-      v-on:save-confirmed="createNewCategory"
-      v-on:discard="discardCategoryChange"
+      v-on:close="closeCategoryWizard"
     />
-
-    <!-- TODO !!!!!!! --------- CategoryWizard should do the saving. Should only return a close event. -->
 
     <CategoryWizard
       :categoryTag="selectedCategoryTag"
       :area="area"
       :dialog-mode="`EDIT`"
       :showDialog="showEditCategoryDialog"
-      v-on:save-confirmed="saveExistingCategory"
-      v-on:discard="discardCategoryChange"
+      v-on:close="closeCategoryWizard"
     />
   </div>
 </template>

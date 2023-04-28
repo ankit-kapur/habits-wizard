@@ -101,12 +101,12 @@ export default class MeasurableWizard extends Vue {
   // ------------------------------------------------ Methods
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
     if (isConfirmed) {
-      this.close();
+      this.closeThroughParent();
     }
     this.showDialogForConfirmDiscard = false;
   }
 
-  close() {
+  closeThroughParent() {
     this.$emit("close", true);
   }
 
@@ -117,7 +117,7 @@ export default class MeasurableWizard extends Vue {
       this.saveExistingMeasurable();
     }
     // Ask the parent to update.
-    this.close();
+    this.closeThroughParent();
   }
 
   createNewMeasurable() {
@@ -141,7 +141,7 @@ export default class MeasurableWizard extends Vue {
     if (this.hasChanged()) {
       this.showDialogForConfirmDiscard = true;
     } else {
-      this.close();
+      this.closeThroughParent();
     }
   }
 
