@@ -14,9 +14,7 @@ import CategoryChips from "@/components/chips/CategoryChips.vue";
   },
 })
 export default class CategorySelector extends Vue {
-  /**
-   * * ------------------------------------------------ Props
-   */
+  // <!-- * -------------------------------- Required Props ------------------------------->
   @Prop()
   area!: Area;
   @Prop()
@@ -26,20 +24,7 @@ export default class CategorySelector extends Vue {
   @Prop()
   isDisplayed!: boolean;
 
-  /**
-   * * ------------------------------------------------ Watchers
-   */
-  @Watch("selectedItemIdList")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onListsChange(_newValue: string, _oldValue: string) {
-    this.selectedItemIdList_local = this.selectedItemIdList;
-
-    console.log(
-      "@Watch triggered in CategorySelector. this.selectedItemIdList_local ===> " +
-        JSON.stringify(this.selectedItemIdList_local)
-    );
-  }
-
+  // <!-- * -------------------------------- Watchers ------------------------------->
   @Watch("isDisplayed")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDisplayStateChange(_newValue: string, _oldValue: string) {
@@ -54,14 +39,10 @@ export default class CategorySelector extends Vue {
     }
   }
 
-  /**
-   * * ------------------------------------------------ Stores
-   */
+  // <!-- * -------------------------------- Stores ------------------------------->
   categoryTagsStore = useCategoryTagsStore();
 
-  /**
-   * * ------------------------------------------------ Data
-   */
+  // <!-- * -------------------------------- Data ------------------------------->
   showCreateCategoryDialog = false;
   showEditCategoryDialog = false;
   selectedCategoryTag: CategoryTag | null = null;
@@ -69,17 +50,14 @@ export default class CategorySelector extends Vue {
   newCategoryTag: CategoryTag = defaultNewCategory;
   searchInput = "";
 
-  /**
-   * * ------------------------------------------------ Lifecycle actions
-   */
+  // <!-- * -------------------------------- Lifecycle actions ------------------------------->
   mounted() {
-    this.selectedItemIdList_local = this.selectedItemIdList;
     this.onShow();
     console.log("🐪 Mounted CategorySelector");
   }
 
   onShow() {
-    // Subscribe to stores here
+    this.selectedItemIdList_local = this.selectedItemIdList;
   }
 
   onHide() {
@@ -145,15 +123,6 @@ export default class CategorySelector extends Vue {
         <v-card-subtitle class="pa-2 pt-3 text-caption font-weight-light">
           Select from the list, or create a new one.
         </v-card-subtitle>
-
-        <!-- TODO ------------- Delete this after chips from v-autocomplete work better. -->
-        <!-- <CategoryChips
-          :categories="selectedCategories"
-          :hasCloseButton="true"
-          :closeIcon="`mdi-close`"
-          v-on:chip-clicked="triggerEditDialog"
-          v-on:chip-closed="removeCategoryTagFromArea"
-        /> -->
 
         <!-- * ------------------------ Auto-complete for chips  -------------------------->
         <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->

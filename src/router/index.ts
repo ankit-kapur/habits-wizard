@@ -4,6 +4,7 @@ import HomePage from "@/views/HomePage.vue";
 import LoginPage from "@/views/LoginPage.vue";
 import AreasPage from "@/views/AreasPage.vue";
 import ProgressPage from "@/views/ProgressPage.vue";
+import RecordingPage from "@/views/RecordingPage.vue";
 import CalendarPage from "@/views/CalendarPage.vue";
 import ConfigurationPage from "@/views/ConfigurationPage.vue";
 import { getAuth } from "firebase/auth";
@@ -26,6 +27,11 @@ const routes: Array<RouteConfig> = [
     path: "/progressPage",
     name: "Progress",
     component: ProgressPage,
+  },
+  {
+    path: "/recordingPage",
+    name: "Record",
+    component: RecordingPage,
   },
   {
     path: "/configurationPage",

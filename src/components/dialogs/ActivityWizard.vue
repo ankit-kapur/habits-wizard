@@ -16,6 +16,9 @@ import ActivityChips from "../chips/ActivityChips.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
 import ConfigureMeasurablesInActivity from "../configure/ConfigureMeasurablesInActivity.vue";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
+import { useAreasStore } from "@/store/AreasStore";
+import { MeasurableType } from "@/model/enum/MeasurableType";
+import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 
 /**
  * TODO P2 ----- Step 1 & 2 should be to select an Area and Category if not provided.
@@ -40,13 +43,12 @@ export default class ActivityWizard extends Vue {
   @Prop()
   activity!: Activity;
   @Prop()
-  area!: Area;
+  areaId!: string;
   @Prop()
   showDialog!: boolean;
 
-  /* <!-- ? ------------------------------ Watchers ------------------------------> */
+  /* <!-- * ------------------------------ Watchers ------------------------------> */
   @Watch("showDialog")
-  // @Watch("activity")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
     console.log("👀 @Watch in ActivityCreateOrEdit. showDialog = " + _newValue);
@@ -66,19 +68,21 @@ export default class ActivityWizard extends Vue {
     if (!isDialogOpen) this.closeViaParent();
   }
 
-  /* <!-- ? ------------------------------ Stores ------------------------------> */
+  /* <!-- * ------------------------------ Stores ------------------------------> */
   iconsStore = useIconsStore();
   categoryTagsStore = useCategoryTagsStore();
   activitiesStore = useActivitiesStore();
+  areasStore = useAreasStore();
 
   mounted() {
     console.log("🐪 Mounted ActivityWizard");
     this.iconsStore.loadIcons();
   }
 
-  /* <!-- ? ------------------------------ Data ------------------------------> */
+  /* <!-- * ------------------------------ Data ------------------------------> */
   activity_local: Activity = deepCopy(defaultNewActivity);
   showDialog_local = false;
+  area: Area | null = null;
   selectedCategory: CategoryTag | null = null;
   showDialogForConfirmDiscard = false;
   showMeasurableSelectionDialog = false;
@@ -101,9 +105,14 @@ export default class ActivityWizard extends Vue {
     [4, "Review"],
   ]);
 
-  /* <!-- ? ------------------------------- Computed pros ------------------------------> */
-  get categories(): CategoryTag[] {
-    return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
+  /* <!-- * ------------------------------- Computed pros ------------------------------> */
+  get categoriesInArea(): CategoryTag[] {
+    if (this.area) {
+      return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
+    } else {
+      console.log("🚨 🚨 🚨 🚨 🚨 Bug: Area should have been loaded by now.");
+      return [];
+    }
   }
 
   get numberOfSteps() {
@@ -121,7 +130,9 @@ export default class ActivityWizard extends Vue {
 
   // <!-- * ---------------------------- Lifecycle ---------------------------->
   onShow() {
-    this.categoryTagsStore.subscribeToStore(); // Subscribe to store
+    // Subscribe to store
+    this.categoryTagsStore.subscribeToStore();
+    this.areasStore.subscribeToLoadAllQuery();
 
     // Reset
     this.resetToDefaultState();
@@ -160,9 +171,13 @@ export default class ActivityWizard extends Vue {
       this.activity_local = deepCopy(
         this.activity ? this.activity : defaultNewActivity
       );
-      this.activity_local.areaId = this.area.id;
     } else {
       this.activity_local = deepCopy(this.activity);
+    }
+
+    // Load Area (if provided)
+    if (this.areaId) {
+      this.area = this.areasStore.getAreaById(this.areaId);
     }
   }
 
@@ -189,12 +204,32 @@ export default class ActivityWizard extends Vue {
 
   // <!-- * ---------------------------- Store actions ---------------------------->
   saveActivity() {
+    // Set whether time-tracking is needed.
+    this.activity_local.hasTimeTracking = this.hasTimeTracking();
+
     if (this.dialogMode === DialogMode.EDIT) {
       this.activitiesStore.updateActivity(this.activity_local);
     } else if (this.dialogMode === DialogMode.CREATE) {
-      this.activitiesStore.createActivity(this.activity_local, this.area.id);
+      this.createNewActivity();
     }
     this.closeViaParent();
+  }
+
+  createNewActivity() {
+    // Assign Area
+    this.activity_local.areaId = this.areaId;
+
+    // <!-- TODO P1 ----- Assign categoryId-->
+
+    this.activitiesStore.createActivity(this.activity_local, this.areaId);
+  }
+
+  hasTimeTracking() {
+    const durationMeasurables = this.activity_local.measurables.filter((m) => {
+      const definition = this.getMeasurableDefinition(m.measurableDefinitionId);
+      return definition && definition.type === MeasurableType.Duration;
+    });
+    return durationMeasurables.length > 0;
   }
 
   // <!-- * ---------------------------- Cancel ---------------------------->
@@ -229,7 +264,7 @@ export default class ActivityWizard extends Vue {
     this.closeViaParent(); // Ask parent to close.
   }
 
-  /* <!-- ? ----------------------------- Icon picker ------------------------------> */
+  /* <!-- * ----------------------------- Icon picker ------------------------------> */
   newIconSelected(newIcon: string) {
     console.log("---- newIconSelected (PARENT) = " + newIcon);
     this.activity_local.icon = newIcon;
@@ -241,7 +276,7 @@ export default class ActivityWizard extends Vue {
     this.showIconPicker = false;
   }
 
-  /* <!-- ? ------------------------------ Stepper ------------------------------> */
+  /* <!-- * ------------------------------ Stepper ------------------------------> */
   moveToStep(destination: number): void {
     if (destination >= this.numberOfSteps) {
       this.currentStepperPos = this.numberOfSteps;
@@ -274,6 +309,11 @@ export default class ActivityWizard extends Vue {
     // TODO: Success or Error icon if validation fails.
     return "mdi-record";
   }
+
+  /* <!-- * ------------------------------ Utils ------------------------------> */
+  getMeasurableDefinition(id: string): MeasurableDefinition | undefined {
+    return this.area?.measurableDefinitions.find((m) => m.id === id);
+  }
 }
 </script>
 
@@ -286,6 +326,7 @@ export default class ActivityWizard extends Vue {
       overlay-opacity="0.88"
       :persistent="hasChanged"
       @keydown.esc="triggerCancellation"
+      @keydown.enter="saveActivity"
     >
       <!-- @keydown.enter="saveActivity" -->
       <v-card flat class="px-2">
@@ -405,7 +446,7 @@ export default class ActivityWizard extends Vue {
                     chips
                     label=""
                     v-model="selectedCategoryId"
-                    :items="categories"
+                    :items="categoriesInArea"
                     item-text="title"
                     item-value="id"
                     hint="Click to select a category"
@@ -496,13 +537,13 @@ export default class ActivityWizard extends Vue {
 
               <ConfigureMeasurablesInActivity
                 :activity="activity_local"
-                :areaId="area.id"
+                :areaId="areaId"
                 :isDisplayed="showDialog"
                 v-on:update="saveMeasurablesUpdate"
               />
             </v-window-item>
 
-            <!-- ? --------------------------------------------- Step 4 -->
+            <!-- ? --------------------------------------------- Step 4: Preview -->
             <v-window-item :step="4">
               <!--  -->
 
@@ -520,7 +561,7 @@ export default class ActivityWizard extends Vue {
                     <v-row>
                       <ActivityChips
                         :activities="[activity_local]"
-                        :categories="categories"
+                        :categories="categoriesInArea"
                         :hasCloseButton="false"
                       />
                     </v-row>
@@ -564,7 +605,7 @@ export default class ActivityWizard extends Vue {
                 <v-icon
                   :color="getStepPositionColor(n)"
                   :style="{
-                    border: (isCurrentStep(n) ? '1' : '0') + 'px black solid',
+                    border: (isCurrentStep(n) ? '0' : '0') + 'px black solid',
                     'border-radius': '12px',
                   }"
                 >

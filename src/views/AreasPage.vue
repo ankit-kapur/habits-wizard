@@ -93,13 +93,13 @@ export default class AreasPage extends Vue {
         <div class="text-center mb-15 mt-4">
           <v-btn
             fab
-            color="add_button"
+            color="white"
             dark
             variant="outlined"
             elevation="10"
             @click="showDialogForNewArea = true"
           >
-            <v-icon>mdi-plus</v-icon>
+            <v-icon color="add_button">mdi-plus</v-icon>
           </v-btn>
         </div>
       </v-col>

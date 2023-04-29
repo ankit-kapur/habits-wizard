@@ -170,7 +170,7 @@ export default class ActivitiesInArea extends Vue {
     <!-- * ------------------------ New popup  -------------------------->
     <ActivityWizard
       :activity="newActivity"
-      :area="area"
+      :areaId="area.id"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateActivityDialog"
       v-on:close="closeActivityDialog"
@@ -179,7 +179,7 @@ export default class ActivitiesInArea extends Vue {
     <!-- * ------------------------ Edit popup  -------------------------->
     <ActivityWizard
       :activity="selectedActivity"
-      :area="area"
+      :areaId="area.id"
       :dialog-mode="`EDIT`"
       :showDialog="showEditActivityDialog"
       v-on:close="closeActivityDialog"

@@ -1,40 +1,39 @@
 <script lang="ts">
+import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { defaultNewActivity } from "@/constants/DefaultDataForForms";
 import Activity from "@/model/pojo/definitions/Activity";
-import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ActivityWizard from "../dialogs/ActivityWizard.vue";
-import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
 import ActivityChips from "./ActivityChips.vue";
 
 @Component({
   components: {
     ActivityWizard: ActivityWizard,
-    ConfirmationDialog: ConfirmationDialog,
     ActivityChips: ActivityChips,
+    ConfirmationDialog: ConfirmationDialog,
   },
 })
 export default class ActivitySelector extends Vue {
-  // ------------------------------------------------ Props
-  @Prop()
-  area!: Area;
+  // <!-- * -------------------------------- Required Props ------------------------------->
   @Prop()
   isDisplayed!: boolean;
 
-  /**
-   * Watches parent variable. Sync's its value to the child.
-   */
+  // <!-- * -------------------------------- Optional Props ------------------------------->
+  // For filtering, areaID and/or categoryID can be provided.
+  @Prop()
+  areaId?: string;
+  @Prop()
+  categoryId?: string;
+
+  // <!-- * -------------------------------- Watchers ------------------------------->
   @Watch("isDisplayed")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onPropertyChanged(_newValue: string, _oldValue: string) {
     const isDialogOpen = !!_newValue;
-    console.log(
-      "👀 @Watch in ActivitySelector. isDialogOpen ===> " + isDialogOpen
-    );
     if (isDialogOpen) {
       this.onShow();
     } else {
@@ -42,7 +41,7 @@ export default class ActivitySelector extends Vue {
     }
   }
 
-  // ------------------------------------------------ Stores
+  // <!-- * -------------------------------- Stores ------------------------------->
   activitiesStore = useActivitiesStore();
   categoriesStore = useCategoryTagsStore();
 
@@ -51,14 +50,18 @@ export default class ActivitySelector extends Vue {
   showEditActivityDialog = false;
   showDeleteActivityDialog = false;
   selectedActivity: Activity | null = null;
-  selectedItemIDs: string[] = [];
+  selectedItemID = "";
   newActivity: Activity = deepCopy(defaultNewActivity);
   searchInput = "";
 
-  // ------------------------------------------------ Computed
+  // <!-- * -------------------------------- Computed props ------------------------------->
   get activitiesList(): Activity[] {
-    const activityList = this.activitiesStore.getActivitiesByArea(this.area.id);
-    this.selectedItemIDs = activityList.map((activity) => activity.id);
+    const activityList = this.activitiesStore.getAllDocs();
+
+    if (this.areaId) {
+      activityList.filter((activity) => activity.areaId === this.areaId);
+    }
+
     return activityList;
   }
 
@@ -66,6 +69,7 @@ export default class ActivitySelector extends Vue {
     return this.categoriesStore.getCategoryTagsList();
   }
 
+  // <!-- * -------------------------------- Lifecycle actions ------------------------------->
   mounted() {
     this.onShow();
     console.log("🐪 Mounted ---- ActivitySelector");
@@ -98,14 +102,6 @@ export default class ActivitySelector extends Vue {
     }
   }
 
-  createNewActivity(newActivity: Activity) {
-    // Save to store
-    this.activitiesStore.createActivity(newActivity, this.area.id);
-
-    // Hide dialog
-    this.closeActivityDialog();
-  }
-
   triggerEditDialog(activity: Activity) {
     console.log("triggerEditDialog");
     this.selectedActivity = activity;
@@ -116,11 +112,6 @@ export default class ActivitySelector extends Vue {
     console.log("triggerDeleteDialog");
     this.selectedActivity = activity;
     this.showDeleteActivityDialog = true;
-  }
-
-  saveExistingActivity(updatedActivity: Activity) {
-    this.activitiesStore.updateActivity(updatedActivity);
-    this.closeActivityDialog();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -148,13 +139,7 @@ export default class ActivitySelector extends Vue {
     <v-card flat>
       <!-- * ---------------- Chips -->
       <v-card-text class="pa-0 ma-0">
-        <!-- * ---------------- Title -->
-        <v-card-title class="pa-2 text-h6 font-weight-light">
-          Activities
-        </v-card-title>
-        <v-card-subtitle class="pa-2 pt-3 text-caption font-weight-light">
-          Select from the list, or create a new one.
-        </v-card-subtitle>
+        <!--  -->
 
         <!-- * ------------------------ Auto-complete for chips  -------------------------->
         <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
@@ -164,12 +149,11 @@ export default class ActivitySelector extends Vue {
           chips
           deletable-chips
           label=""
-          v-model="selectedItemIDs"
+          v-model="selectedItemID"
           :items="activitiesList"
           item-text="title"
           item-value="id"
-          multiple
-          hint=""
+          hint="Select an Activity or create one."
           persistent-hint
           hide-selected
           :hide-no-data="showCreateActivityDialog"
@@ -208,10 +192,8 @@ export default class ActivitySelector extends Vue {
             <ActivityChips
               :activities="[data.item]"
               :categories="categoriesList"
-              :hasCloseButton="true"
-              :closeIcon="`mdi-delete`"
+              :hasCloseButton="false"
               v-on:chip-clicked="triggerEditDialog"
-              v-on:chip-closed="triggerDeleteDialog"
             />
           </template>
 
@@ -234,19 +216,26 @@ export default class ActivitySelector extends Vue {
             </v-list-item>
           </template>
 
+          <!-- ? ------------ (+) icon ------------ * -->
+          <template v-slot:append-outer>
+            <v-btn icon @click="showCreateActivityDialog = true">
+              <v-icon> mdi-plus </v-icon>
+            </v-btn>
+          </template>
+
           <!--  -->
         </v-autocomplete>
       </v-card-text>
 
       <!-- ? ------------ (+) icon ------------ * -->
-      <v-card-actions class="mt-4">
+      <!-- <v-card-actions class="mt-4">
         <v-spacer />
         <v-btn outlined rounded @click="showCreateActivityDialog = true">
           <v-icon class="pr-2"> mdi-plus </v-icon>
           Create
         </v-btn>
         <v-spacer />
-      </v-card-actions>
+      </v-card-actions> -->
 
       <!--  -->
     </v-card>
@@ -254,21 +243,19 @@ export default class ActivitySelector extends Vue {
     <!-- * ------------------------ New popup  -------------------------->
     <ActivityWizard
       :activity="newActivity"
-      :area="area"
+      :areaId="areaId"
       :dialog-mode="`CREATE`"
       :showDialog="showCreateActivityDialog"
-      v-on:save-confirmed="createNewActivity"
-      v-on:discard="closeActivityDialog"
+      v-on:close="closeActivityDialog"
     />
 
     <!-- * ------------------------ Edit popup  -------------------------->
     <ActivityWizard
       :activity="selectedActivity"
-      :area="area"
+      :areaId="areaId"
       :dialog-mode="`EDIT`"
       :showDialog="showEditActivityDialog"
-      v-on:save-confirmed="saveExistingActivity"
-      v-on:discard="closeActivityDialog"
+      v-on:close="closeActivityDialog"
     />
 
     <!-- * ------------------------ Delete popup  -------------------------->

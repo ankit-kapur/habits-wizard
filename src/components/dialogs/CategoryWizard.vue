@@ -115,7 +115,7 @@ export default class CategoryWizard extends Vue {
   }
 
   // <!-- * ---------------------------- Computed Props ---------------------------->
-  get colorPalette(): string[][] {
+  getColorPalette(): string[][] {
     if (!this.area || !this.area.palette) return [];
     // return this.colorSwatches;
 
@@ -133,8 +133,6 @@ export default class CategoryWizard extends Vue {
       column = (1 + column) % this.swatchesMaxColumns;
     }
 
-    console.log("area.palette =" + JSON.stringify(this.area.palette));
-    console.log("swatches =" + JSON.stringify(swatches));
     return swatches;
   }
 
@@ -353,7 +351,7 @@ export default class CategoryWizard extends Vue {
             v-model="categoryTag_local.color"
             mode="hexa"
             hide-inputs
-            :swatches="colorPalette"
+            :swatches="getColorPalette()"
             swatches-max-height="200"
             show-swatches
             :hide-canvas="!showAdvancedColorPicker"

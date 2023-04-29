@@ -20,6 +20,8 @@ import { setColorsFromImage } from "@/utils/colors/ColorUtils";
  *    - At least 1 category must be selected.
  *    - Category delete should be disallowed if any Activities (in this Area) are associated with it.
  *    - At least 1 category, and 1 activity must be selected.
+ *
+ * TODO P2 ----- Delete should be disallowed if Activities exist.
  **/
 
 @Component({

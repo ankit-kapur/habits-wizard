@@ -128,7 +128,6 @@ export default class AreaCard extends Vue {
 
   // <!-- * ---------------------------- Categories ---------------------------->
   get categories(): CategoryTag[] {
-    console.log("💾 💾 💾 💾 💾 💾Snapshot updated. Refreshed category tags.");
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
   }
 
@@ -366,7 +365,7 @@ export default class AreaCard extends Vue {
 
     <ActivityWizard
       :activity="selectedActivity"
-      :area="area"
+      :areaId="area.id"
       :dialog-mode="activityWizardDialogMode"
       :showDialog="showActivityWizard"
       v-on:close="closeActivityWizard"

@@ -1,4 +1,5 @@
 import Vue from "vue";
+// import "@/styles/variables.scss";
 import { createPinia, PiniaVuePlugin } from "pinia";
 import router from "./router";
 import vuetify from "./plugins/vuetify";

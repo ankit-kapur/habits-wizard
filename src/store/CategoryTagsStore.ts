@@ -64,7 +64,7 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
         queryToLoad,
         (snapshot: QuerySnapshot<CategoryTag>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
-          console.log("💾 💾 💾 Snapshot updated. Refreshed category tags.");
+          console.log("💾 Snapshot updated. Refreshed categories.");
         }
       );
       this.unsubscribeHooks.push(unsubscribe);

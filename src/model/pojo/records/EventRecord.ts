@@ -1,3 +1,5 @@
+import { EventState } from "@/model/enum/EventState";
+
 export default interface EventRecord {
   // ? ------------------------------ Identifiers
   id: string;
@@ -29,11 +31,10 @@ export default interface EventRecord {
   breaksTaken?: BreakPeriod[];
 
   // ? ------------------------------ Completion markers
-  // TODO: Make enum: IN_PROGRESS, PAUSED, COMPLETED, ERROR
   // Error state happens when Activity is complete but required metadata is missing.
-  eventState: string;
+  eventState: EventState;
   // Whether all metadata needed has been provided
-  recordCompletenessState: boolean;
+  isRecordComplete: boolean;
 
   // ? ----------------------------- Measurements
   // ! -------- Should Measurements be a sub-collection?
