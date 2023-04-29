@@ -77,6 +77,7 @@ export default class RecordWizard extends Vue {
   activity_local: Activity = deepCopy(defaultNewActivity);
   area: Area = deepCopy(defaultNewArea()); // Temporary
   showDialog_local = false;
+  selectedActivity: Activity | null = null;
   selectedCategory: CategoryTag | null = null;
   showDialogForConfirmDiscard = false;
   showMeasurableSelectionDialog = false;
@@ -86,7 +87,7 @@ export default class RecordWizard extends Vue {
   selectedCategoryId = "";
 
   // Stepper
-  currentStepperPos = 0;
+  currentStepperPos = 1;
   previous_step_icon = "mdi-chevon-left";
   next_step_icon = "mdi-chevon-right";
 
@@ -132,12 +133,13 @@ export default class RecordWizard extends Vue {
     this.showDialog_local = false;
   }
 
-  onSelectionChange() {
-    if (this.selectedCategoryId.length > 0) {
-      this.activity_local.categoryId = this.selectedCategoryId;
-    } else {
-      console.log("This is a bug 🐞");
-    }
+  activitySelectionChanged(selectedActivity: Activity) {
+    console.log(
+      "activitySelectionChanged = " + JSON.stringify(selectedActivity)
+    );
+    console.log("type = " + typeof selectedActivity);
+    console.log("selectedActivity = " + selectedActivity);
+    this.selectedActivity = selectedActivity;
   }
 
   switchBetweenViewEditModes(): void {
@@ -152,7 +154,7 @@ export default class RecordWizard extends Vue {
 
   resetToDefaultState() {
     // Stepper
-    this.currentStepperPos = 0;
+    this.currentStepperPos = 1;
   }
 
   respondToDiscardConfirm(isConfirmed: boolean): void {
@@ -314,39 +316,47 @@ export default class RecordWizard extends Vue {
         <v-divider />
 
         <!-- ? ----------------- Box subtitle ---------------- * -->
-        <v-card-actions class="pa-3 ma-0">
+        <!-- <v-card-actions class="pa-3 ma-0">
           <v-card-subtitle
             class="pa-0 text-h6 font-weight-light"
             style="color: grey"
           >
-            Step {{ currentStepperPos + 1 }}: {{ stepperWindowTitle }}
+            Step {{ currentStepperPos }}: {{ stepperWindowTitle }}
           </v-card-subtitle>
 
           <v-spacer />
-
-          <!-- ? ----------------- Filter --------------------->
-          <!-- TODO P2 ----- Show a dialog for selecting an Area and/or Category -->
-          <v-btn icon v-if="currentStepperPos == 0">
-            <v-icon>mdi-filter</v-icon>
-          </v-btn>
-
-          <!--  -->
-        </v-card-actions>
+        </v-card-actions> -->
 
         <!-- <v-divider /> -->
 
         <!-- ? ------------------------- Stepper Window -------------------------->
-        <v-card-text class="pa-3 ma-0">
-          <v-window v-model="currentStepperPos">
+        <v-card-text class="pa-0 ma-0">
+          <v-stepper vertical v-model="currentStepperPos">
             <!--  -->
 
             <!-- ? --------------------------------------------- Step 1: Activity selection -->
-            <v-window-item :step="1">
-              <ActivitySelector :isDisplayed="showDialog" />
-            </v-window-item>
+            <v-stepper-step
+              step="1"
+              :complete="selectedActivity !== null"
+              class=""
+            >
+              <span class="text-h6 font-weight-light">Select an Activity</span>
+              <small>Pick one or create a new one.</small>
+            </v-stepper-step>
+
+            <v-stepper-content step="1" class="pa-1">
+              <!-- ? ----------------- Filter --------------------->
+              <!-- TODO P2 ----- Show a dialog for selecting an Area and/or Category -->
+              <v-card flat max-width="90%" class="pa-0 ma-0">
+                <ActivitySelector
+                  :isDisplayed="showDialog"
+                  v-on:selection-changed="activitySelectionChanged"
+                />
+              </v-card>
+            </v-stepper-content>
 
             <!-- ? --------------------------------------------- Step 2: Time selection -->
-            <v-window-item :step="2">
+            <v-stepper-step :step="2">
               <!--  -->
 
               <!-- TODO ----- if Activity has time-tracking (i.e. has a Duration-type measurable) -->
@@ -358,27 +368,27 @@ export default class RecordWizard extends Vue {
               <!--      3. Completed already -->
 
               <!--  -->
-            </v-window-item>
+            </v-stepper-step>
 
             <!-- ? --------------------------------------------- Step 3: Record Measurables -->
-            <v-window-item :step="3">
+            <v-stepper-step :step="3">
               <!--  -->
 
               <!-- TODO ----- Should be optional. Can enter later. -->
               <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
 
               <!--  -->
-            </v-window-item>
+            </v-stepper-step>
 
             <!-- ? --------------------------------------------- Step 4: Review -->
-            <v-window-item :step="4">
+            <v-stepper-step :step="4">
               <!--  -->
               <!-- WIP -->
               <!--  -->
-            </v-window-item>
+            </v-stepper-step>
 
             <!-- ? ---- Window ends here -->
-          </v-window>
+          </v-stepper>
         </v-card-text>
 
         <v-divider />
@@ -413,7 +423,7 @@ export default class RecordWizard extends Vue {
                     'border-radius': '12px',
                   }"
                 >
-                  {{ getStepPositionIcon(n) }}
+                  {{ getStepPositionIcon(n + 1) }}
                 </v-icon>
               </v-btn>
             </v-item>

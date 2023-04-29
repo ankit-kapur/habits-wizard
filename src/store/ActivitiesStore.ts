@@ -87,7 +87,7 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
       return this.getAllDocs().filter((activity) => activity.areaId === areaId);
     },
 
-    getDocById(activityId: string): Activity {
+    getActivityByID(activityId: string): Activity {
       return this.allDocs.find((activity) => activity.id === activityId)!;
     },
 
