@@ -107,12 +107,16 @@ export default class ActivityWizard extends Vue {
 
   /* <!-- * ------------------------------- Computed pros ------------------------------> */
   get categoriesInArea(): CategoryTag[] {
-    if (this.area) {
-      return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
-    } else {
-      console.log("🚨 🚨 🚨 🚨 🚨 Bug: Area should have been loaded by now.");
-      return [];
-    }
+    return this.area
+      ? this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags)
+      : [];
+  }
+
+  get hasChanged() {
+    return !(
+      JSON.stringify(this.activity_local) === JSON.stringify(this.activity) ||
+      JSON.stringify(this.activity_local) === JSON.stringify(defaultNewActivity)
+    );
   }
 
   get numberOfSteps() {
@@ -233,20 +237,9 @@ export default class ActivityWizard extends Vue {
   }
 
   // <!-- * ---------------------------- Cancel ---------------------------->
-  get hasChanged() {
-    return !(
-      JSON.stringify(this.activity_local) === JSON.stringify(this.activity) ||
-      JSON.stringify(this.activity_local) === JSON.stringify(defaultNewActivity)
-    );
-  }
-
   triggerCancellation() {
-    // If nothing's changed, discard without confirmation
-    if (this.hasChanged) {
-      this.showDialogForConfirmDiscard = true;
-    } else {
-      this.closeViaParent();
-    }
+    if (this.hasChanged) this.showDialogForConfirmDiscard = true;
+    else this.closeViaParent();
   }
 
   /* <!-- * ----------------------------- Delete actions ------------------------------> */

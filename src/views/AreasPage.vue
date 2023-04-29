@@ -115,10 +115,10 @@ export default class AreasPage extends Vue {
 
     <!-- Edit dialog -->
     <AreaWizard
+      :area="selectedArea"
       :dialog-mode="`EDIT`"
       v-on:close-dialog="closeEditAreaDialog"
       :showDialog="showDialogForEditArea"
-      :area="selectedArea"
     />
   </v-container>
 </template>

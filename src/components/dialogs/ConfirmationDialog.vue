@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class ConfirmationDialog extends Vue {
@@ -13,31 +13,24 @@ export default class ConfirmationDialog extends Vue {
   @Prop()
   noButtonText!: string;
 
-  /**
-   * Watches parent variable. Sync's its value to the child.
-   */
-  @Watch("showDialog")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onPropertyChanged(_newValue: string, _oldValue: string) {
-    this.showThisDialog = this.showDialog;
-    console.log(
-      "onPropertyChanged just happened inside @Watch. this.showThisDialog ===> " +
-        this.showThisDialog
-    );
+  // ------------------------------------------------ Computed props
+  get showDialog_local() {
+    return this.showDialog;
   }
 
-  // Toggle for displaying this box
-  showThisDialog = false;
+  set showDialog_local(newVal: boolean) {
+    this.noClicked();
+  }
 
   // ------------------------------------------------ Methods
   yesClicked() {
-    console.log("🫖 🫖 🫖  YES was clicked");
+    console.log("🫖 Yes was clicked");
     // Update parent
     this.$emit("confirm-status-change", true);
   }
 
   noClicked() {
-    console.log("🫖 🫖 🫖  NO was clicked");
+    console.log("🫖 No was clicked");
     // Update parent
     this.$emit("confirm-status-change", false);
   }
@@ -45,7 +38,7 @@ export default class ConfirmationDialog extends Vue {
 </script>
 
 <template>
-  <v-dialog v-model="showThisDialog" max-width="500px">
+  <v-dialog v-model="showDialog_local" max-width="500px">
     <v-card>
       <v-card-title>
         <span> {{ messageToDisplay }}</span>

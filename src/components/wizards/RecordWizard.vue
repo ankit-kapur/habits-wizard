@@ -75,7 +75,7 @@ export default class RecordWizard extends Vue {
   /* <!-- ? ------------------------------ Data ------------------------------> */
   eventRecord_local: EventRecord = deepCopy(defaultNewEventRecord);
   activity_local: Activity = deepCopy(defaultNewActivity);
-  area: Area = deepCopy(defaultNewArea()); // Temporary
+  area: Area = deepCopy(defaultNewArea); // Temporary
   showDialog_local = false;
   selectedActivity: Activity | null = null;
   selectedCategory: CategoryTag | null = null;
@@ -203,7 +203,7 @@ export default class RecordWizard extends Vue {
   // <!-- * ---------------------------- Validations ---------------------------->
   isValidEventRecord() {
     // TODO ---- Actually validate
-    return true;
+    return false;
   }
 
   // <!-- * ---------------------------- Store actions ---------------------------->
@@ -374,20 +374,23 @@ export default class RecordWizard extends Vue {
               }}</span>
 
               <!-- ? ---------- Sub-title -->
-              <span v-if="selectedActivity !== null">
-                <small>
-                  <!-- Color by category -->
-                  <span
-                    v-bind:style="{
-                      color: activityColor,
-                    }"
-                  >
-                    <v-icon x-small :color="activityColor">
-                      {{ selectedActivity.icon }}
-                    </v-icon>
-                    {{ selectedActivity.title }}</span
-                  >
-                </small>
+              <span
+                v-if="selectedActivity !== null"
+                class="text-caption font-weight-light"
+              >
+                <br />
+                Selected
+                <!-- Color by category -->
+                <span
+                  v-bind:style="{
+                    color: activityColor,
+                  }"
+                >
+                  <v-icon x-small :color="activityColor">
+                    {{ selectedActivity.icon }}
+                  </v-icon>
+                  {{ selectedActivity.title }}</span
+                >
               </span>
 
               <!--  -->
@@ -519,6 +522,7 @@ export default class RecordWizard extends Vue {
             text
             :disabled="currentStepperPos === 1"
             @click="moveToPreviousStep()"
+            class="px-3"
           >
             <v-icon> mdi-chevron-left </v-icon>
             <span>Previous</span>
@@ -529,9 +533,9 @@ export default class RecordWizard extends Vue {
           <!-- ? ----------- Next -->
           <v-btn
             text
-            color="primary"
             :disabled="currentStepperPos === numberOfSteps"
             @click="moveToNextStep()"
+            class="px-3"
           >
             <span>Next</span>
             <v-icon> mdi-chevron-right </v-icon>
@@ -551,7 +555,7 @@ export default class RecordWizard extends Vue {
           <v-btn
             color="primary"
             @click="saveEventRecord"
-            :diabled="isValidEventRecord"
+            :disabled="!isValidEventRecord()"
           >
             {{ `Save` }}
           </v-btn>

@@ -5,6 +5,7 @@ import Activity from "@/model/pojo/definitions/Activity";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import { useEventRecordsStore } from "@/store/EventRecordsStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ActivityWizard from "../dialogs/ActivityWizard.vue";
@@ -44,6 +45,7 @@ export default class ActivitySelector extends Vue {
   // <!-- * -------------------------------- Stores ------------------------------->
   activitiesStore = useActivitiesStore();
   categoriesStore = useCategoryTagsStore();
+  eventRecordsStore = useEventRecordsStore();
 
   // ------------------------------------------------ Data
   showCreateActivityDialog = false;
@@ -53,6 +55,7 @@ export default class ActivitySelector extends Vue {
   selectedActivityID = "";
   newActivity: Activity = deepCopy(defaultNewActivity);
   searchInput = "";
+  isSearchModeEnabled = false;
 
   // <!-- * -------------------------------- Computed props ------------------------------->
   get activitiesList(): Activity[] {
@@ -94,15 +97,22 @@ export default class ActivitySelector extends Vue {
 
   resetState() {
     this.selectedActivityID = "";
+    this.isSearchModeEnabled = false;
   }
 
-  // Update parent
+  /**
+   * When selection changes, notify the parent.
+   */
   onTagSelectionChange() {
-    if (this.selectedActivityID.length > 0)
-      this.selectedActivity = this.activitiesStore.getActivityByID(
-        this.selectedActivityID
-      );
+    this.selectedActivity =
+      this.selectedActivityID && this.selectedActivityID.length > 0
+        ? this.activitiesStore.getActivityByID(this.selectedActivityID)
+        : null;
+
     this.$emit("selection-changed", this.selectedActivity);
+
+    // Reset
+    this.isSearchModeEnabled = false;
   }
 
   deSelectChip() {
@@ -120,6 +130,14 @@ export default class ActivitySelector extends Vue {
       this.newActivity.title = this.searchInput;
       this.showCreateActivityDialog = true;
     }
+  }
+
+  onInputClick() {
+    // <!-- TODO P2 ------- Not working. Need to stop the onscreen-keyboard from popping up.
+
+    if (!this.isSearchModeEnabled)
+      (document.activeElement as HTMLElement).blur();
+    this.searchInput = "";
   }
 
   triggerEditDialog() {
@@ -159,9 +177,13 @@ export default class ActivitySelector extends Vue {
         <v-col cols="1" class="d-flex justify-center align-center">
           <!-- ? ------------ Filter icon ------------ * -->
           <!-- TODO P2 ----- Show a dialog for selecting an Area and/or Category -->
-          <v-btn icon @click="showCreateActivityDialog = true" class="pb-4">
+          <v-icon @click="isSearchModeEnabled = true" class="mb-4">
+            mdi-magnify
+          </v-icon>
+
+          <!-- <v-btn icon @click="showCreateActivityDialog = true" class="pb-4">
             <v-icon> mdi-filter </v-icon>
-          </v-btn>
+          </v-btn> -->
         </v-col>
 
         <!-- * ------------------------ Auto-complete chips  -------------------------->
@@ -181,7 +203,7 @@ export default class ActivitySelector extends Vue {
             persistent-hint
             hide-selected
             :hide-no-data="showCreateActivityDialog"
-            @input="searchInput = ''"
+            @input="onInputClick()"
             :search-input.sync="searchInput"
             @keydown.enter="promptForNewActivity"
             @keydown.enter.native.prevent

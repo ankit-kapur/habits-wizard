@@ -25,7 +25,7 @@ export default interface EventRecord {
 
   // Start/end/duration --- These will be stored as Measurements too. But here for simplicity.
   startTime?: number;
-  endTime?: number;
+  completionTime?: number;
   durationInSeconds?: number; // Calc based on pauses since startTime.
 
   breaksTaken?: BreakPeriod[];

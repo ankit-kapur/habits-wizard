@@ -55,6 +55,7 @@ export default class CategoryWizard extends Vue {
 
   // <!-- * ------------------------------------------- Data -->
   categoryTag_local = deepCopy(defaultNewCategory);
+  categoryOriginal: CategoryTag | null = null;
   showDialog_local = false;
   showDialogForConfirmDiscard = false;
   showDeleteConfirmDialog = false;
@@ -68,21 +69,17 @@ export default class CategoryWizard extends Vue {
   }
 
   get boxTitle(): string {
-    if (this.dialogMode === DialogMode.VIEW)
-      return this.categoryTag_local.title;
+    if (this.dialogMode === DialogMode.VIEW) return "Category";
     else if (this.dialogMode === DialogMode.CREATE) return "New Category";
     else if (this.dialogMode === DialogMode.EDIT) return "Editing Category";
     else return "invalid case. this is a bug.";
   }
 
-  get boxSubTitle(): string {
-    if (this.dialogMode === DialogMode.VIEW)
-      return "Click edit/delete buttons to modify.";
-    else if (this.dialogMode === DialogMode.CREATE)
-      return "Pick a name & color";
-    else if (this.dialogMode === DialogMode.EDIT)
-      return "Click color or name to edit.";
-    else return "invalid case. this is a bug.";
+  get hasChanged() {
+    return !(
+      JSON.stringify(this.categoryTag_local) ===
+      JSON.stringify(this.categoryOriginal)
+    );
   }
 
   // <!-- * ---------------------------- Stores ---------------------------->
@@ -102,16 +99,19 @@ export default class CategoryWizard extends Vue {
       this.categoryTag ? this.categoryTag : defaultNewCategory
     );
 
+    // Set dialog states
     this.showDialog_local = this.showDialog;
     this.showAdvancedColorPicker = false;
 
+    // Set color
     if (this.dialogMode === DialogMode.CREATE && this.area.dominantColor)
       this.categoryTag_local.color = this.area.dominantColor;
+
+    this.categoryOriginal = deepCopy(this.categoryTag_local);
   }
 
   onHide() {
-    // Not sure if this is needed.
-    this.showDialog_local = false;
+    this.showDialog_local = false; // Not sure if this is needed.
   }
 
   // <!-- * ---------------------------- Computed Props ---------------------------->
@@ -168,19 +168,9 @@ export default class CategoryWizard extends Vue {
   }
 
   triggerCancellation() {
-    // If nothing's changed, discard without confirmation
-    if (
-      JSON.stringify(this.categoryTag_local) ===
-        JSON.stringify(this.categoryTag) ||
-      JSON.stringify(this.categoryTag_local) ===
-        JSON.stringify(defaultNewCategory)
-    ) {
-      console.log("🐞 discard");
-      this.closeViaParent();
-    } else {
-      console.log("🐞 showDialogForConfirmDiscard");
-      this.showDialogForConfirmDiscard = true;
-    }
+    console.log("triggerCancellation ==== " + this.hasChanged);
+    if (this.hasChanged) this.showDialogForConfirmDiscard = true;
+    else this.closeViaParent();
   }
 
   closeViaParent() {
@@ -201,12 +191,12 @@ export default class CategoryWizard extends Vue {
 </script>
 
 <template>
-  <v-bottom-sheet
-    max-width="300"
+  <v-dialog
+    max-width="500"
     overlay-opacity="0.88"
     inset
     v-model="showDialog_local"
-    :persistent="dialogMode !== `VIEW`"
+    :persistent="hasChanged"
     @keydown.esc="triggerCancellation"
     @keydown.enter="saveCategory"
   >
@@ -223,7 +213,7 @@ export default class CategoryWizard extends Vue {
         <!-- ? ---------- EDIT button -->
         <v-btn
           icon
-          x-small
+          small
           v-if="dialogMode !== `CREATE`"
           @click="switchBetweenViewEditModes"
         >
@@ -235,7 +225,7 @@ export default class CategoryWizard extends Vue {
         <!-- ? ---------- DELETE button -->
         <v-btn
           icon
-          x-small
+          small
           v-if="dialogMode !== `CREATE`"
           @click="triggerDeleteAction"
         >
@@ -244,11 +234,21 @@ export default class CategoryWizard extends Vue {
       </v-card-actions>
 
       <!-- ? ----------------- Box subtitle ---------------- * -->
-      <v-card-text class="pa-0 ma-0">
+      <!-- <v-card-text class="pa-0 ma-0">
         <v-card-subtitle class="pt-1 text-body-2 font-weight-light">
           {{ boxSubTitle }}
         </v-card-subtitle>
-      </v-card-text>
+      </v-card-text> -->
+
+      <!-- ? --------------------- Preview ------------------------->
+      <v-card-actions class="">
+        <v-container fluid>
+          <v-row>
+            <CategoryChips :categories="[categoryTag_local]" />
+          </v-row>
+        </v-container>
+        <v-spacer />
+      </v-card-actions>
 
       <v-divider></v-divider>
 
@@ -303,21 +303,6 @@ export default class CategoryWizard extends Vue {
       </v-card-actions>
 
       <v-divider />
-
-      <!-- ? --------------------- Preview ------------------------->
-      <v-card-actions class="">
-        <v-container fluid>
-          <v-row v-if="dialogMode !== `VIEW`">
-            <span class="mr-4 ml-1 mb-1 text-caption font-weight-light">
-              Preview
-            </span>
-          </v-row>
-          <v-row>
-            <CategoryChips :categories="[categoryTag_local]" />
-          </v-row>
-        </v-container>
-        <v-spacer />
-      </v-card-actions>
 
       <!-- ? ------------------ Bottom Actions ---------------------->
       <v-card-actions class="pt-4 pb-4" v-if="dialogMode !== `VIEW`">
@@ -393,5 +378,5 @@ export default class CategoryWizard extends Vue {
       yesButtonText="Delete"
       noButtonText="Cancel"
     />
-  </v-bottom-sheet>
+  </v-dialog>
 </template>

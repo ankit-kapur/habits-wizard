@@ -35,7 +35,7 @@ import { setColorsFromImage } from "@/utils/colors/ColorUtils";
 export default class AreaWizard extends Vue {
   // ------------------------------------------------ Props
   @Prop()
-  area!: Area;
+  area?: Area;
   @Prop()
   showDialog!: boolean;
   @Prop()
@@ -138,9 +138,7 @@ export default class AreaWizard extends Vue {
 
   resetToDefaultState(): Area {
     // Reset Area
-    this.area_local = this.area
-      ? deepCopy(this.area)
-      : deepCopy(defaultNewArea());
+    this.area_local = deepCopy(this.area ? this.area : defaultNewArea);
 
     // Hide dialogs and windows
     this.showDiscardConfirmationDialog = false;
@@ -156,7 +154,7 @@ export default class AreaWizard extends Vue {
     // If nothing's changed, discard without confirmation
     if (
       JSON.stringify(this.area) == JSON.stringify(this.area_local) ||
-      JSON.stringify(defaultNewArea()) == JSON.stringify(this.area_local)
+      JSON.stringify(defaultNewArea) == JSON.stringify(this.area_local)
     ) {
       this.closeThisDialog();
     } else {
@@ -228,7 +226,6 @@ export default class AreaWizard extends Vue {
       inset
       max-width="500"
       overlay-opacity="0.88"
-      persistent
       @keydown.esc="triggerCancellation"
     >
       <v-card flat tile>
