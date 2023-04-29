@@ -188,9 +188,9 @@ export default class ActivitySelector extends Vue {
 
         <!-- * ------------------------ Auto-complete chips  -------------------------->
         <v-col class="px-0">
-          <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
-          <!-- removed fields: clearable -->
-          <v-autocomplete
+          <!--  -->
+
+          <v-select
             auto-select-first
             chips
             deletable-chips
@@ -217,6 +217,35 @@ export default class ActivitySelector extends Vue {
             color="primary"
             class="pt-2 px-2"
           >
+            <!-- https://v2.vuetifyjs.com/en/api/v-autocomplete/#props -->
+            <!-- removed fields: clearable -->
+            <!-- <v-autocomplete
+            auto-select-first
+            chips
+            deletable-chips
+            label="Pick an Activity"
+            v-model="selectedActivityID"
+            :items="activitiesList"
+            item-text="title"
+            item-value="id"
+            hint="Select an Activity or create one."
+            persistent-hint
+            hide-selected
+            :hide-no-data="showCreateActivityDialog"
+            @input="onInputClick()"
+            :search-input.sync="searchInput"
+            @keydown.enter="promptForNewActivity"
+            @keydown.enter.native.prevent
+            @change="onTagSelectionChange"
+            :menu-props="{
+              closeOnContentClick: false,
+              closeOnClick: true,
+              openOnClick: false,
+            }"
+            :disabled="showEditActivityDialog"
+            color="primary"
+            class="pt-2 px-2"
+          > -->
             <!-- Notes about the modifiers above in <v-autocomplete> -->
             <!--      @input will reset the text-input to '' once tag is selected -->
             <!--      search-input.sync will bind the text-input to our variable -->
@@ -253,11 +282,14 @@ export default class ActivitySelector extends Vue {
             <template v-slot:item="{ item, attrs, on }">
               <v-list-item v-on="on" v-bind="attrs" #default="{ active }">
                 <v-list-item-content>
-                  <!-- TODO P1 ---------------------------------------------------------------- COLOR THIS -->
+                  <!-- TODO P1 ------------------------------------- COLOR THIS -->
 
                   <v-list-item-title>
                     <v-row no-gutters align="center">
-                      <v-icon class="pr-4" :color="item.color">
+                      <v-icon
+                        class="pr-4"
+                        :color="categoriesStore.getActivityColor(item)"
+                      >
                         {{ item.icon }}
                       </v-icon>
                       <span>{{ item.title }}</span>
@@ -277,7 +309,7 @@ export default class ActivitySelector extends Vue {
             </template>
 
             <!--  -->
-          </v-autocomplete>
+          </v-select>
 
           <!--  -->
         </v-col>

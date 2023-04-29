@@ -64,7 +64,7 @@ export default class RecordWizard extends Vue {
 
   /* <!-- ? ------------------------------ Stores ------------------------------> */
   iconsStore = useIconsStore();
-  categoryTagsStore = useCategoryTagsStore();
+  categoriesStore = useCategoryTagsStore();
   activitiesStore = useActivitiesStore();
 
   mounted() {
@@ -129,14 +129,11 @@ export default class RecordWizard extends Vue {
 
   /* <!-- * ------------------------------- Computed props ------------------------------> */
   get categories(): CategoryTag[] {
-    return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
+    return this.categoriesStore.getCategoriesByIDs(this.area.categoryTags);
   }
 
   get activityColor(): string {
-    return this.selectedActivity
-      ? this.categoryTagsStore.getCategoryById(this.selectedActivity.categoryId)
-          .color
-      : "";
+    return this.categoriesStore.getActivityColor(this.selectedActivity);
   }
 
   get numberOfSteps() {
@@ -150,7 +147,7 @@ export default class RecordWizard extends Vue {
 
   // <!-- * ---------------------------- Lifecycle ---------------------------->
   onShow() {
-    this.categoryTagsStore.subscribeToStore(); // Subscribe to store
+    this.categoriesStore.subscribeToStore(); // Subscribe to store
 
     // Reset
     this.resetToDefaultState();
@@ -162,7 +159,7 @@ export default class RecordWizard extends Vue {
 
   onHide() {
     // Unsubscribe from stores.
-    this.categoryTagsStore.unsubscribe();
+    this.categoriesStore.unsubscribe();
 
     // Not sure if this is needed.
     this.showDialog_local = false;
