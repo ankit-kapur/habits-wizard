@@ -91,17 +91,52 @@ export default class RecordWizard extends Vue {
   previous_step_icon = "mdi-chevon-left";
   next_step_icon = "mdi-chevon-right";
 
-  // TODO P2: Insert step for selecting an Area.
+  // <!-- TODO P0 ------ 🚨 🚨 🚨 DISABLE CLICK IN STEP IF PREVIOUS STEP IS NOT COMPLETE 🚨 🚨 🚨
+
+  stepsConfig = {
+    STEP_1: {
+      id: 1,
+      title: "Activity",
+      isComplete: function (selectedActivity) {
+        return selectedActivity !== null;
+      },
+      rules: [
+        () => {
+          const result =
+            this.currentStepperPos === 1 || this.selectedActivity !== null;
+          console.log("✅ ✅ ✅ ✅ ✅ rules result = " + result);
+
+          // <!-- TODO P1 ------ WHY IS THIS ONLY GETTING CALLED ONCE?
+
+          return result;
+        },
+      ],
+    },
+    STEP_2: {
+      id: 2,
+      title: "Time",
+      isComplete: () => this.selectedActivity !== null,
+      rules: [() => true],
+    },
+  };
+
   stepTitles: Map<number, string> = new Map([
-    [1, "Pick an Activity"],
+    [1, "Activity"],
     [2, "Select Time"],
     [3, "Record measurables"],
     [4, "Review"],
   ]);
 
-  /* <!-- ? ------------------------------- Computed pros ------------------------------> */
+  /* <!-- * ------------------------------- Computed props ------------------------------> */
   get categories(): CategoryTag[] {
     return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
+  }
+
+  get activityColor(): string {
+    return this.selectedActivity
+      ? this.categoryTagsStore.getCategoryById(this.selectedActivity.categoryId)
+          .color
+      : "";
   }
 
   get numberOfSteps() {
@@ -133,13 +168,10 @@ export default class RecordWizard extends Vue {
     this.showDialog_local = false;
   }
 
-  activitySelectionChanged(selectedActivity: Activity) {
-    console.log(
-      "activitySelectionChanged = " + JSON.stringify(selectedActivity)
-    );
-    console.log("type = " + typeof selectedActivity);
-    console.log("selectedActivity = " + selectedActivity);
-    this.selectedActivity = selectedActivity;
+  activitySelectionChanged(providedActivity: Activity) {
+    this.selectedActivity = providedActivity;
+    // Move to next step
+    if (this.selectedActivity) this.moveToNextStep();
   }
 
   switchBetweenViewEditModes(): void {
@@ -203,7 +235,7 @@ export default class RecordWizard extends Vue {
   /* <!-- * ----------------------------- Delete actions ------------------------------> */
 
   triggerDeleteAction(): void {
-    // <!-- TODO P2 ----- Validate its safe to delete -->
+    // TODO P2 ----- Validate its safe to delete
     this.showDeleteConfirmDialog = true;
   }
 
@@ -237,17 +269,6 @@ export default class RecordWizard extends Vue {
   isCurrentStep(stepNumber: number) {
     return this.currentStepperPos == stepNumber - 1;
   }
-
-  getStepPositionColor(stepNumber: number): string {
-    // TODO: Green if step completed.
-    return this.isCurrentStep(stepNumber) ? "primary" : "darkgray";
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getStepPositionIcon(stepNumber: number) {
-    // TODO: Success or Error icon if validation fails.
-    return "mdi-record";
-  }
 }
 </script>
 
@@ -256,16 +277,14 @@ export default class RecordWizard extends Vue {
     <v-bottom-sheet
       v-model="showDialog_local"
       inset
-      max-width="400"
+      max-width="600"
       overlay-opacity="0.88"
       :persistent="hasChanged"
       @keydown.esc="triggerCancellation"
-      @keydown.enter="saveEventRecord"
     >
-      <!-- @keydown.enter="saveActivity" -->
       <v-card flat class="px-2">
         <!--  -->
-        <!-- ? ---------------------------------- Top panel --------------------------------- * -->
+        <!-- ? ---------------------------------- Top bar --------------------------------- * -->
 
         <v-card-actions class="pa-3 pt-5 pb-4 ma-0">
           <!-- ? ----------------- Box title ---------------- * -->
@@ -329,120 +348,199 @@ export default class RecordWizard extends Vue {
 
         <!-- <v-divider /> -->
 
-        <!-- ? ------------------------- Stepper Window -------------------------->
+        <!-- * ------------------------------------- Stepper ----------------------------------->
         <v-card-text class="pa-0 ma-0">
-          <v-stepper vertical v-model="currentStepperPos">
+          <v-stepper
+            v-model="currentStepperPos"
+            vertical
+            elevation="0"
+            class="pb-4"
+          >
             <!--  -->
 
             <!-- ? --------------------------------------------- Step 1: Activity selection -->
             <v-stepper-step
-              step="1"
-              :complete="selectedActivity !== null"
+              :step="stepsConfig.STEP_1.id"
+              :complete="stepsConfig.STEP_1.isComplete(selectedActivity)"
+              :rules="stepsConfig.STEP_1.rules"
+              @click="currentStepperPos = stepsConfig.STEP_1.id"
               class=""
             >
-              <span class="text-h6 font-weight-light">Select an Activity</span>
-              <small>Pick one or create a new one.</small>
-            </v-stepper-step>
+              <!--  -->
 
-            <v-stepper-content step="1" class="pa-1">
-              <!-- ? ----------------- Filter --------------------->
-              <!-- TODO P2 ----- Show a dialog for selecting an Area and/or Category -->
-              <v-card flat max-width="90%" class="pa-0 ma-0">
+              <!-- ? ---------- Title -->
+              <span class="text-h6 font-weight-light">{{
+                stepsConfig.STEP_1.title
+              }}</span>
+
+              <!-- ? ---------- Sub-title -->
+              <span v-if="selectedActivity !== null">
+                <small>
+                  <!-- Color by category -->
+                  <span
+                    v-bind:style="{
+                      color: activityColor,
+                    }"
+                  >
+                    <v-icon x-small :color="activityColor">
+                      {{ selectedActivity.icon }}
+                    </v-icon>
+                    {{ selectedActivity.title }}</span
+                  >
+                </small>
+              </span>
+
+              <!--  -->
+            </v-stepper-step>
+            <v-stepper-content :step="stepsConfig.STEP_1.id" class="pa-1">
+              <!--  -->
+
+              <v-card flat max-width="88%" class="pl-1 pa-0 ma-0">
+                <!--  -->
+
                 <ActivitySelector
                   :isDisplayed="showDialog"
                   v-on:selection-changed="activitySelectionChanged"
                 />
+
+                <!--  -->
               </v-card>
             </v-stepper-content>
 
             <!-- ? --------------------------------------------- Step 2: Time selection -->
-            <v-stepper-step :step="2">
-              <!--  -->
-
-              <!-- TODO ----- if Activity has time-tracking (i.e. has a Duration-type measurable) -->
-              <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
-
-              <!-- TODO ----- show options: -->
-              <!--      1. Not started -->
-              <!--      2. Started -->
-              <!--      3. Completed already -->
-
-              <!--  -->
+            <v-stepper-step
+              :step="stepsConfig.STEP_2.id"
+              :complete="false"
+              @click="currentStepperPos = 2"
+              class=""
+            >
+              <span class="text-h6 font-weight-light">
+                {{ stepsConfig.STEP_2.title }}</span
+              >
+              <!-- <small>When did you do this event?</small> -->
             </v-stepper-step>
+
+            <v-stepper-content :step="stepsConfig.STEP_2.id" class="pa-1">
+              <!-- ? ----------------- Filter --------------------->
+              <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
+                <!--  -->
+
+                <v-text-field
+                  outlined
+                  placeholder="Under construction"
+                ></v-text-field>
+
+                <!-- TODO ----- if Activity has time-tracking (i.e. has a Duration-type measurable) -->
+                <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
+
+                <!-- TODO ----- show options: -->
+                <!--      1. Not started -->
+                <!--      2. Started -->
+                <!--      3. Completed already -->
+
+                <!--  -->
+              </v-card>
+            </v-stepper-content>
 
             <!-- ? --------------------------------------------- Step 3: Record Measurables -->
-            <v-stepper-step :step="3">
-              <!--  -->
-
-              <!-- TODO ----- Should be optional. Can enter later. -->
-              <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
-
-              <!--  -->
+            <v-stepper-step
+              step="3"
+              :complete="false"
+              @click="currentStepperPos = 3"
+              class=""
+            >
+              <span class="text-h6 font-weight-light">Measurables</span>
             </v-stepper-step>
+
+            <v-stepper-content step="3" class="pa-1">
+              <!-- ? ----------------- Filter --------------------->
+              <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
+                <!--  -->
+
+                <v-text-field
+                  outlined
+                  placeholder="Under construction"
+                ></v-text-field>
+
+                <!-- TODO ----- Should be optional. Can enter later. -->
+                <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
+
+                <!--  -->
+              </v-card>
+            </v-stepper-content>
+            <!--  -->
 
             <!-- ? --------------------------------------------- Step 4: Review -->
-            <v-stepper-step :step="4">
-              <!--  -->
-              <!-- WIP -->
-              <!--  -->
+            <v-stepper-step
+              step="4"
+              :complete="false"
+              @click="currentStepperPos = 4"
+              class=""
+            >
+              <span class="text-h6 font-weight-light">Review</span>
+              <!-- <small>When did you do this event?</small> -->
             </v-stepper-step>
+
+            <!-- TODO ------- Don't think I need a review step. 
+              Subtitles of steps should show what's selected. -->
+
+            <v-stepper-content step="4" class="pa-1">
+              <!-- ? ----------------- Filter --------------------->
+              <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
+                <!--  -->
+
+                <v-text-field
+                  outlined
+                  placeholder="Under construction"
+                ></v-text-field>
+
+                <!-- TODO ----- if Activity has time-tracking (i.e. has a Duration-type measurable) -->
+                <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
+
+                <!-- TODO ----- show options: -->
+                <!--      1. Not started -->
+                <!--      2. Started -->
+                <!--      3. Completed already -->
+
+                <!--  -->
+              </v-card>
+            </v-stepper-content>
 
             <!-- ? ---- Window ends here -->
           </v-stepper>
         </v-card-text>
 
-        <v-divider />
-
-        <!-- ? ----------- Buttons for window navigation -------------->
-        <v-card-actions class="justify-space-between">
+        <!-- * ----------- Buttons for window navigation -------------->
+        <v-card-actions class="px-0 pb-4 justify-space-between">
           <!--  -->
 
-          <!------------- Previous -->
-          <v-btn icon @click="moveToPreviousStep()">
+          <!-- ? ----------- Previous -->
+          <v-btn
+            text
+            :disabled="currentStepperPos === 1"
+            @click="moveToPreviousStep()"
+          >
             <v-icon> mdi-chevron-left </v-icon>
+            <span>Previous</span>
           </v-btn>
 
           <v-spacer />
 
-          <v-item-group
-            v-model="currentStepperPos"
-            class="text-center"
-            mandatory
-          >
-            <v-item
-              v-for="n in numberOfSteps"
-              :key="`btn-${n}`"
-              v-slot="{ active, toggle }"
-            >
-              <!-- ? ---------------- Step button -->
-              <v-btn :input-value="active" icon @click="toggle">
-                <v-icon
-                  :color="getStepPositionColor(n)"
-                  :style="{
-                    border: (isCurrentStep(n) ? '0' : '0') + 'px black solid',
-                    'border-radius': '12px',
-                  }"
-                >
-                  {{ getStepPositionIcon(n + 1) }}
-                </v-icon>
-              </v-btn>
-            </v-item>
-          </v-item-group>
-
-          <v-spacer />
-
-          <!------------- Next -->
+          <!-- ? ----------- Next -->
           <v-btn
-            icon
+            text
             color="primary"
-            :disabled="false"
+            :disabled="currentStepperPos === numberOfSteps"
             @click="moveToNextStep()"
           >
+            <span>Next</span>
             <v-icon> mdi-chevron-right </v-icon>
           </v-btn>
 
           <!--  -->
         </v-card-actions>
+
+        <v-divider />
 
         <!-- ? ------------------ Bottom Actions ---------------------->
         <v-card-actions class="pt-4 pb-4">

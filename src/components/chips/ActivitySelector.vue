@@ -158,6 +158,7 @@ export default class ActivitySelector extends Vue {
 
         <v-col cols="1" class="d-flex justify-center align-center">
           <!-- ? ------------ Filter icon ------------ * -->
+          <!-- TODO P2 ----- Show a dialog for selecting an Area and/or Category -->
           <v-btn icon @click="showCreateActivityDialog = true" class="pb-4">
             <v-icon> mdi-filter </v-icon>
           </v-btn>
@@ -171,7 +172,7 @@ export default class ActivitySelector extends Vue {
             auto-select-first
             chips
             deletable-chips
-            label=""
+            label="Pick an Activity"
             v-model="selectedActivityID"
             :items="activitiesList"
             item-text="title"
@@ -220,6 +221,7 @@ export default class ActivitySelector extends Vue {
                 :closeIcon="`mdi-close`"
                 v-on:chip-closed="deSelectChip"
                 v-on:chip-clicked="triggerEditDialog"
+                class="mt-3"
               />
             </template>
 
@@ -248,6 +250,7 @@ export default class ActivitySelector extends Vue {
             <template v-slot:append-outer>
               <v-btn icon @click="showCreateActivityDialog = true">
                 <v-icon> mdi-plus </v-icon>
+                <!-- mdi-plus-circle-outline -->
               </v-btn>
             </template>
 
