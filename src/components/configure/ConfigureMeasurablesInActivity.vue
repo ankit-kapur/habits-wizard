@@ -60,14 +60,14 @@ export default class ConfigureMeasurablesInActivity extends Vue {
 
   // ------------------------------------------------ Methods
   onShow() {
-    this.areasStore.subscribeToLoadAllQuery();
+    this.areasStore.subscribeToStore();
 
     // <!-- ! --- THIS MAY NOT WORK. Moving between steps in ActivityWizard shouldn't reset this. -->
     this.measurables = deepCopy(this.activity.measurables);
   }
 
   onHide() {
-    this.areasStore.unsubscribeAll();
+    this.areasStore.unsubscribe();
     // Reset
     this.showMeasurableSelectionDialog = false;
   }

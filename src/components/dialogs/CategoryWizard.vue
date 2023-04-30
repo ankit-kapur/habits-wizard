@@ -9,6 +9,7 @@ import { Area } from "@/model/pojo/definitions/Area";
 import CategoryChips from "@/components/chips/CategoryChips.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import ColorPicker from "@/components/picker/ColorPicker.vue";
 
 /**
  * TODO P1 ----- Add validations. Block the Save button.
@@ -18,6 +19,7 @@ import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
   components: {
     ConfirmationDialog: ConfirmationDialog,
     CategoryChips: CategoryChips,
+    ColorPicker: ColorPicker,
   },
   methods: {},
 })
@@ -60,8 +62,6 @@ export default class CategoryWizard extends Vue {
   showDialogForConfirmDiscard = false;
   showDeleteConfirmDialog = false;
   showColorPicker = false;
-  showAdvancedColorPicker = false;
-  swatchesMaxColumns = 5;
 
   // <!-- * ------------------------------------------- Computed props -->
   get categoriesList() {
@@ -101,11 +101,10 @@ export default class CategoryWizard extends Vue {
 
     // Set dialog states
     this.showDialog_local = this.showDialog;
-    this.showAdvancedColorPicker = false;
 
     // Set color
-    if (this.dialogMode === DialogMode.CREATE && this.area.dominantColor)
-      this.categoryTag_local.color = this.area.dominantColor;
+    if (this.dialogMode === DialogMode.CREATE)
+      this.categoryTag_local.color = this.area.color;
 
     this.categoryOriginal = deepCopy(this.categoryTag_local);
   }
@@ -115,26 +114,6 @@ export default class CategoryWizard extends Vue {
   }
 
   // <!-- * ---------------------------- Computed Props ---------------------------->
-  getColorPalette(): string[][] {
-    if (!this.area || !this.area.palette) return [];
-    // return this.colorSwatches;
-
-    // Initialize with empty columns.
-    const swatches: string[][] = [];
-    for (let i = 0; i < this.swatchesMaxColumns; i++) {
-      const emptyArray: string[] = [];
-      swatches.push(emptyArray);
-    }
-
-    // Fill columns
-    let column = 0;
-    for (var color of this.area.palette) {
-      swatches[column].push(color);
-      column = (1 + column) % this.swatchesMaxColumns;
-    }
-
-    return swatches;
-  }
 
   // <!-- * ---------------------------- Behavioral actions ---------------------------->
   respondToConfirmDiscardDialog(isConfirmed: boolean): void {
@@ -175,6 +154,15 @@ export default class CategoryWizard extends Vue {
 
   closeViaParent() {
     this.$emit("close", true);
+  }
+
+  selectedNewColor(newColor: string) {
+    this.categoryTag_local.color = deepCopy(newColor);
+    this.hideColorPicker();
+  }
+
+  hideColorPicker() {
+    this.showColorPicker = false;
   }
 
   // <!-- * ---------------------------- Store actions ---------------------------->
@@ -319,49 +307,14 @@ export default class CategoryWizard extends Vue {
 
     <!-- * ----------------------- Dialogs  -------------------------->
 
-    <!-- ? ----------------------- Color picker dialog -->
-    <v-dialog v-model="showColorPicker">
-      <v-card class="pa-2 pt-4">
-        <!--  -->
-
-        <!-- ? ----------------------- Close button -->
-        <v-card-actions>
-          <v-spacer />
-          <v-icon @click="showColorPicker = false">mdi-close</v-icon>
-        </v-card-actions>
-
-        <!-- ? ----------------------- Color picker -->
-        <v-card-text>
-          <v-color-picker
-            v-model="categoryTag_local.color"
-            mode="hexa"
-            hide-inputs
-            :swatches="getColorPalette()"
-            swatches-max-height="200"
-            show-swatches
-            :hide-canvas="!showAdvancedColorPicker"
-            :hide-sliders="!showAdvancedColorPicker"
-          ></v-color-picker>
-        </v-card-text>
-
-        <v-card-actions>
-          <!-- <v-spacer /> -->
-
-          <!-- ? -------------- "Show more" button -->
-          <v-btn
-            text
-            @click="showAdvancedColorPicker = !showAdvancedColorPicker"
-          >
-            See {{ showAdvancedColorPicker ? `less` : `more` }}
-          </v-btn>
-
-          <v-spacer />
-
-          <!-- ? -------------- "Save" button -->
-          <v-btn color="primary" @click="showColorPicker = false"> Save </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- ? ------------------------ Color picker -->
+    <ColorPicker
+      :isDisplayed="showColorPicker"
+      :initialColor="area.color"
+      :area="area"
+      v-on:selected-color="selectedNewColor"
+      v-on:cancel="hideColorPicker"
+    />
 
     <!-- ? ------------------------ Confirm dialogs -->
     <ConfirmationDialog

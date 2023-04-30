@@ -21,6 +21,7 @@ import { getDocReference } from "@/utils/firebase/FirestoreUtils";
 import { getCurrentUserId } from "@/utils/firebase/GoogleAuthUtils";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 import { v4 as uuid } from "uuid";
+import Activity from "@/model/pojo/definitions/Activity";
 
 interface State {
   allDocs: Area[];
@@ -56,7 +57,7 @@ export const useAreasStore = defineStore("AreasStore", {
     /**
      * Subscribes a listener to load ALL areas by query.
      */
-    subscribeToLoadAllQuery() {
+    subscribeToStore() {
       console.log("🗞️ Subscribing to AREAS store.");
 
       const queryToLoadAreas = query(
@@ -67,14 +68,14 @@ export const useAreasStore = defineStore("AreasStore", {
         queryToLoadAreas,
         (snapshot: QuerySnapshot<Area>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
-          console.log("🔥 🔥 🔥 Snapshot updated. Refreshing areasList");
+          console.log("💾 Snapshot updated. Refreshing areasList");
         }
       );
       this.unsubscribeHooks.push(unsubscribe);
     },
 
     /* Detaches all listeners. */
-    unsubscribeAll() {
+    unsubscribe() {
       this.unsubscribeHooks.forEach((unsubscribeHook) => unsubscribeHook());
     },
 
@@ -93,7 +94,7 @@ export const useAreasStore = defineStore("AreasStore", {
      * Gets all Area objects
      * @returns list of Areas
      */
-    getAreasList(): Area[] {
+    getAll(): Area[] {
       // Sort by Title.
       this.allDocs.slice().sort((a, b) => a.title.localeCompare(b.title));
       return this.allDocs;
@@ -195,6 +196,12 @@ export const useAreasStore = defineStore("AreasStore", {
       );
 
       this.updateArea(area);
+    },
+
+    // ? ------------------------------------ Display related ------------------------------------
+
+    getActivityColor(activity: Activity | null): string {
+      return activity ? this.getAreaById(activity.areaId).color : "";
     },
 
     // -------------------------------------------- Private functions

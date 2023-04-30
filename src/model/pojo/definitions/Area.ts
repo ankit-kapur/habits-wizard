@@ -18,16 +18,16 @@ export interface Area {
   imageUrl: string;
 
   // Hex color codes.
-  dominantColor?: string;
-  palette?: string[];
-  shadesOfDominantColor?: string[];
+  dominantColorInImage?: string;
+  colorPalette?: string[];
+  autoSetColorsFromImage: boolean;
 
   // * ---- Removing links to Categories and Activities here. Don't need bi-directional links.
   // // Associated entities (only IDs here)
   // activities: string[];
 
   // ? ------------------------------ Categories
-  categoryTags: string[];
+  categoryIDList: string[];
   // List of all tags used in Activities in this Area.
 
   // ? ------------------------------ Tags

@@ -12,6 +12,7 @@ import ActivitiesInArea from "../chips/ActivitiesInArea.vue";
 import ImagePicker from "@/components/picker/ImagePicker.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
 import { setColorsFromImage } from "@/utils/colors/ColorUtils";
+import ColorPicker from "@/components/picker/ColorPicker.vue";
 
 /**
  * TODO P1 ----- Add validations. Block the Save button, mark the pages that have errors or ✅
@@ -30,6 +31,7 @@ import { setColorsFromImage } from "@/utils/colors/ColorUtils";
     CategorySelector: CategorySelector,
     ActivitiesInArea: ActivitiesInArea,
     ImagePicker: ImagePicker,
+    ColorPicker: ColorPicker,
   },
 })
 export default class AreaWizard extends Vue {
@@ -120,10 +122,9 @@ export default class AreaWizard extends Vue {
   // ------------------------------------------------ Methods
   saveArea(): void {
     if (this.dialogMode === DialogMode.CREATE) {
-      // Setting colors here in case the default image has not been changed.
-      setColorsFromImage(this.area_local);
       this.areasStore.createArea(this.area_local);
-    } else {
+    } else if (this.dialogMode === DialogMode.EDIT) {
+      console.log("COLORRRRRR = " + this.area_local.color);
       this.areasStore.updateArea(this.area_local);
     }
     this.closeThisDialog();
@@ -146,6 +147,11 @@ export default class AreaWizard extends Vue {
 
     // Stepper
     this.currentStepperPos = 0;
+
+    if (this.dialogMode === DialogMode.CREATE) {
+      // Extract initial colors from default image
+      this.imageChanged(this.area_local.imageUrl);
+    }
 
     return this.area_local;
   }
@@ -173,8 +179,8 @@ export default class AreaWizard extends Vue {
     this.showDiscardConfirmationDialog = false;
   }
 
-  onCategoryTagsChanged(updatedCategoryTagIdList: string[]) {
-    this.area_local.categoryTags = updatedCategoryTagIdList;
+  onCategoryTagsChanged(updatedCategoryIDList: string[]) {
+    this.area_local.categoryIDList = updatedCategoryIDList;
   }
 
   /* ------------------------------ Stepper ------------------------------*/
@@ -200,20 +206,35 @@ export default class AreaWizard extends Vue {
     return this.currentStepperPos == stepNumber - 1;
   }
 
+  /* ------------------------------ Image picker ------------------------------*/
   showImagePicker() {
     console.log("CLICKED");
     this.showImageEditDialog = true;
   }
 
   imageChanged(newImageUrl: string) {
-    console.log("IMAGE CHANGED");
-    // if (newImageUrl === this.area_local.imageUrl) return; // No change
+    if (newImageUrl === this.area_local.imageUrl) return; // No change
 
     this.area_local.imageUrl = newImageUrl; // Update URL
     this.showImageEditDialog = false; // Hide image-picker.
 
     // Extract colors from the image.
     setColorsFromImage(this.area_local);
+
+    if (this.area_local.autoSetColorsFromImage)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.area_local.color = this.area_local.dominantColorInImage!;
+  }
+
+  /* ------------------------------ Color picker ------------------------------*/
+  selectedNewColor(newColor: string) {
+    console.log("selectedNewColor ======= " + newColor);
+    this.area_local.color = deepCopy(newColor);
+    this.hideColorPicker();
+  }
+
+  hideColorPicker() {
+    this.showColorPicker = false;
   }
 }
 </script>
@@ -284,6 +305,48 @@ export default class AreaWizard extends Vue {
                         />
                       </v-col>
                     </v-row>
+
+                    <!-- ? ------------------------------ Color selection -->
+                    <v-row>
+                      <!--  -->
+
+                      <!-- ? -------- Circle with color -->
+                      <v-col
+                        cols="4"
+                        class="pl-7 d-flex justify-center align-center"
+                      >
+                        <span class="pr-2">Color <br /> </span>
+                        <v-icon
+                          x-large
+                          :color="area_local.color"
+                          @click="showColorPicker = true"
+                        >
+                          mdi-circle
+                        </v-icon>
+                      </v-col>
+
+                      <v-spacer />
+
+                      <!-- ? -------- Switch -->
+                      <v-col cols="2">
+                        <v-switch
+                          v-model="area_local.autoSetColorsFromImage"
+                          label=""
+                        />
+                      </v-col>
+
+                      <!-- ? -------- Label -->
+                      <v-col
+                        cols="4"
+                        class="d-flex justify-center align-center"
+                      >
+                        <small>Auto-set colors from image.</small>
+                      </v-col>
+
+                      <!--  -->
+                    </v-row>
+
+                    <!--  -->
                   </v-container>
                 </v-card-text>
 
@@ -300,8 +363,8 @@ export default class AreaWizard extends Vue {
                   <!-- * ---------------- Tag selector for category chips -->
                   <CategorySelector
                     :area="area_local"
-                    :allItemsList="categoryStore.getCategoryTagsList()"
-                    :selectedItemIdList="area_local.categoryTags"
+                    :allItemsList="categoryStore.getAll()"
+                    :selectedItemIdList="area_local.categoryIDList"
                     :isDisplayed="showDialog"
                     v-on:category-tags-changed="onCategoryTagsChanged"
                   ></CategorySelector>
@@ -413,20 +476,32 @@ export default class AreaWizard extends Vue {
       </v-card>
     </v-bottom-sheet>
 
-    <!-- * -------------------------------- Confirm dialog for discarding -->
+    <!-- * ----------------------- Dialogs  -------------------------->
+
+    <!-- ? ------------------------ Color picker -->
+    <ColorPicker
+      :isDisplayed="showColorPicker"
+      :initialColor="area_local.color"
+      :area="area_local"
+      v-on:selected-color="selectedNewColor"
+      v-on:cancel="hideColorPicker"
+    />
+
+    <!-- ? ------------------------ Image picker -->
+    <ImagePicker
+      :showDialog="showImageEditDialog"
+      :imageUrl="area_local.imageUrl"
+      v-on:save="imageChanged"
+      v-on:cancelled="showImageEditDialog = false"
+    />
+
+    <!-- ? ------------------------ Confirm dialogs -->
     <ConfirmationDialog
       v-on:confirm-status-change="respondToDiscardConfirmation"
       :showDialog="showDiscardConfirmationDialog"
       messageToDisplay="Sure you want to discard this?"
       yesButtonText="Discard"
       noButtonText="Cancel"
-    />
-
-    <ImagePicker
-      :showDialog="showImageEditDialog"
-      :imageUrl="area_local.imageUrl"
-      v-on:save="imageChanged"
-      v-on:cancelled="showImageEditDialog = false"
     />
   </div>
 </template>

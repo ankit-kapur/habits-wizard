@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { FirestoreConstants } from "@/constants/FirestoreConstants";
 import { firestoreDatabase as firestoreDB } from "@/firebase";
-import Activity from "@/model/pojo/definitions/Activity";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { getDocReference } from "@/utils/firebase/FirestoreUtils";
 import { getCurrentUserId } from "@/utils/firebase/GoogleAuthUtils";
@@ -77,7 +76,7 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
     },
 
     // -------------------------------------------- Queries
-    getCategoryTagsList(): CategoryTag[] {
+    getAll(): CategoryTag[] {
       // Sort by Title.
       this.allDocs.slice().sort((a, b) => a.title.localeCompare(b.title));
       return this.allDocs;
@@ -93,11 +92,6 @@ export const useCategoryTagsStore = defineStore("CategoryTagsStore", {
       return this.allDocs.filter((categoryTag) =>
         categoryIDs.includes(categoryTag.id)
       );
-    },
-
-    getActivityColor(activity: Activity | null): string {
-      if (!activity) return "";
-      return this.getCategoryById(activity.categoryId).color;
     },
 
     // -------------------------------------------- Create

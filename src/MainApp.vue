@@ -38,15 +38,11 @@ export default class MainApp extends Vue {
   }
 
   get group(): number {
-    console.log(
-      "🌽 🌽 🌽 get group() = " + this.appStateStore.getBottomTabSelection()
-    );
     this.isNavDrawerOpen = false;
     return this.appStateStore.getBottomTabSelection();
   }
 
   set group(currTab: number) {
-    console.log("🌽 🌽 🌽 set group() = " + currTab);
     this.appStateStore.setBottomTabSelection(currTab);
   }
 }

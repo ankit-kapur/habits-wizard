@@ -14,13 +14,15 @@ import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import EventRecord from "@/model/pojo/records/EventRecord";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
+import { useAreasStore } from "@/store/AreasStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import { useEventRecordsStore } from "@/store/EventRecordsStore";
 import { useIconsStore } from "@/store/IconsStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 /**
- * TODO P1 ----- Add validations. Especially when a Category is not selected. Block the Save button.
+ * TODO P1 ----- Add validations.
  **/
 
 @Component({
@@ -43,8 +45,7 @@ export default class RecordWizard extends Vue {
 
   /* <!-- ? ------------------------------ Watchers ------------------------------> */
   @Watch("showDialog")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onPropertyChanged(_newValue: string, _oldValue: string) {
+  onPropertyChanged(_newValue: string) {
     console.log("👀 @Watch in RecordWizard. showDialog = " + _newValue);
     const isDialogOpen = !!_newValue;
     if (isDialogOpen) {
@@ -56,16 +57,17 @@ export default class RecordWizard extends Vue {
 
   // Workaround for when space above bottom-sheet is tapped.
   @Watch("showDialog_local")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onLocalDisplayStateChange(_newValue: string, _oldValue: string) {
+  onLocalDisplayStateChange(_newValue: string) {
     const isDialogOpen = !!_newValue;
     if (!isDialogOpen) this.closeViaParent();
   }
 
   /* <!-- ? ------------------------------ Stores ------------------------------> */
   iconsStore = useIconsStore();
+  areasStore = useAreasStore();
   categoriesStore = useCategoryTagsStore();
   activitiesStore = useActivitiesStore();
+  eventRecordsStore = useEventRecordsStore();
 
   mounted() {
     console.log("🐪 Mounted RecordWizard");
@@ -84,7 +86,6 @@ export default class RecordWizard extends Vue {
   showDeleteConfirmDialog = false;
   showSearchBar = false;
   searchInput = "";
-  selectedCategoryId = "";
 
   // Stepper
   currentStepperPos = 1;
@@ -106,7 +107,7 @@ export default class RecordWizard extends Vue {
             this.currentStepperPos === 1 || this.selectedActivity !== null;
           console.log("✅ ✅ ✅ ✅ ✅ rules result = " + result);
 
-          // <!-- TODO P1 ------ WHY IS THIS ONLY GETTING CALLED ONCE?
+          /* <!-- TODO P1 ------ WHY IS THIS ONLY GETTING CALLED ONCE? --> */
 
           return result;
         },
@@ -129,11 +130,18 @@ export default class RecordWizard extends Vue {
 
   /* <!-- * ------------------------------- Computed props ------------------------------> */
   get categories(): CategoryTag[] {
-    return this.categoriesStore.getCategoriesByIDs(this.area.categoryTags);
+    return this.categoriesStore.getCategoriesByIDs(this.area.categoryIDList);
+  }
+
+  get areas(): Area[] {
+    return this.areasStore.getAll();
   }
 
   get activityColor(): string {
-    return this.categoriesStore.getActivityColor(this.selectedActivity);
+    const areaMatched = this.areas.find(
+      (area) => this.selectedActivity?.areaId === area.id
+    );
+    return areaMatched ? areaMatched.color : "";
   }
 
   get numberOfSteps() {
@@ -147,18 +155,18 @@ export default class RecordWizard extends Vue {
 
   // <!-- * ---------------------------- Lifecycle ---------------------------->
   onShow() {
-    this.categoriesStore.subscribeToStore(); // Subscribe to store
+    // Subscribe to stores
+    this.areasStore.subscribeToStore();
+    this.categoriesStore.subscribeToStore();
 
     // Reset
     this.resetToDefaultState();
     this.showDialog_local = this.showDialog;
-
-    // Assign category
-    this.selectedCategoryId = this.activity_local.categoryId;
   }
 
   onHide() {
     // Unsubscribe from stores.
+    this.areasStore.unsubscribe();
     this.categoriesStore.unsubscribe();
 
     // Not sure if this is needed.
@@ -238,7 +246,7 @@ export default class RecordWizard extends Vue {
 
   respondToDeleteConfirmDialog(isConfirmed: boolean): void {
     if (isConfirmed) {
-      this.activitiesStore.deleteActivity(this.activity_local);
+      this.eventRecordsStore.deleteEventRecord(this.eventRecord_local);
     }
     this.showDeleteConfirmDialog = false;
     this.closeViaParent(); // Ask parent to close.

@@ -5,6 +5,15 @@ import { useAreasStore } from "@/store/AreasStore";
 import AreaCard from "@/components/cards/AreaCard.vue";
 import { Area } from "@/model/pojo/definitions/Area";
 import AreaWizard from "@/components/dialogs/AreaWizard.vue";
+import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import { useActivitiesStore } from "@/store/ActivitiesStore";
+import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import Activity from "@/model/pojo/definitions/Activity";
+
+/**
+ * TODO P2 ---- unsubscribe from stores when router move away from this page.
+ * Add an "isDisplayed" prop that's set based on the router.
+ */
 
 // See documentation on class-components:
 // 👉🏽 https://class-component.vuejs.org/guide/class-component.html#computed-properties
@@ -18,6 +27,8 @@ export default class AreasPage extends Vue {
   // ------------------------------------------------ Data
   // Stores
   areasStore = useAreasStore();
+  categoryTagsStore = useCategoryTagsStore();
+  activitiesStore = useActivitiesStore();
 
   // Toggles
   showDialogForNewArea = false;
@@ -29,25 +40,36 @@ export default class AreasPage extends Vue {
 
   // ------------------------------------------------ Mounted
   mounted() {
-    this.areasStore.subscribeToLoadAllQuery();
+    this.areasStore.subscribeToStore();
+    this.categoryTagsStore.subscribeToStore();
+    this.activitiesStore.subscribeToStore();
     this.showDialogForNewArea = false;
-    console.log("🐪 🐪 🐪  Mounted AreasPage");
+    console.log("🐪  Mounted AreasPage");
   }
 
-  /**
-   * TODO P1 ------- Add an "isDisplayed" prop that's set based on the router.
-   */
   unmounted() {
-    // TODO -- not the right place to unsubscribe. not getting called.
-
-    this.areasStore.unsubscribeAll();
-    console.log("🐪 🐪 🐪  UN-mounted AreasPage");
+    this.areasStore.unsubscribe();
+    this.categoryTagsStore.unsubscribe();
+    this.activitiesStore.unsubscribe();
+    console.log("🐪  Unmounted AreasPage");
   }
 
   get selectedArea(): Area | undefined {
     return this.selectedAreaId
       ? this.areasStore.getAreaById(this.selectedAreaId)
       : undefined;
+  }
+
+  get areaList(): Area[] {
+    return this.areasStore.getAll();
+  }
+
+  get categoryList(): CategoryTag[] {
+    return this.categoryTagsStore.getAll();
+  }
+
+  get activityList(): Activity[] {
+    return this.activitiesStore.getAll();
   }
 
   // ------------------------------------------------ Methods
@@ -73,13 +95,16 @@ export default class AreasPage extends Vue {
     <v-row dense align="start">
       <v-col
         class="pl-2 pr-2 pb-0 pt-0"
-        v-for="(area, index) in areasStore.getAreasList()"
+        v-for="(area, index) in areasStore.getAll()"
         v-bind:key="area.id"
       >
         <!------------------- Area cards -------------------->
 
         <AreaCard
-          v-bind:areaId="area.id"
+          :areaId="area.id"
+          :areaList="areaList"
+          :categoryList="categoryList"
+          :activityList="activityList"
           v-bind:index="index"
           v-bind:key="area.id"
           v-on:edit-area="triggerEditMode"

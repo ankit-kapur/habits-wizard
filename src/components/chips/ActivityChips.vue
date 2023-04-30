@@ -1,6 +1,6 @@
 <script lang="ts">
 import Activity from "@/model/pojo/definitions/Activity";
-import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import { Area } from "@/model/pojo/definitions/Area";
 import { getFillColor } from "@/utils/colors/ColorUtils";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
@@ -10,7 +10,7 @@ export default class ActivityChips extends Vue {
   @Prop()
   activities!: Activity[];
   @Prop()
-  categories!: CategoryTag[];
+  areas!: Area[]; // Areas that the given activities belong to.
 
   @Prop()
   hasCloseButton?: boolean;
@@ -27,22 +27,14 @@ export default class ActivityChips extends Vue {
   }
 
   // ------------------------------------------------ Getters
-  getFillColor = getFillColor;
-  getCategoryColor(activity: Activity): string {
-    const categoryId: string = activity.categoryId;
-    const categoryMatched = this.categories.find(
-      (category) => category.id === categoryId
-    );
-    if (!categoryMatched) {
-      console.log(
-        "🐞 This is a bug. No category matched the ID: " +
-          categoryId +
-          ". Activity = " +
-          JSON.stringify(activity)
-      );
-    }
-    return categoryMatched ? categoryMatched.color : "";
+  getColor(activity: Activity): string {
+    const areaMatched = this.areas.find((area) => activity.areaId === area.id);
+    if (!areaMatched) {
+      console.log("🐞 This is a bug. No area matched the activity.");
+      return "";
+    } else return areaMatched.color;
   }
+  getFillColor = getFillColor;
 
   // ------------------------------------------------ Actions
   onChipClick(activity: Activity) {
@@ -68,18 +60,12 @@ export default class ActivityChips extends Vue {
       @click:close="onChipCloseButtonClick(activity)"
       :model-value="true"
       :style="
-        `border: 1px solid ` +
-        getCategoryColor(activity) +
-        `; border-radius: 8px`
+        `border: 1px solid ` + getColor(activity) + `; border-radius: 8px`
       "
-      :color="getFillColor(getCategoryColor(activity), fillOpacityPercent)"
+      :color="getFillColor(getColor(activity), fillOpacityPercent)"
       class="pl-1 ma-1 mr-1 mt-0 mb-2 pb-0 pt-0"
     >
-      <v-icon
-        medium
-        class="ml-1 mt-2 mb-2 mr-2"
-        :color="getCategoryColor(activity)"
-      >
+      <v-icon medium class="ml-1 mt-2 mb-2 mr-2" :color="getColor(activity)">
         {{ activity.icon }}</v-icon
       >
       <span style="">{{ activity.title }}</span>

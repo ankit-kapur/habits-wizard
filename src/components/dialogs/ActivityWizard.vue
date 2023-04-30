@@ -90,7 +90,7 @@ export default class ActivityWizard extends Vue {
   showIconPicker = false;
   showSearchBar = false;
   searchInput = "";
-  selectedCategoryId = "";
+  selectedCategoryIDList: string[] = [];
 
   // Stepper
   currentStepperPos = 0;
@@ -108,8 +108,12 @@ export default class ActivityWizard extends Vue {
   /* <!-- * ------------------------------- Computed pros ------------------------------> */
   get categoriesInArea(): CategoryTag[] {
     return this.area
-      ? this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags)
+      ? this.categoryTagsStore.getCategoriesByIDs(this.area.categoryIDList)
       : [];
+  }
+
+  get areasList(): Area[] {
+    return this.areasStore.getAll();
   }
 
   get hasChanged() {
@@ -136,14 +140,14 @@ export default class ActivityWizard extends Vue {
   onShow() {
     // Subscribe to store
     this.categoryTagsStore.subscribeToStore();
-    this.areasStore.subscribeToLoadAllQuery();
+    this.areasStore.subscribeToStore();
 
     // Reset
     this.resetToDefaultState();
     this.showDialog_local = this.showDialog;
 
     // Assign category
-    this.selectedCategoryId = this.activity_local.categoryId;
+    this.selectedCategoryIDList = this.activity_local.categoryIDList;
   }
 
   onHide() {
@@ -155,11 +159,7 @@ export default class ActivityWizard extends Vue {
   }
 
   onSelectionChange() {
-    if (this.selectedCategoryId.length > 0) {
-      this.activity_local.categoryId = this.selectedCategoryId;
-    } else {
-      console.log("This is a bug 🐞");
-    }
+    this.activity_local.categoryIDList = this.selectedCategoryIDList;
   }
 
   saveMeasurablesUpdate(measurables: MeasurableForActivity[]) {
@@ -182,6 +182,7 @@ export default class ActivityWizard extends Vue {
     // Load Area (if provided)
     if (this.areaId) {
       this.area = this.areasStore.getAreaById(this.areaId);
+      this.activity_local.areaId = this.areaId;
     }
   }
 
@@ -438,7 +439,8 @@ export default class ActivityWizard extends Vue {
                     auto-select-first
                     chips
                     label=""
-                    v-model="selectedCategoryId"
+                    multiple
+                    v-model="selectedCategoryIDList"
                     :items="categoriesInArea"
                     item-text="title"
                     item-value="id"
@@ -554,7 +556,7 @@ export default class ActivityWizard extends Vue {
                     <v-row>
                       <ActivityChips
                         :activities="[activity_local]"
-                        :categories="categoriesInArea"
+                        :areas="areasList"
                         :hasCloseButton="false"
                       />
                     </v-row>

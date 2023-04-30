@@ -1,18 +1,17 @@
 <script lang="ts">
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useAreasStore } from "@/store/AreasStore";
-import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { getPrettyTimestamp } from "@/utils/time/TimestampConversionUtils";
 import VClamp from "vue-clamp";
-import { useActivitiesStore } from "@/store/ActivitiesStore";
 import CategoryChips from "@/components/chips/CategoryChips.vue";
 import ActivityChips from "@/components/chips/ActivityChips.vue";
 import CategoryWizard from "@/components/dialogs/CategoryWizard.vue";
 import { DialogMode } from "@/model/enum/DialogMode";
 import Activity from "@/model/pojo/definitions/Activity";
 import ActivityWizard from "@/components/dialogs/ActivityWizard.vue";
+import { Area } from "@/model/pojo/definitions/Area";
 
 @Component({
   components: {
@@ -25,14 +24,21 @@ import ActivityWizard from "@/components/dialogs/ActivityWizard.vue";
   },
 })
 export default class AreaCard extends Vue {
-  // ------------------------------------------------ Props
+  /* <!-- * ------------------------------ Props ------------------------------> */
+  // @Prop()
+  // isDisplayed!: boolean;
   @Prop()
   areaId!: string;
+  @Prop()
+  areaList!: Area[];
+  @Prop()
+  categoryList!: CategoryTag[];
+  @Prop()
+  activityList!: Activity[];
 
-  // ------------------------------------------------ Stores
+  /* <!-- * ------------------------------ Stores ------------------------------> */
+  // <!-- TODO P1 ------------------------------------------------------ Remove stores -->
   areasStore = useAreasStore();
-  categoryTagsStore = useCategoryTagsStore();
-  activitiesStore = useActivitiesStore();
 
   // ------------------------------------------------ Data
   isCardExpanded = false;
@@ -59,28 +65,23 @@ export default class AreaCard extends Vue {
 
   // ------------------------------------------------ Mounted
   mounted() {
-    this.areasStore.subscribeToLoadAllQuery();
-    this.categoryTagsStore.subscribeToStore();
-    this.activitiesStore.subscribeToStore(); // Subscribe to store
-    console.log("🐪 🐪 🐪  Mounted AreaCard");
+    console.log("🐪 Mounted AreaCard");
   }
 
   unmounted() {
-    // TODO -- not the right place to unsubscribe. not getting called.
-    this.areasStore.unsubscribeAll();
-    this.categoryTagsStore.unsubscribe();
-    this.activitiesStore.unsubscribe();
-    console.log("🐪 🐪 🐪  UN-mounted AreaCard");
+    console.log("🐪 Unmounted AreaCard");
   }
 
   // ------------------------------------------------ Computed props
-  get activities() {
-    return this.activitiesStore.getActivitiesByArea(this.areaId);
+  get activitiesInArea() {
+    return this.activityList.filter(
+      (activity) => activity.areaId === this.areaId
+    );
   }
 
   // ------------------------------------------------ Methods
-  get area() {
-    return this.areasStore.getAreaById(this.areaId);
+  get area(): Area | undefined {
+    return this.areaList.find((area) => area.id === this.areaId);
   }
 
   expandAreaClicked() {
@@ -111,24 +112,24 @@ export default class AreaCard extends Vue {
     this.showEditButton = false;
   }
 
-  confirmDelete() {
+  triggerDeleteConfirmation() {
     this.showDialogForConfirmDelete = true;
-  }
-
-  performDelete() {
-    this.areasStore.deleteArea(this.areaId);
   }
 
   respondToConfirmDeleteDialog(isConfirmed: boolean): void {
     if (isConfirmed) {
-      this.performDelete();
+      this.areasStore.deleteArea(this.areaId);
     }
     this.showDialogForConfirmDelete = false;
   }
 
   // <!-- * ---------------------------- Categories ---------------------------->
-  get categories(): CategoryTag[] {
-    return this.categoryTagsStore.getCategoriesByIDs(this.area.categoryTags);
+  get categoriesInArea(): CategoryTag[] {
+    console.log("🐸 this.area = " + JSON.stringify(this.area));
+    if (!this.area) return [];
+    return this.categoryList.filter((category) =>
+      this.area?.categoryIDList.includes(category.id)
+    );
   }
 
   triggerCategoryWizard(categoryTag: CategoryTag) {
@@ -199,7 +200,7 @@ export default class AreaCard extends Vue {
           <v-img
             class="ma-0 pa-0"
             style="border-radius: 6px"
-            :src="area.imageUrl"
+            :src="area?.imageUrl"
             :width="IMAGE_HEIGHT"
             :height="IMAGE_HEIGHT"
           ></v-img>
@@ -221,7 +222,7 @@ export default class AreaCard extends Vue {
                   :max-lines="1"
                   class="text-h5 font-weight-light"
                 >
-                  {{ area.title }}
+                  {{ area?.title }}
                 </v-clamp>
               </v-col>
             </v-row>
@@ -235,7 +236,7 @@ export default class AreaCard extends Vue {
                   :max-lines="DESCRIPTION_MAX_LINES"
                   class="text-subtitle-2 font-weight-light"
                 >
-                  {{ area.description }}
+                  {{ area?.description }}
                 </v-clamp>
 
                 <!--  -->
@@ -274,7 +275,7 @@ export default class AreaCard extends Vue {
           <v-btn
             text
             small
-            @click="confirmDelete"
+            @click="triggerDeleteConfirmation"
             color="delete_button"
             style="border-radius: 15px; border-width: 1"
             class="mr-4"
@@ -298,22 +299,22 @@ export default class AreaCard extends Vue {
 
         <!-- * ------------------- Categories section ----------------------->
         <v-card-text
-          v-if="categories.length > 0"
+          v-if="categoriesInArea.length > 0"
           class="font-weight-light mb-0 pb-0"
         >
           Categories
         </v-card-text>
 
         <!-- ? -------------------- Category chips ----------------------->
-        <v-card-text v-if="categories.length > 0" class="pt-1 pb-2">
+        <v-card-text v-if="categoriesInArea.length > 0" class="pt-1 pb-2">
           <CategoryChips
-            :categories="categories"
+            :categories="categoriesInArea"
             v-on:chip-clicked="triggerCategoryWizard"
           />
         </v-card-text>
 
         <!-- * ------------------- Activities section ----------------------->
-        <div v-if="activities.length > 0">
+        <div v-if="activitiesInArea.length > 0">
           <v-divider class="mx-4 mb-1"></v-divider>
 
           <v-card-text class="font-weight-light mb-0 pb-0">
@@ -323,8 +324,8 @@ export default class AreaCard extends Vue {
           <!-- ? -------------------- Activity chips ----------------------->
           <v-card-actions class="pt-1 pb-2">
             <ActivityChips
-              :activities="activities"
-              :categories="categories"
+              :activities="activitiesInArea"
+              :areas="areaList"
               v-on:chip-clicked="triggerActivityWizard"
             />
           </v-card-actions>
@@ -338,7 +339,7 @@ export default class AreaCard extends Vue {
             Created:
           </span>
           <span class="font-weight-light">
-            {{ getPrettyTimestamp(area.createdAt) }}
+            {{ getPrettyTimestamp(area?.createdAt) }}
           </span>
           <br />
 
@@ -346,7 +347,7 @@ export default class AreaCard extends Vue {
             Last updated:
           </span>
           <span class="font-weight-light">
-            {{ getPrettyTimestamp(area.lastUpdatedAt) }}
+            {{ getPrettyTimestamp(area?.lastUpdatedAt) }}
           </span>
           <!-- Other colors: #888a89 (medium-gray) -->
         </v-card-text>
@@ -365,7 +366,7 @@ export default class AreaCard extends Vue {
 
     <ActivityWizard
       :activity="selectedActivity"
-      :areaId="area.id"
+      :areaId="area?.id"
       :dialog-mode="activityWizardDialogMode"
       :showDialog="showActivityWizard"
       v-on:close="closeActivityWizard"

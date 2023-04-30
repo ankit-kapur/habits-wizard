@@ -48,8 +48,8 @@ export function setColorsFromImage(area: Area) {
     const paletteHex: string[] = palette.map((rgb) => rgbToHex(rgb));
 
     // * ------- Write the colors into the Area.
-    area.dominantColor = dominantColorHex;
-    area.palette = paletteHex;
+    area.dominantColorInImage = dominantColorHex;
+    area.colorPalette = paletteHex;
   });
 
   // Destroy HTML element

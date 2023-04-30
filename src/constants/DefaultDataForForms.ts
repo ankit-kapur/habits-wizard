@@ -13,14 +13,14 @@ export const defaultNewArea: Area = {
   userId: "",
   description:
     "late 16th century from medieval Latin eleemosynarius, from late Latin eleemosyna‘alms",
-  categoryTags: [],
+  categoryIDList: [],
   measurableDefinitions: getDefaultMeasurables,
+  autoSetColorsFromImage: true,
 };
 
 export const defaultNewCategory: CategoryTag = {
   id: "",
   title: "New Category",
-  icon: "mdi-circle",
   userId: "",
   color: "",
 };
@@ -30,7 +30,7 @@ export const defaultNewActivity: Activity = {
   userId: "",
   title: "",
   areaId: "",
-  categoryId: "",
+  categoryIDList: [],
   icon: "mdi-square",
   hasTimeTracking: false,
   measurables: [],
@@ -40,7 +40,7 @@ export const defaultNewEventRecord: EventRecord = {
   id: "",
   userId: "",
   activityId: "",
-  categoryId: "",
+  categoryIDList: [],
   areaId: "",
   tags: [],
   eventState: EventState.NOT_STARTED,

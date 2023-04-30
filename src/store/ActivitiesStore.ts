@@ -65,7 +65,7 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
         queryToLoad,
         (snapshot: QuerySnapshot<Activity>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
-          console.log("🔥 🔥 🔥 Snapshot updated. Refreshed ACTIVITIES list.");
+          console.log("💾 Snapshot updated for ACTIVITIES list.");
         }
       );
       this.unsubscribeHooks.push(unsubscribe);
@@ -77,14 +77,14 @@ export const useActivitiesStore = defineStore("ActivitiesStore", {
     },
 
     // ? -------------------------------------------- Queries --------------------------------------------
-    getAllDocs(): Activity[] {
+    getAll(): Activity[] {
       // Sort by Title.
       this.allDocs.slice().sort((a, b) => a.title.localeCompare(b.title));
       return this.allDocs;
     },
 
     getActivitiesByArea(areaId: string): Activity[] {
-      return this.getAllDocs().filter((activity) => activity.areaId === areaId);
+      return this.getAll().filter((activity) => activity.areaId === areaId);
     },
 
     getActivityByID(activityId: string): Activity {

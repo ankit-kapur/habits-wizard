@@ -69,7 +69,7 @@ export const useEventRecordsStore = defineStore("EventRecordsStore", {
         queryToLoad,
         (snapshot: QuerySnapshot<EventRecord>) => {
           this.allDocs = snapshot.docs.map((doc) => doc.data());
-          console.log("🔥 🔥 🔥 Snapshot updated. Refreshed EventRecords.");
+          console.log("💾 Snapshot updated. Refreshed EventRecords.");
         }
       );
       this.unsubscribeHooks.push(unsubscribe);

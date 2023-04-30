@@ -2,9 +2,9 @@
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { defaultNewActivity } from "@/constants/DefaultDataForForms";
 import Activity from "@/model/pojo/definitions/Activity";
-import CategoryTag from "@/model/pojo/definitions/CategoryTag";
+import { Area } from "@/model/pojo/definitions/Area";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
-import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import { useAreasStore } from "@/store/AreasStore";
 import { useEventRecordsStore } from "@/store/EventRecordsStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
@@ -43,8 +43,8 @@ export default class ActivitySelector extends Vue {
   }
 
   // <!-- * -------------------------------- Stores ------------------------------->
+  areasStore = useAreasStore();
   activitiesStore = useActivitiesStore();
-  categoriesStore = useCategoryTagsStore();
   eventRecordsStore = useEventRecordsStore();
 
   // ------------------------------------------------ Data
@@ -59,7 +59,7 @@ export default class ActivitySelector extends Vue {
 
   // <!-- * -------------------------------- Computed props ------------------------------->
   get activitiesList(): Activity[] {
-    const activityList = this.activitiesStore.getAllDocs();
+    const activityList = this.activitiesStore.getAll();
 
     if (this.areaId) {
       activityList.filter((activity) => activity.areaId === this.areaId);
@@ -68,8 +68,8 @@ export default class ActivitySelector extends Vue {
     return activityList;
   }
 
-  get categoriesList(): CategoryTag[] {
-    return this.categoriesStore.getCategoryTagsList();
+  get areasList(): Area[] {
+    return this.areasStore.getAll();
   }
 
   // <!-- * -------------------------------- Lifecycle actions ------------------------------->
@@ -84,15 +84,17 @@ export default class ActivitySelector extends Vue {
   }
 
   onShow() {
-    this.activitiesStore.subscribeToStore(); // Subscribe to stores
-    this.categoriesStore.subscribeToStore();
+    // Subscribe to stores
+    this.areasStore.subscribeToStore();
+    this.activitiesStore.subscribeToStore();
 
+    // Reset
     this.resetState();
   }
 
   onHide() {
+    this.areasStore.unsubscribe();
     this.activitiesStore.unsubscribe(); // Unsubscribe from stores
-    this.categoriesStore.unsubscribe();
   }
 
   resetState() {
@@ -267,7 +269,7 @@ export default class ActivitySelector extends Vue {
             <template v-slot:selection="data">
               <ActivityChips
                 :activities="[data.item]"
-                :categories="categoriesList"
+                :areas="areasList"
                 :hasCloseButton="true"
                 :closeIcon="`mdi-close`"
                 v-on:chip-closed="deSelectChip"
@@ -282,16 +284,19 @@ export default class ActivitySelector extends Vue {
             <template v-slot:item="{ item, attrs, on }">
               <v-list-item v-on="on" v-bind="attrs" #default="{ active }">
                 <v-list-item-content>
-                  <!-- TODO P1 ------------------------------------- COLOR THIS -->
-
                   <v-list-item-title>
                     <v-row no-gutters align="center">
+                      <!--  -->
+
+                      <!-- ? ------ Icon -->
                       <v-icon
                         class="pr-4"
-                        :color="categoriesStore.getActivityColor(item)"
+                        :color="areasStore.getActivityColor(item)"
                       >
                         {{ item.icon }}
                       </v-icon>
+
+                      <!-- ? ------ Title of Activity -->
                       <span>{{ item.title }}</span>
                       <v-spacer></v-spacer>
                     </v-row>

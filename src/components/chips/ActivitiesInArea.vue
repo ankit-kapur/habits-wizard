@@ -2,9 +2,8 @@
 import { defaultNewActivity } from "@/constants/DefaultDataForForms";
 import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
-import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
-import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
+import { useAreasStore } from "@/store/AreasStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ActivityWizard from "../dialogs/ActivityWizard.vue";
@@ -44,7 +43,7 @@ export default class ActivitiesInArea extends Vue {
 
   // ------------------------------------------------ Stores
   activitiesStore = useActivitiesStore();
-  categoriesStore = useCategoryTagsStore();
+  areasStore = useAreasStore();
 
   // ------------------------------------------------ Data
   showCreateActivityDialog = false;
@@ -62,8 +61,8 @@ export default class ActivitiesInArea extends Vue {
     return activityList;
   }
 
-  get categoriesList(): CategoryTag[] {
-    return this.categoriesStore.getCategoryTagsList();
+  get areasList(): Area[] {
+    return this.areasStore.getAll();
   }
 
   mounted() {
@@ -80,7 +79,7 @@ export default class ActivitiesInArea extends Vue {
   onShow() {
     // Subscribe to stores
     this.activitiesStore.subscribeToStore();
-    this.categoriesStore.subscribeToStore();
+    this.areasStore.subscribeToStore();
 
     // Reset
     this.selectedActivity = deepCopy(defaultNewActivity);
@@ -89,7 +88,7 @@ export default class ActivitiesInArea extends Vue {
   onHide() {
     // Unsubscribe from stores
     this.activitiesStore.unsubscribe();
-    this.categoriesStore.unsubscribe();
+    this.areasStore.unsubscribe();
   }
 
   promptForNewActivity() {
@@ -142,7 +141,7 @@ export default class ActivitiesInArea extends Vue {
 
         <ActivityChips
           :activities="activitiesList"
-          :categories="categoriesList"
+          :areas="areasList"
           :hasCloseButton="true"
           :closeIcon="`mdi-delete`"
           v-on:chip-clicked="triggerEditDialog"

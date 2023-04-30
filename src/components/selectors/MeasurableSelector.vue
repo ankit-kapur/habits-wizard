@@ -106,11 +106,11 @@ export default class MeasurableSelector extends Vue {
   }
 
   onShow() {
-    this.areasStore.subscribeToLoadAllQuery();
+    this.areasStore.subscribeToStore();
   }
 
   onHide() {
-    this.areasStore.unsubscribeAll();
+    this.areasStore.unsubscribe();
     this.resetState();
   }
   resetState() {
