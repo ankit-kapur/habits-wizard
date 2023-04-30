@@ -38,7 +38,7 @@ export default class RecordingPage extends Vue {
         <v-col cols="12">
           <v-card
             @click="recordButtonClicked"
-            max-width="800"
+            max-width="300"
             class="mb-4 mx-auto px-auto"
           >
             <!-- https://neural.love/cdn/ai-photostock/1ed3fefe-33ce-60ae-aaa9-29ea77aa236d/0.jpg?Expires=1685577599&Signature=14s3wHonJosTtIm~xbV~uEa8064AD6tABbeWWIh2Ixr-png6YrxmEtq5C6zZUaNi7852EnQKivVqSLIcX75hVHx-bG-6IS4xLyxM0mdVr9ayDvo8A9aR1VaemIqVWaAzC4za2YpjHqw4~vGUav2QYEThvdDI-2mgUcfo4SoPz5AIaCJQ-iQD3AoPmMxqUmtHFRtzP4tN-KQsb2e0uk32VISQeosaK4PH3bVeox4DU~xEhQz-a8wFg8A7VVmezzxh6tfjGWTlMhnK-loq2L7urxb0AFnTeG04Bds3Z3scACP4T1anR6b7F-ImwKk~ePt7h5XwYc9JdBbbiQgKPEr3~g__&Key-Pair-Id=K2RFTOXRBNSROX -->

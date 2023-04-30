@@ -54,6 +54,11 @@ export default class AreasPage extends Vue {
     console.log("🐪  Unmounted AreasPage");
   }
 
+  get isLoading(): boolean {
+    // TODO
+    return false;
+  }
+
   get selectedArea(): Area | undefined {
     return this.selectedAreaId
       ? this.areasStore.getAreaById(this.selectedAreaId)
@@ -95,20 +100,29 @@ export default class AreasPage extends Vue {
     <v-row dense align="start">
       <v-col
         class="pl-2 pr-2 pb-0 pt-0"
-        v-for="(area, index) in areasStore.getAll()"
+        v-for="(area, index) in areaList"
         v-bind:key="area.id"
       >
         <!------------------- Area cards -------------------->
 
-        <AreaCard
-          :areaId="area.id"
-          :areaList="areaList"
-          :categoryList="categoryList"
-          :activityList="activityList"
-          v-bind:index="index"
-          v-bind:key="area.id"
-          v-on:edit-area="triggerEditMode"
-        ></AreaCard>
+        <v-skeleton-loader
+          :loading="isLoading"
+          height="400"
+          width="80%"
+          type="image, list-item-two-line"
+        >
+          <AreaCard
+            :areaId="area.id"
+            :areaList="areaList"
+            :categoryList="categoryList"
+            :activityList="activityList"
+            v-bind:index="index"
+            v-bind:key="area.id"
+            v-on:edit-area="triggerEditMode"
+          ></AreaCard>
+        </v-skeleton-loader>
+
+        <!--  -->
       </v-col>
     </v-row>
 
@@ -135,7 +149,7 @@ export default class AreasPage extends Vue {
     <AreaWizard
       :dialog-mode="`CREATE`"
       v-on:close-dialog="closeNewAreaDialog"
-      :showDialog="showDialogForNewArea"
+      :isDisplayed="showDialogForNewArea"
     />
 
     <!-- Edit dialog -->
@@ -143,7 +157,7 @@ export default class AreasPage extends Vue {
       :area="selectedArea"
       :dialog-mode="`EDIT`"
       v-on:close-dialog="closeEditAreaDialog"
-      :showDialog="showDialogForEditArea"
+      :isDisplayed="showDialogForEditArea"
     />
   </v-container>
 </template>

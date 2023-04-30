@@ -16,6 +16,8 @@ export const defaultNewArea: Area = {
   categoryIDList: [],
   measurableDefinitions: getDefaultMeasurables,
   autoSetColorsFromImage: true,
+  dominantColorInImage: "",
+  colorPalette: [],
 };
 
 export const defaultNewCategory: CategoryTag = {

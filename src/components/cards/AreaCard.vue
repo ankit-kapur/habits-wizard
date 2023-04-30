@@ -125,7 +125,6 @@ export default class AreaCard extends Vue {
 
   // <!-- * ---------------------------- Categories ---------------------------->
   get categoriesInArea(): CategoryTag[] {
-    console.log("🐸 this.area = " + JSON.stringify(this.area));
     if (!this.area) return [];
     return this.categoryList.filter((category) =>
       this.area?.categoryIDList.includes(category.id)
@@ -355,6 +354,10 @@ export default class AreaCard extends Vue {
     </v-expand-transition>
 
     <!-- * ------------------------ Wizards  -------------------------->
+
+    <!-- ! Move these -->
+    <!-- TODO P1 ------- Move these to AreasPage. Every Card having its own makes no sense. -->
+
     <CategoryWizard
       :categoryTag="selectedCategoryTag"
       :area="area"

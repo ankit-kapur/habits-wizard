@@ -39,7 +39,7 @@ export default class ConfirmationDialog extends Vue {
 
 <template>
   <v-dialog v-model="showDialog_local" max-width="500px">
-    <v-card>
+    <v-card class="pb-2">
       <v-card-title>
         <span> {{ messageToDisplay }}</span>
         <v-spacer></v-spacer>
@@ -47,7 +47,7 @@ export default class ConfirmationDialog extends Vue {
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="noClicked"> {{ noButtonText }} </v-btn>
-        <v-btn color="primary" text @click="yesClicked">
+        <v-btn color="primary" @click="yesClicked">
           {{ yesButtonText }}
         </v-btn>
       </v-card-actions>

@@ -39,23 +39,31 @@ export default class AreaWizard extends Vue {
   @Prop()
   area?: Area;
   @Prop()
-  showDialog!: boolean;
+  isDisplayed!: boolean;
   @Prop()
   dialogMode!: DialogMode;
 
   /**
    * Watches parent variable, and sync's its value to the child variable.
    */
-  @Watch("showDialog")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onPropertyChanged(_newValue: string, _oldValue: string) {
+  @Watch("isDisplayed")
+  onIsDisplayedChanged(_newValue: string) {
     const isDialogOpen = !!_newValue;
-    console.log("👀 @Watch in AreaWizard. _newValue = " + _newValue);
-
+    console.log("👀 @Watch in AreaWizard. isDisplayed = " + _newValue);
+    this.isDisplayed_local = this.isDisplayed;
     if (isDialogOpen) {
       this.onShow();
     } else {
       this.onHide();
+    }
+  }
+
+  // Workaround for when space above dialog is tapped.
+  @Watch("isDisplayed_local")
+  onLocalDisplayChanged(_newValue: boolean) {
+    console.log("👀 @Watch in AreaWizard. isDisplayed_local = " + _newValue);
+    if (_newValue === false && this.isDisplayed) {
+      this.confirmDiscard(true);
     }
   }
 
@@ -66,13 +74,14 @@ export default class AreaWizard extends Vue {
   // ------------------------------------------------ Data
   // State
   area_local: Area = this.resetToDefaultState();
+  originalArea: Area | null = null;
+  isDisplayed_local = false;
 
   // Toggles for displays
   showDiscardConfirmationDialog = false;
   showCreateCategoryDialog = false;
   showImageEditDialog = false;
   showColorPicker = false;
-  areCategoriesLoaded = false;
 
   // Stepper
   currentStepperPos = 0;
@@ -99,34 +108,34 @@ export default class AreaWizard extends Vue {
 
   // ------------------------------------------------ Lifecycle
   onShow() {
+    // Subscribe to stores
+    this.categoryStore.subscribeToStore();
+
+    // Reset
     this.resetToDefaultState();
 
+    // Write to store.
     if (this.dialogMode === DialogMode.CREATE) {
-      // ! ---- In the future, I might want to clean up DANGLING new things automatically.
-      this.areasStore.createArea(this.area_local); // Write to store.
+      this.areasStore.createArea(this.area_local);
     }
 
-    console.log("🦎 onShow ---" + JSON.stringify(this.area_local));
+    this.originalArea = deepCopy(this.area_local);
   }
 
   onHide() {
     // Nothing for now.
   }
+
   mounted() {
-    this.categoryStore.subscribeToStore();
-    this.areCategoriesLoaded = true;
+    // Reset
     this.resetToDefaultState();
     console.log("🐪  Mounted AreaWizard");
   }
 
   // ------------------------------------------------ Methods
   saveArea(): void {
-    if (this.dialogMode === DialogMode.CREATE) {
-      this.areasStore.createArea(this.area_local);
-    } else if (this.dialogMode === DialogMode.EDIT) {
-      console.log("COLORRRRRR = " + this.area_local.color);
-      this.areasStore.updateArea(this.area_local);
-    }
+    // We update even for CREATE mode because onShow() creates the record.
+    this.areasStore.updateArea(this.area_local);
     this.closeThisDialog();
   }
 
@@ -156,22 +165,23 @@ export default class AreaWizard extends Vue {
     return this.area_local;
   }
 
-  triggerCancellation() {
-    // If nothing's changed, discard without confirmation
-    if (
-      JSON.stringify(this.area) == JSON.stringify(this.area_local) ||
-      JSON.stringify(defaultNewArea) == JSON.stringify(this.area_local)
-    ) {
-      this.closeThisDialog();
-    } else {
-      this.showDiscardConfirmationDialog = true;
-    }
+  hasChanged() {
+    return (
+      JSON.stringify(this.area_local) !== JSON.stringify(this.originalArea)
+    );
   }
 
-  respondToDiscardConfirmation(isConfirmed: boolean): void {
+  triggerCancellation() {
+    // If nothing's changed, discard without confirmation
+    if (this.hasChanged()) this.showDiscardConfirmationDialog = true;
+    else this.confirmDiscard(true);
+  }
+
+  confirmDiscard(isConfirmed: boolean): void {
     if (isConfirmed) {
       if (this.dialogMode === DialogMode.CREATE) {
         // Delete from the store.
+        console.log("DELETEING ==== " + this.area_local.id);
         this.areasStore.deleteArea(this.area_local.id);
       }
       this.closeThisDialog();
@@ -243,8 +253,9 @@ export default class AreaWizard extends Vue {
   <div class="">
     <!-- * ------------------------------------------------ Bottom sheet -->
     <v-bottom-sheet
-      v-model="showDialog"
+      v-model="isDisplayed_local"
       inset
+      :persistent="hasChanged()"
       max-width="500"
       overlay-opacity="0.88"
       @keydown.esc="triggerCancellation"
@@ -365,7 +376,7 @@ export default class AreaWizard extends Vue {
                     :area="area_local"
                     :allItemsList="categoryStore.getAll()"
                     :selectedItemIdList="area_local.categoryIDList"
-                    :isDisplayed="showDialog"
+                    :isDisplayed="isDisplayed"
                     v-on:category-tags-changed="onCategoryTagsChanged"
                   ></CategorySelector>
 
@@ -385,7 +396,7 @@ export default class AreaWizard extends Vue {
                   <!-- ? -------- Activities selector -->
                   <ActivitiesInArea
                     :area="area_local"
-                    :isDisplayed="showDialog"
+                    :isDisplayed="isDisplayed"
                   >
                   </ActivitiesInArea>
                 </v-card-text>
@@ -497,7 +508,7 @@ export default class AreaWizard extends Vue {
 
     <!-- ? ------------------------ Confirm dialogs -->
     <ConfirmationDialog
-      v-on:confirm-status-change="respondToDiscardConfirmation"
+      v-on:confirm-status-change="confirmDiscard"
       :showDialog="showDiscardConfirmationDialog"
       messageToDisplay="Sure you want to discard this?"
       yesButtonText="Discard"

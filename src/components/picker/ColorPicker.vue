@@ -25,9 +25,9 @@ export default class ColorPicker extends Vue {
 
   /* <!-- ? ------------------------------ Watchers ------------------------------> */
   @Watch("isDisplayed")
-  onDisplayChanged(_newValue: string) {
-    console.log("👀 @Watch in ColorPicker. isDisplayed = " + _newValue);
+  onIsDisplayedChanged(_newValue: string) {
     const isDialogOpen = !!_newValue;
+    console.log("👀 @Watch in ColorPicker. isDisplayed = " + _newValue);
     if (isDialogOpen) {
       this.resetState();
     }
@@ -37,8 +37,7 @@ export default class ColorPicker extends Vue {
   // Workaround for when space above dialog is tapped.
   @Watch("isDisplayed_local")
   onLocalDisplayChanged(_newValue: boolean) {
-    console.log("👀 @Watch in ColorPicker. isisDisplayed_local = " + _newValue);
-    if (_newValue == false) this.closeViaParent;
+    if (_newValue === false) this.closeViaParent();
   }
 
   /* <!-- ? ------------------------------ Lifecycle ------------------------------> */
@@ -55,22 +54,24 @@ export default class ColorPicker extends Vue {
     this.$emit("cancel", false);
   }
 
-  /* <!-- ? ------------------------------ Computed props ------------------------------> */
-
-  /* <!-- ? ------------------------------ Methods ------------------------------> */
+  /* <!-- * ------------------------------ Methods ------------------------------> */
   getColorPalette(): string[][] {
     if (!this.area || !this.area.colorPalette) return [];
     // return this.colorSwatches;
 
-    // Initialize with empty columns.
+    // <!-- ? ---- Initialize with empty columns. -->
+    const allColors: string[] = [];
     const swatches: string[][] = [];
     for (let i = 0; i < this.swatchesMaxColumns; i++) {
       const emptyArray: string[] = [];
       swatches.push(emptyArray);
     }
 
+    // <!-- ? ---- Add colors extracted from image -->
+    allColors.push(this.area.dominantColorInImage);
+    this.area.colorPalette.forEach((color) => allColors.push(color));
+
     // Add shades of color.
-    const allColors: string[] = deepCopy(this.area.colorPalette);
     const shades: string[] = getShadesFromColor(this.area.color);
     shades.forEach((shade) => allColors.push(shade));
 
@@ -80,7 +81,6 @@ export default class ColorPicker extends Vue {
       swatches[column].push(color);
       column = (1 + column) % this.swatchesMaxColumns;
     }
-
     return swatches;
   }
 }
@@ -99,7 +99,7 @@ export default class ColorPicker extends Vue {
       </v-card-actions>
 
       <!-- ? ----------------------- Color picker -->
-      <v-card-text>
+      <v-card-text class="mx-0 px-0 d-flex justify-center">
         <v-color-picker
           v-model="selectedColor"
           mode="hexa"

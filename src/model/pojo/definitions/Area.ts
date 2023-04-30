@@ -18,8 +18,8 @@ export interface Area {
   imageUrl: string;
 
   // Hex color codes.
-  dominantColorInImage?: string;
-  colorPalette?: string[];
+  dominantColorInImage: string;
+  colorPalette: string[];
   autoSetColorsFromImage: boolean;
 
   // * ---- Removing links to Categories and Activities here. Don't need bi-directional links.
