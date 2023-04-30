@@ -5,6 +5,13 @@ import ColorThief from "colorthief";
  * ! ----- Use this to generate SHADES
  * https://stackoverflow.com/questions/40619476/javascript-generate-different-shades-of-the-same-color
  */
+export function getShadesFromColor(color: string): string[] {
+  console.log("Getting shades of color: " + color);
+
+  // TODO P0 ------- Implement
+
+  return [];
+}
 
 /**
  * Gives a lighter shade of the color based on the opacity % given.

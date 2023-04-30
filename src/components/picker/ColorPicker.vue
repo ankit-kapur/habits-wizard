@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Area } from "@/model/pojo/definitions/Area";
+import { getShadesFromColor } from "@/utils/colors/ColorUtils";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
@@ -19,6 +20,8 @@ export default class ColorPicker extends Vue {
   showColorPicker = false;
   showAdvancedColorPicker = false;
   swatchesMaxColumns = 5;
+
+  getShadesFromColor = getShadesFromColor;
 
   /* <!-- ? ------------------------------ Watchers ------------------------------> */
   @Watch("isDisplayed")
@@ -53,18 +56,6 @@ export default class ColorPicker extends Vue {
   }
 
   /* <!-- ? ------------------------------ Computed props ------------------------------> */
-  // get isDisplayed_local() {
-  //   if (this.isDisplayed) {
-  //     // Reset on display.
-  //     this.showAdvancedColorPicker = false;
-  //     this.selectedColor = deepCopy(this.initialColor);
-  //   }
-  //   return this.isDisplayed;
-  // }
-
-  // set isDisplayed_local(newValue: boolean) {
-  //   if (newValue == false) this.closeViaParent;
-  // }
 
   /* <!-- ? ------------------------------ Methods ------------------------------> */
   getColorPalette(): string[][] {
@@ -78,14 +69,17 @@ export default class ColorPicker extends Vue {
       swatches.push(emptyArray);
     }
 
+    // Add shades of color.
+    const allColors: string[] = deepCopy(this.area.colorPalette);
+    const shades: string[] = getShadesFromColor(this.area.color);
+    shades.forEach((shade) => allColors.push(shade));
+
     // Fill columns
     let column = 0;
-    for (var color of this.area.colorPalette) {
+    for (var color of allColors) {
       swatches[column].push(color);
       column = (1 + column) % this.swatchesMaxColumns;
     }
-
-    // TODO P1 ---- Get shades of area.color from ColorUtils.
 
     return swatches;
   }
