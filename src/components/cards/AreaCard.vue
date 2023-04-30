@@ -53,7 +53,7 @@ export default class AreaCard extends Vue {
   activityWizardDialogMode = DialogMode.EDIT;
 
   MIN_WIDTH_CARD = 320;
-  MAX_WIDTH_CARD = 350;
+  MAX_WIDTH_CARD = 390;
   IMAGE_HEIGHT = 110;
   IMAGE_COLUMNS = 4;
   DESCRIPTION_MAX_LINES = 3;
@@ -247,7 +247,6 @@ export default class AreaCard extends Vue {
     </v-container>
 
     <v-expand-transition mode="in-out">
-      >
       <div v-if="isCardExpanded">
         <!--  -->
 

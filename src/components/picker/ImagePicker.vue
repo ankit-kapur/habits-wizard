@@ -41,7 +41,7 @@ export default class ImagePicker extends Vue {
 </script>
 
 <template>
-  <v-dialog v-model="showDialog">
+  <v-dialog persistent v-model="showDialog">
     <v-card>
       <v-card-title> Pick an image </v-card-title>
 

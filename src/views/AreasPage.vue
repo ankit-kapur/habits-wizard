@@ -55,7 +55,7 @@ export default class AreasPage extends Vue {
   }
 
   get isLoading(): boolean {
-    // TODO
+    // TODO P2 ----- Skeleton should show when cards are not ready.
     return false;
   }
 

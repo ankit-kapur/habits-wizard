@@ -29,6 +29,7 @@ export default class ConfigurationPage extends Vue {
   <div class="">
     <v-container fluid>
       <v-row dense>
+        <!-- * ---------------- Area ---------------- * -->
         <v-col cols="12">
           <v-card
             @click="routerPush('/areasPage')"

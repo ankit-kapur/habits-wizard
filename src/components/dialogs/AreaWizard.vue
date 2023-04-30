@@ -223,7 +223,7 @@ export default class AreaWizard extends Vue {
   }
 
   imageChanged(newImageUrl: string) {
-    if (newImageUrl === this.area_local.imageUrl) return; // No change
+    // if (newImageUrl === this.area_local.imageUrl) return; // No change
 
     this.area_local.imageUrl = newImageUrl; // Update URL
     this.showImageEditDialog = false; // Hide image-picker.
@@ -256,7 +256,7 @@ export default class AreaWizard extends Vue {
       v-model="isDisplayed_local"
       inset
       :persistent="hasChanged()"
-      max-width="500"
+      max-width="400"
       overlay-opacity="0.88"
       @keydown.esc="triggerCancellation"
     >
@@ -324,35 +324,44 @@ export default class AreaWizard extends Vue {
                       <!-- ? -------- Circle with color -->
                       <v-col
                         cols="4"
-                        class="pl-7 d-flex justify-center align-center"
+                        class="pl-4 d-flex justify-center align-center"
                       >
-                        <span class="pr-2">Color <br /> </span>
-                        <v-icon
-                          x-large
-                          :color="area_local.color"
-                          @click="showColorPicker = true"
-                        >
-                          mdi-circle
-                        </v-icon>
+                        <span class="text-center">
+                          Color
+                          <br />
+
+                          <v-icon
+                            size="50"
+                            :color="area_local.color"
+                            @click="showColorPicker = true"
+                          >
+                            mdi-circle
+                          </v-icon>
+                        </span>
                       </v-col>
 
                       <v-spacer />
 
                       <!-- ? -------- Switch -->
-                      <v-col cols="2">
+                      <v-col cols="7">
                         <v-switch
                           v-model="area_local.autoSetColorsFromImage"
-                          label=""
+                          label="Auto color"
+                          hint="Colors will be automatically set from the image"
+                          persistent-hint
+                          color=""
                         />
+                        <!-- 
+                          hint="Auto-set colors from image"
+                          persistent-hint -->
                       </v-col>
 
                       <!-- ? -------- Label -->
-                      <v-col
-                        cols="4"
-                        class="d-flex justify-center align-center"
-                      >
-                        <small>Auto-set colors from image.</small>
-                      </v-col>
+                      <!-- <v-col cols="" class="d-flex justify-center align-center">
+                        <span class="text-caption">
+                          Automatically set colors from image.
+                        </span>
+                      </v-col> -->
 
                       <!--  -->
                     </v-row>
