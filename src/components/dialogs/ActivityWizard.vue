@@ -81,6 +81,7 @@ export default class ActivityWizard extends Vue {
 
   /* <!-- * ------------------------------ Data ------------------------------> */
   activity_local: Activity = deepCopy(defaultNewActivity);
+  activityOriginal: Activity | null = null;
   showDialog_local = false;
   area: Area | null = null;
   selectedCategory: CategoryTag | null = null;
@@ -118,8 +119,8 @@ export default class ActivityWizard extends Vue {
 
   get hasChanged() {
     return !(
-      JSON.stringify(this.activity_local) === JSON.stringify(this.activity) ||
-      JSON.stringify(this.activity_local) === JSON.stringify(defaultNewActivity)
+      JSON.stringify(this.activity_local) ===
+      JSON.stringify(this.activityOriginal)
     );
   }
 
@@ -148,6 +149,9 @@ export default class ActivityWizard extends Vue {
 
     // Assign category
     this.selectedCategoryIDList = this.activity_local.categoryIDList;
+
+    // Original snapshot to know if anything's changed.
+    this.activityOriginal = deepCopy(this.activity_local);
   }
 
   onHide() {

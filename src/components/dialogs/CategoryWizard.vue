@@ -106,6 +106,7 @@ export default class CategoryWizard extends Vue {
     if (this.dialogMode === DialogMode.CREATE)
       this.categoryTag_local.color = this.area.color;
 
+    // Original snapshot to know if anything's changed.
     this.categoryOriginal = deepCopy(this.categoryTag_local);
   }
 
