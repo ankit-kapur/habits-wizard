@@ -3,6 +3,7 @@ import ActivityChips from "@/components/chips/ActivityChips.vue";
 import ActivitySelector from "@/components/chips/ActivitySelector.vue";
 import CategoryChips from "@/components/chips/CategoryChips.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
+import TimePicker from "@/components/picker/TimePicker.vue";
 import {
   defaultNewActivity,
   defaultNewArea,
@@ -31,6 +32,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
     CategoryChips: CategoryChips,
     ActivityChips: ActivityChips,
     ActivitySelector: ActivitySelector,
+    TimePicker: TimePicker,
   },
   methods: {},
 })
@@ -252,8 +254,8 @@ export default class RecordWizard extends Vue {
     this.closeViaParent(); // Ask parent to close.
   }
 
-  /* <!-- ? ------------------------------ Stepper ------------------------------> */
-  moveToStep(destination: number): void {
+  /* <!-- * ------------------------------ Stepper ------------------------------> */
+  moveToStep(destination: number) {
     if (destination >= this.numberOfSteps) {
       this.currentStepperPos = this.numberOfSteps;
     } else if (destination < 0) {
@@ -263,16 +265,21 @@ export default class RecordWizard extends Vue {
     }
   }
 
-  moveToNextStep(): void {
+  moveToNextStep() {
     this.moveToStep(1 + this.currentStepperPos);
   }
 
-  moveToPreviousStep(): void {
+  moveToPreviousStep() {
     this.moveToStep(this.currentStepperPos - 1);
   }
 
   isCurrentStep(stepNumber: number) {
     return this.currentStepperPos == stepNumber - 1;
+  }
+
+  /* <!-- * ------------------------------ Stepper ------------------------------> */
+  updateStartTime() {
+    // TODO
   }
 }
 </script>
@@ -433,10 +440,12 @@ export default class RecordWizard extends Vue {
               <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
                 <!--  -->
 
-                <v-text-field
-                  outlined
-                  placeholder="Under construction"
-                ></v-text-field>
+                <!-- ? ------------ Time picker -->
+                <TimePicker
+                  titleText="Start Time"
+                  :isDisplayed="showDialog"
+                  v-on:time-selected="updateStartTime"
+                />
 
                 <!-- TODO ----- if Activity has time-tracking (i.e. has a Duration-type measurable) -->
                 <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
