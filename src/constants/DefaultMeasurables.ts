@@ -41,8 +41,8 @@ export const getDefaultMeasurables = [
     baseUnitEmoji: ":hourglass_flowing_sand:", // ⏳
   },
   {
-    id: "completionTime",
-    title: "Completion Time",
+    id: "endTime",
+    title: "End Time",
     type: MeasurableType.Timestamp,
     baseUnitName: "",
     baseUnitEmoji: ":hourglass:", // ⌛️

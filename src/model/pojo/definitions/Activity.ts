@@ -1,71 +1,29 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-
-import { MeasurableType } from "@/model/enum/MeasurableType";
-import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
-
 // ? Find a solution for using ENUMS in pojo, without needed the "as Type" thing in .json
-export default class Activity {
+export default interface Activity {
   // ? --------------- Identification
-  id: string = "";
-  userId: string = "";
+  id: string;
+  userId: string;
 
   // ? --------------- Association
-  areaId: string = "";
-  categoryIDList: string[] = [];
+  areaId: string;
+  categoryIDList: string[];
 
   // ? --------------- Display
-  title: string = "";
-  icon: string = "";
+  title: string;
+  icon: string;
 
   // ? --------------- Timestamps
   createdAt?: number;
   lastUpdatedAt?: number;
 
-  // ? --------------- Measurables
-  measurables: MeasurableForActivity[] = [];
-
   // ? --------------- Tracking
-  hasTimeMeasurable? = (
-    measurableDefinitions: MeasurableDefinition[]
-  ): boolean => {
-    return this.hasMeasurableType!(
-      MeasurableType.Timestamp,
-      measurableDefinitions
-    );
-  };
+  // * Whether this is an Activity or a Task.
+  //      If true, default measurables to be added: ---- startTime, endTime, duration.
+  //      Else, default measurables to be added: ---- endTime (i.e. completed at time).
+  hasTimeTracking: boolean;
 
-  hasDurationMeasurable? = (
-    measurableDefinitions: MeasurableDefinition[]
-  ): boolean => {
-    return this.hasMeasurableType!(
-      MeasurableType.Duration,
-      measurableDefinitions
-    );
-  };
-
-  // * --------------------- Private functions
-
-  private hasMeasurableType? = (
-    measurableType: MeasurableType,
-    measurableDefinitions: MeasurableDefinition[]
-  ): boolean => {
-    const matches: MeasurableForActivity[] = this.measurables.filter((m) => {
-      const def: MeasurableDefinition = this.getMeasurableDefinition!(
-        m.measurableDefinitionId,
-        measurableDefinitions
-      );
-      return def.type === measurableType;
-    });
-    return matches.length > 0;
-  };
-
-  private getMeasurableDefinition? = (
-    measurableDefinitionId: string,
-    measurableDefinitions: MeasurableDefinition[]
-  ): MeasurableDefinition => {
-    return measurableDefinitions.find((m) => m.id === measurableDefinitionId)!;
-  };
+  // ? --------------- Measurables
+  measurables: MeasurableForActivity[];
 
   // ? --------------- Future fields
   // // typically just 1 per day. List for Things done multiple times a day.

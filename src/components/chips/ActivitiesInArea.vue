@@ -1,8 +1,10 @@
 <script lang="ts">
+import { defaultNewActivity } from "@/constants/DefaultDataForForms";
 import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { useAreasStore } from "@/store/AreasStore";
+import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ActivityWizard from "../dialogs/ActivityWizard.vue";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
@@ -49,7 +51,7 @@ export default class ActivitiesInArea extends Vue {
   showDeleteActivityDialog = false;
   selectedActivity: Activity | null = null;
   selectedItemIDs: string[] = [];
-  newActivity: Activity = new Activity();
+  newActivity: Activity = deepCopy(defaultNewActivity);
   searchInput = "";
 
   // ------------------------------------------------ Computed
@@ -80,7 +82,7 @@ export default class ActivitiesInArea extends Vue {
     this.areasStore.subscribeToStore();
 
     // Reset
-    this.selectedActivity = new Activity();
+    this.selectedActivity = deepCopy(defaultNewActivity);
   }
 
   onHide() {

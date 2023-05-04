@@ -4,7 +4,11 @@ import ActivitySelector from "@/components/chips/ActivitySelector.vue";
 import CategoryChips from "@/components/chips/CategoryChips.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import TimePicker from "@/components/picker/TimePicker.vue";
-import { defaultNewArea } from "@/constants/DefaultDataForForms";
+import {
+  defaultNewActivity,
+  defaultNewArea,
+  defaultNewEventRecord,
+} from "@/constants/DefaultDataForForms";
 import { DialogMode } from "@/model/enum/DialogMode";
 import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
@@ -73,8 +77,8 @@ export default class RecordWizard extends Vue {
   }
 
   /* <!-- ? ------------------------------ Data ------------------------------> */
-  // eventRecord_local: EventRecord = deepCopy(defaultNewEventRecord);
-  eventRecord_local: EventRecord = new EventRecord();
+  eventRecord_local: EventRecord = deepCopy(defaultNewEventRecord);
+  activity_local: Activity = deepCopy(defaultNewActivity);
   area: Area = deepCopy(defaultNewArea); // Temporary
   showDialog_local = false;
   selectedActivity: Activity | null = null;
@@ -85,11 +89,8 @@ export default class RecordWizard extends Vue {
   showSearchBar = false;
   searchInput = "";
 
-  // Time-related
-  timingProgressSelection = ""; // Whether in the past or in progress or yet to start.
-
   // Stepper
-  stepperPosition = 1;
+  currentStepperPos = 1;
   previous_step_icon = "mdi-chevon-left";
   next_step_icon = "mdi-chevon-right";
 
@@ -105,7 +106,7 @@ export default class RecordWizard extends Vue {
       rules: [
         () => {
           const result =
-            this.stepperPosition === 1 || this.selectedActivity !== null;
+            this.currentStepperPos === 1 || this.selectedActivity !== null;
           console.log("✅ ✅ ✅ ✅ ✅ rules result = " + result);
 
           /* <!-- TODO P1 ------ WHY IS THIS ONLY GETTING CALLED ONCE? --> */
@@ -116,18 +117,6 @@ export default class RecordWizard extends Vue {
     },
     STEP_2: {
       id: 2,
-      title: "Time",
-      isComplete: () => this.selectedActivity !== null,
-      rules: [() => true],
-    },
-    STEP_3: {
-      id: 3,
-      title: "Time",
-      isComplete: () => this.selectedActivity !== null,
-      rules: [() => true],
-    },
-    STEP_4: {
-      id: 4,
       title: "Time",
       isComplete: () => this.selectedActivity !== null,
       rules: [() => true],
@@ -162,7 +151,7 @@ export default class RecordWizard extends Vue {
   }
 
   get stepperWindowTitle(): string {
-    const title = this.stepTitles.get(this.stepperPosition + 1);
+    const title = this.stepTitles.get(this.currentStepperPos + 1);
     return title ? title : "";
   }
 
@@ -204,7 +193,7 @@ export default class RecordWizard extends Vue {
 
   resetToDefaultState() {
     // Stepper
-    this.stepperPosition = 1;
+    this.currentStepperPos = 1;
   }
 
   respondToDiscardConfirm(isConfirmed: boolean): void {
@@ -237,7 +226,7 @@ export default class RecordWizard extends Vue {
       JSON.stringify(this.eventRecord_local) ===
         JSON.stringify(this.eventRecord) ||
       JSON.stringify(this.eventRecord_local) ===
-        JSON.stringify(new EventRecord())
+        JSON.stringify(defaultNewEventRecord)
     );
   }
 
@@ -268,24 +257,24 @@ export default class RecordWizard extends Vue {
   /* <!-- * ------------------------------ Stepper ------------------------------> */
   moveToStep(destination: number) {
     if (destination >= this.numberOfSteps) {
-      this.stepperPosition = this.numberOfSteps;
+      this.currentStepperPos = this.numberOfSteps;
     } else if (destination < 0) {
-      this.stepperPosition = this.numberOfSteps - 1;
+      this.currentStepperPos = this.numberOfSteps - 1;
     } else {
-      this.stepperPosition = destination;
+      this.currentStepperPos = destination;
     }
   }
 
   moveToNextStep() {
-    this.moveToStep(1 + this.stepperPosition);
+    this.moveToStep(1 + this.currentStepperPos);
   }
 
   moveToPreviousStep() {
-    this.moveToStep(this.stepperPosition - 1);
+    this.moveToStep(this.currentStepperPos - 1);
   }
 
   isCurrentStep(stepNumber: number) {
-    return this.stepperPosition == stepNumber - 1;
+    return this.currentStepperPos == stepNumber - 1;
   }
 
   /* <!-- * ------------------------------ Stepper ------------------------------> */
@@ -374,7 +363,7 @@ export default class RecordWizard extends Vue {
         <!-- * ------------------------------------- Stepper ----------------------------------->
         <v-card-text class="pa-0 ma-0">
           <v-stepper
-            v-model="stepperPosition"
+            v-model="currentStepperPos"
             vertical
             elevation="0"
             class="pb-4"
@@ -386,7 +375,7 @@ export default class RecordWizard extends Vue {
               :step="stepsConfig.STEP_1.id"
               :complete="stepsConfig.STEP_1.isComplete(selectedActivity)"
               :rules="stepsConfig.STEP_1.rules"
-              @click="stepperPosition = stepsConfig.STEP_1.id"
+              @click="currentStepperPos = stepsConfig.STEP_1.id"
               class=""
             >
               <!--  -->
@@ -437,7 +426,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               :step="stepsConfig.STEP_2.id"
               :complete="false"
-              @click="stepperPosition = 2"
+              @click="currentStepperPos = 2"
               class=""
             >
               <span class="text-h6 font-weight-light">
@@ -450,14 +439,6 @@ export default class RecordWizard extends Vue {
               <!-- ? ----------------- Filter --------------------->
               <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
                 <!--  -->
-
-                <span>Have you completed it already? </span>
-
-                <v-radio-group v-model="timingProgressSelection">
-                  <v-radio label="Already done" value="alreadyDone" />
-                  <v-radio label="In progress" value="inProgress" />
-                  <v-radio label="Not started" value="notStarted" />
-                </v-radio-group>
 
                 <!-- ? ------------ Time picker -->
                 <TimePicker
@@ -482,7 +463,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               step="3"
               :complete="false"
-              @click="stepperPosition = 3"
+              @click="currentStepperPos = 3"
               class=""
             >
               <span class="text-h6 font-weight-light">Measurables</span>
@@ -510,7 +491,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               step="4"
               :complete="false"
-              @click="stepperPosition = 4"
+              @click="currentStepperPos = 4"
               class=""
             >
               <span class="text-h6 font-weight-light">Review</span>
@@ -553,7 +534,7 @@ export default class RecordWizard extends Vue {
           <!-- ? ----------- Previous -->
           <v-btn
             text
-            :disabled="stepperPosition === 1"
+            :disabled="currentStepperPos === 1"
             @click="moveToPreviousStep()"
             class="px-3"
           >
@@ -566,7 +547,7 @@ export default class RecordWizard extends Vue {
           <!-- ? ----------- Next -->
           <v-btn
             text
-            :disabled="stepperPosition === numberOfSteps"
+            :disabled="currentStepperPos === numberOfSteps"
             @click="moveToNextStep()"
             class="px-3"
           >
