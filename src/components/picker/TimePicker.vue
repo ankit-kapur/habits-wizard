@@ -19,7 +19,7 @@ export default class TimePicker extends Vue {
   /* <!-- ? ------------------------------ Data ------------------------------> */
   isDisplayed_local = false;
   showTimePicker = false;
-  selectedTime = ""; // TODO: Get as prop
+  selectedTime = "";
 
   /* <!-- ? ------------------------------ Watchers ------------------------------> */
   @Watch("isDisplayed")

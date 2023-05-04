@@ -1,12 +1,10 @@
 <script lang="ts">
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
-import { defaultNewActivity } from "@/constants/DefaultDataForForms";
 import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { useAreasStore } from "@/store/AreasStore";
 import { useEventRecordsStore } from "@/store/EventRecordsStore";
-import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ActivityWizard from "../dialogs/ActivityWizard.vue";
 import ActivityChips from "./ActivityChips.vue";
@@ -53,7 +51,7 @@ export default class ActivitySelector extends Vue {
   showDeleteActivityDialog = false;
   selectedActivity: Activity | null = null;
   selectedActivityID = "";
-  newActivity: Activity = deepCopy(defaultNewActivity);
+  newActivity: Activity = new Activity();
   searchInput = "";
   isSearchModeEnabled = false;
 

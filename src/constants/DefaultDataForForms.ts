@@ -1,9 +1,6 @@
 import { getDefaultMeasurables } from "@/constants/DefaultMeasurables";
-import { EventState } from "@/model/enum/EventState";
-import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
-import EventRecord from "@/model/pojo/records/EventRecord";
 
 export const defaultNewArea: Area = {
   id: "",
@@ -27,24 +24,22 @@ export const defaultNewCategory: CategoryTag = {
   color: "",
 };
 
-export const defaultNewActivity: Activity = {
-  id: "",
-  userId: "",
-  title: "",
-  areaId: "",
-  categoryIDList: [],
-  icon: "mdi-square",
-  hasTimeTracking: false,
-  measurables: [],
-};
+// export const defaultNewActivity: Activity = {
+//   id: "",
+//   userId: "",
+//   title: "",
+//   areaId: "",
+//   categoryIDList: [],
+//   icon: "mdi-square",
+//   measurables: [],
+// };
 
-export const defaultNewEventRecord: EventRecord = {
-  id: "",
-  userId: "",
-  activityId: "",
-  categoryIDList: [],
-  areaId: "",
-  tags: [],
-  eventState: EventState.NOT_STARTED,
-  isRecordComplete: false,
-};
+// export const defaultNewEventRecord: EventRecord = {
+//   id: "",
+//   userId: "",
+//   activityId: "",
+//   categoryIDList: [],
+//   areaId: "",
+//   tags: [],
+//   eventState: EventState.NOT_STARTED,
+// };

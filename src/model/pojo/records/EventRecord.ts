@@ -1,15 +1,16 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { EventState } from "@/model/enum/EventState";
 
-export default interface EventRecord {
+export default class EventRecord {
   // * ------------------------------ Identifiers
-  id: string;
-  userId: string;
+  id: string = "";
+  userId: string = "";
 
   // * ------------------------------ Association
-  activityId: string;
+  activityId: string = "";
   // ? Note: area & category can be obtained from activity. but here for easier querying.
-  categoryIDList: string[];
-  areaId: string;
+  categoryIDList: string[] = [];
+  areaId: string = "";
 
   /*
    * Tags are freeform and are not 'defined' anywhere.
@@ -17,7 +18,7 @@ export default interface EventRecord {
    *      for auto-completing in the EventRecord UI
    *      so on saving an EventRecord we also updated the tags set in the Area.
    */
-  tags: string[];
+  tags: string[] = [];
 
   // * ------------------------------ Timestamps
   createdAt?: number;
@@ -32,14 +33,19 @@ export default interface EventRecord {
 
   // ? ------------------------------ Completion markers
   // Error state happens when Activity is complete but required metadata is missing.
-  eventState: EventState;
-  // Whether all metadata needed has been provided
-  isRecordComplete: boolean;
+  eventState = EventState.NOT_STARTED;
 
-  // ? ----------------------------- Measurements
-  // ! -------- Should Measurements be a sub-collection?
-  //         Will allow CGQ (collection group queries) to get all
-  // measurements: Measurement[];
+  // Whether all metadata needed has been provided
+  isRecordComplete = (): boolean => {
+    // TODO -------- false if required Measurables are missing.
+    return true;
+  };
+
+  // ? ----------------------------- Measurable values
+  // Key = measurableDefinitionId, value = recorded value.
+  // TODO: Does Map work in Firestore?
+  // TODO: Should value be a number?
+  metrics: Map<string, string> = new Map();
 
   // ----------------------- Future fields for planning
   //   isAdHoc: boolean;

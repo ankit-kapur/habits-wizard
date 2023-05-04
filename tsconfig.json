@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "strictPropertyInitialization": false,
     "noImplicitAny": false,
     "allowJs": true,
     "resolveJsonModule": true,
@@ -33,5 +34,5 @@
   "parserOptions": {
     "parser": "babel-eslint",
     "ecmaVersion": 6
-  },
+  }
 }

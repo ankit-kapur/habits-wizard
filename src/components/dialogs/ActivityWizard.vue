@@ -1,5 +1,4 @@
 <script lang="ts">
-import { defaultNewActivity } from "@/constants/DefaultDataForForms";
 import Activity, {
   MeasurableForActivity,
 } from "@/model/pojo/definitions/Activity";
@@ -17,8 +16,6 @@ import { DialogMode } from "@/model/enum/DialogMode";
 import ConfigureMeasurablesInActivity from "../configure/ConfigureMeasurablesInActivity.vue";
 import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { useAreasStore } from "@/store/AreasStore";
-import { MeasurableType } from "@/model/enum/MeasurableType";
-import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 
 /**
  * TODO P2 ----- Step 1 & 2 should be to select an Area and Category if not provided.
@@ -80,7 +77,7 @@ export default class ActivityWizard extends Vue {
   }
 
   /* <!-- * ------------------------------ Data ------------------------------> */
-  activity_local: Activity = deepCopy(defaultNewActivity);
+  activity_local: Activity = new Activity();
   activityOriginal: Activity | null = null;
   showDialog_local = false;
   area: Area | null = null;
@@ -177,7 +174,7 @@ export default class ActivityWizard extends Vue {
     // Reset Activity.
     if (this.dialogMode === DialogMode.CREATE) {
       this.activity_local = deepCopy(
-        this.activity ? this.activity : defaultNewActivity
+        this.activity ? this.activity : new Activity()
       );
     } else {
       this.activity_local = deepCopy(this.activity);
@@ -213,9 +210,6 @@ export default class ActivityWizard extends Vue {
 
   // <!-- * ---------------------------- Store actions ---------------------------->
   saveActivity() {
-    // Set whether time-tracking is needed.
-    this.activity_local.hasTimeTracking = this.hasTimeTracking();
-
     if (this.dialogMode === DialogMode.EDIT) {
       this.activitiesStore.updateActivity(this.activity_local);
     } else if (this.dialogMode === DialogMode.CREATE) {
@@ -231,14 +225,6 @@ export default class ActivityWizard extends Vue {
     // <!-- TODO P1 ----- Assign categoryId-->
 
     this.activitiesStore.createActivity(this.activity_local, this.areaId);
-  }
-
-  hasTimeTracking() {
-    const durationMeasurables = this.activity_local.measurables.filter((m) => {
-      const definition = this.getMeasurableDefinition(m.measurableDefinitionId);
-      return definition && definition.type === MeasurableType.Duration;
-    });
-    return durationMeasurables.length > 0;
   }
 
   // <!-- * ---------------------------- Cancel ---------------------------->
@@ -309,9 +295,6 @@ export default class ActivityWizard extends Vue {
   }
 
   /* <!-- * ------------------------------ Utils ------------------------------> */
-  getMeasurableDefinition(id: string): MeasurableDefinition | undefined {
-    return this.area?.measurableDefinitions.find((m) => m.id === id);
-  }
 }
 </script>
 
