@@ -61,8 +61,7 @@ export default class ConfigureMeasurablesInActivity extends Vue {
   // ------------------------------------------------ Methods
   onShow() {
     this.areasStore.subscribeToStore();
-
-    // <!-- ! --- THIS MAY NOT WORK. Moving between steps in ActivityWizard shouldn't reset this. -->
+    // Reset
     this.measurables = deepCopy(this.activity.measurables);
   }
 
@@ -143,13 +142,17 @@ export default class ConfigureMeasurablesInActivity extends Vue {
     >
       <v-container class="pa-0 ma-0">
         <v-row class="pa-0 ma-0 text-center">
-          <v-spacer />
+          <!--  -->
+
+          <!-- <v-spacer /> -->
 
           <v-col class="pa-1" cols="5"> Measurable </v-col>
-          <v-col class="pa-1 pr-5" cols="3"> Required? </v-col>
-          <v-col class="pa-1"> Remove </v-col>
+          <v-col class="pa-1 pr-5" cols="4"> Required? </v-col>
+          <v-col class="pa-1" cols="3"> Remove </v-col>
 
-          <v-spacer />
+          <!-- <v-spacer /> -->
+
+          <!--  -->
         </v-row>
       </v-container>
     </v-card-text>
@@ -182,7 +185,7 @@ export default class ConfigureMeasurablesInActivity extends Vue {
 
           <!-- <v-spacer /> -->
 
-          <v-col class="pa-1 pt-2" cols="3">
+          <v-col class="pa-1 pt-4" cols="3">
             <!-- ? -------------- Is Required ------------>
             <v-switch
               v-model="measurable.isRequired"
@@ -195,7 +198,7 @@ export default class ConfigureMeasurablesInActivity extends Vue {
 
           <!-- <v-spacer /> -->
 
-          <v-col class="pa-1">
+          <v-col class="pa-1 pt-2" cols="2">
             <!-- ? -------------- (x) Remove button ------------>
             <v-btn icon @click="removeMeasurableFromActivity(measurable)">
               <v-icon>mdi-close</v-icon>

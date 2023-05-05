@@ -15,7 +15,7 @@ import { setColorsFromImage } from "@/utils/colors/ColorUtils";
 import ColorPicker from "@/components/picker/ColorPicker.vue";
 
 /**
- * TODO P1 ----- Add validations. Block the Save button, mark the pages that have errors or ✅
+ * TODO P2 ----- Add validations. Block the Save button, mark the pages that have errors or ✅
  * Validations:
  *    - Name, description, image are required. Length limits.
  *    - At least 1 category must be selected.

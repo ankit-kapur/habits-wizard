@@ -36,14 +36,11 @@ export default interface EventRecord {
   // Whether all metadata needed has been provided
   isRecordComplete: boolean;
 
-  // ? ----------------------------- Measurements
-  // ! -------- Should Measurements be a sub-collection?
-  //         Will allow CGQ (collection group queries) to get all
-  // measurements: Measurement[];
-
-  // ----------------------- Future fields for planning
-  //   isAdHoc: boolean;
-  //   plannedThingId?: string; // if not adhoc, this is required.
+  // ? ----------------------------- Measurable values
+  // Key = measurableDefinitionId, value = recorded value.
+  // TODO: Does Map work in Firestore?
+  // TODO: Should value be a number?
+  metrics: Map<string, string>;
 }
 
 interface BreakPeriod {

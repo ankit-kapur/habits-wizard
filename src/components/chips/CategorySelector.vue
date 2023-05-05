@@ -2,10 +2,10 @@
 import { defaultNewCategory } from "@/constants/DefaultDataForForms";
 import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
-import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import CategoryWizard from "@/components/dialogs/CategoryWizard.vue";
 import CategoryChips from "@/components/chips/CategoryChips.vue";
+import { useAreasStore } from "@/store/AreasStore";
 
 @Component({
   components: {
@@ -40,7 +40,7 @@ export default class CategorySelector extends Vue {
   }
 
   // <!-- * -------------------------------- Stores ------------------------------->
-  categoryTagsStore = useCategoryTagsStore();
+  areasStore = useAreasStore();
 
   // <!-- * -------------------------------- Data ------------------------------->
   showCreateCategoryDialog = false;
@@ -96,9 +96,14 @@ export default class CategorySelector extends Vue {
   }
 
   closeCategoryWizard() {
-    console.log("Discardddding");
     this.showCreateCategoryDialog = false;
     this.showEditCategoryDialog = false;
+  }
+
+  addNewlyCreatedCategory(newCategoryID: string) {
+    // this.areasStore.addCategoryToArea();
+    this.selectedItemIdList_local.push(newCategoryID);
+    this.closeCategoryWizard();
   }
 
   /**
@@ -233,6 +238,7 @@ export default class CategorySelector extends Vue {
       :dialog-mode="`CREATE`"
       :showDialog="showCreateCategoryDialog"
       v-on:close="closeCategoryWizard"
+      v-on:new-category-created="addNewlyCreatedCategory"
     />
 
     <CategoryWizard

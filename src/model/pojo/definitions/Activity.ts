@@ -20,7 +20,8 @@ export default interface Activity {
   // * Whether this is an Activity or a Task.
   //      If true, default measurables to be added: ---- startTime, endTime, duration.
   //      Else, default measurables to be added: ---- endTime (i.e. completed at time).
-  hasTimeTracking: boolean;
+  hasTimeMeasurable: boolean;
+  hasDurationMeasurable: boolean;
 
   // ? --------------- Measurables
   measurables: MeasurableForActivity[];

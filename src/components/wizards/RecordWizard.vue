@@ -89,8 +89,11 @@ export default class RecordWizard extends Vue {
   showSearchBar = false;
   searchInput = "";
 
+  // Time-related
+  timingProgressSelection = ""; // Whether in the past or in progress or yet to start.
+
   // Stepper
-  currentStepperPos = 1;
+  stepperPosition = 1;
   previous_step_icon = "mdi-chevon-left";
   next_step_icon = "mdi-chevon-right";
 
@@ -106,7 +109,7 @@ export default class RecordWizard extends Vue {
       rules: [
         () => {
           const result =
-            this.currentStepperPos === 1 || this.selectedActivity !== null;
+            this.stepperPosition === 1 || this.selectedActivity !== null;
           console.log("✅ ✅ ✅ ✅ ✅ rules result = " + result);
 
           /* <!-- TODO P1 ------ WHY IS THIS ONLY GETTING CALLED ONCE? --> */
@@ -117,6 +120,18 @@ export default class RecordWizard extends Vue {
     },
     STEP_2: {
       id: 2,
+      title: "Time",
+      isComplete: () => this.selectedActivity !== null,
+      rules: [() => true],
+    },
+    STEP_3: {
+      id: 3,
+      title: "Time",
+      isComplete: () => this.selectedActivity !== null,
+      rules: [() => true],
+    },
+    STEP_4: {
+      id: 4,
       title: "Time",
       isComplete: () => this.selectedActivity !== null,
       rules: [() => true],
@@ -151,7 +166,7 @@ export default class RecordWizard extends Vue {
   }
 
   get stepperWindowTitle(): string {
-    const title = this.stepTitles.get(this.currentStepperPos + 1);
+    const title = this.stepTitles.get(this.stepperPosition + 1);
     return title ? title : "";
   }
 
@@ -193,7 +208,7 @@ export default class RecordWizard extends Vue {
 
   resetToDefaultState() {
     // Stepper
-    this.currentStepperPos = 1;
+    this.stepperPosition = 1;
   }
 
   respondToDiscardConfirm(isConfirmed: boolean): void {
@@ -257,24 +272,24 @@ export default class RecordWizard extends Vue {
   /* <!-- * ------------------------------ Stepper ------------------------------> */
   moveToStep(destination: number) {
     if (destination >= this.numberOfSteps) {
-      this.currentStepperPos = this.numberOfSteps;
+      this.stepperPosition = this.numberOfSteps;
     } else if (destination < 0) {
-      this.currentStepperPos = this.numberOfSteps - 1;
+      this.stepperPosition = this.numberOfSteps - 1;
     } else {
-      this.currentStepperPos = destination;
+      this.stepperPosition = destination;
     }
   }
 
   moveToNextStep() {
-    this.moveToStep(1 + this.currentStepperPos);
+    this.moveToStep(1 + this.stepperPosition);
   }
 
   moveToPreviousStep() {
-    this.moveToStep(this.currentStepperPos - 1);
+    this.moveToStep(this.stepperPosition - 1);
   }
 
   isCurrentStep(stepNumber: number) {
-    return this.currentStepperPos == stepNumber - 1;
+    return this.stepperPosition == stepNumber - 1;
   }
 
   /* <!-- * ------------------------------ Stepper ------------------------------> */
@@ -363,7 +378,7 @@ export default class RecordWizard extends Vue {
         <!-- * ------------------------------------- Stepper ----------------------------------->
         <v-card-text class="pa-0 ma-0">
           <v-stepper
-            v-model="currentStepperPos"
+            v-model="stepperPosition"
             vertical
             elevation="0"
             class="pb-4"
@@ -375,7 +390,7 @@ export default class RecordWizard extends Vue {
               :step="stepsConfig.STEP_1.id"
               :complete="stepsConfig.STEP_1.isComplete(selectedActivity)"
               :rules="stepsConfig.STEP_1.rules"
-              @click="currentStepperPos = stepsConfig.STEP_1.id"
+              @click="stepperPosition = stepsConfig.STEP_1.id"
               class=""
             >
               <!--  -->
@@ -426,7 +441,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               :step="stepsConfig.STEP_2.id"
               :complete="false"
-              @click="currentStepperPos = 2"
+              @click="stepperPosition = 2"
               class=""
             >
               <span class="text-h6 font-weight-light">
@@ -436,9 +451,16 @@ export default class RecordWizard extends Vue {
             </v-stepper-step>
 
             <v-stepper-content :step="stepsConfig.STEP_2.id" class="pa-1">
-              <!-- ? ----------------- Filter --------------------->
               <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
                 <!--  -->
+
+                <span>Done already? </span>
+
+                <v-radio-group v-model="timingProgressSelection">
+                  <v-radio label="Not started" value="notStarted" />
+                  <v-radio label="In progress" value="inProgress" />
+                  <v-radio label="Already done" value="alreadyDone" />
+                </v-radio-group>
 
                 <!-- ? ------------ Time picker -->
                 <TimePicker
@@ -463,7 +485,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               step="3"
               :complete="false"
-              @click="currentStepperPos = 3"
+              @click="stepperPosition = 3"
               class=""
             >
               <span class="text-h6 font-weight-light">Measurables</span>
@@ -491,7 +513,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               step="4"
               :complete="false"
-              @click="currentStepperPos = 4"
+              @click="stepperPosition = 4"
               class=""
             >
               <span class="text-h6 font-weight-light">Review</span>
@@ -534,7 +556,7 @@ export default class RecordWizard extends Vue {
           <!-- ? ----------- Previous -->
           <v-btn
             text
-            :disabled="currentStepperPos === 1"
+            :disabled="stepperPosition === 1"
             @click="moveToPreviousStep()"
             class="px-3"
           >
@@ -547,7 +569,7 @@ export default class RecordWizard extends Vue {
           <!-- ? ----------- Next -->
           <v-btn
             text
-            :disabled="currentStepperPos === numberOfSteps"
+            :disabled="stepperPosition === numberOfSteps"
             @click="moveToNextStep()"
             class="px-3"
           >

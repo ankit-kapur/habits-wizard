@@ -157,6 +157,10 @@ export default class CategoryWizard extends Vue {
     this.$emit("close", true);
   }
 
+  notifyParentOfNewCategory() {
+    this.$emit("new-category-created", this.categoryTag_local.id);
+  }
+
   selectedNewColor(newColor: string) {
     this.categoryTag_local.color = deepCopy(newColor);
     this.hideColorPicker();
@@ -171,10 +175,11 @@ export default class CategoryWizard extends Vue {
   saveCategory() {
     if (this.dialogMode === DialogMode.EDIT) {
       this.categoriesStore.updateCategoryTag(this.categoryTag_local);
+      this.closeViaParent();
     } else if (this.dialogMode === DialogMode.CREATE) {
       this.categoriesStore.createCategoryTag(this.categoryTag_local);
+      this.notifyParentOfNewCategory();
     }
-    this.closeViaParent();
   }
 }
 </script>

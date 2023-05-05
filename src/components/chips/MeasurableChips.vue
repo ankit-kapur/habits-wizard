@@ -54,11 +54,14 @@ export default class MeasurableChips extends Vue {
       @click:close="onChipCloseButtonClick(measurableDefinition)"
       :model-value="true"
       :style="`border-radius: 18px`"
-      class="pa-3 ma-1"
+      class="pr-3 pl-1 ma-1"
     >
-      <MyEmoji :emojiString="measurableDefinition.baseUnitEmoji" />
+      <MyEmoji
+        :emojiString="measurableDefinition.baseUnitEmoji"
+        class="pt-2 pl-0"
+      />
 
-      <span class="pl-2">{{ measurableDefinition.title }}</span>
+      <span class="pl-1">{{ measurableDefinition.title }}</span>
     </v-chip>
   </v-chip-group>
 </template>

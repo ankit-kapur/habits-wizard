@@ -34,8 +34,9 @@ export const defaultNewActivity: Activity = {
   areaId: "",
   categoryIDList: [],
   icon: "mdi-square",
-  hasTimeTracking: false,
   measurables: [],
+  hasTimeMeasurable: false,
+  hasDurationMeasurable: false,
 };
 
 export const defaultNewEventRecord: EventRecord = {
@@ -47,4 +48,5 @@ export const defaultNewEventRecord: EventRecord = {
   tags: [],
   eventState: EventState.NOT_STARTED,
   isRecordComplete: false,
+  metrics: new Map(),
 };

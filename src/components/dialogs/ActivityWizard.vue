@@ -213,32 +213,39 @@ export default class ActivityWizard extends Vue {
 
   // <!-- * ---------------------------- Store actions ---------------------------->
   saveActivity() {
-    // Set whether time-tracking is needed.
-    this.activity_local.hasTimeTracking = this.hasTimeTracking();
+    // --------- Set whether this activity has time & duration tracking.
+    this.activity_local.hasTimeMeasurable = this.hasMeasurableType(
+      MeasurableType.Timestamp
+    );
+    this.activity_local.hasDurationMeasurable = this.hasMeasurableType(
+      MeasurableType.Duration
+    );
 
+    console.log(
+      "🧨 🧨 🧨 hasTimeMeasurable = " + this.activity_local.hasTimeMeasurable
+    );
+
+    console.log(
+      "🌽 🌽 🌽 hasDurationMeasurable = " +
+        this.activity_local.hasDurationMeasurable
+    );
+
+    // --------- Save
     if (this.dialogMode === DialogMode.EDIT) {
       this.activitiesStore.updateActivity(this.activity_local);
     } else if (this.dialogMode === DialogMode.CREATE) {
       this.createNewActivity();
     }
+
+    // --------- Close
     this.closeViaParent();
   }
 
   createNewActivity() {
     // Assign Area
     this.activity_local.areaId = this.areaId;
-
-    // <!-- TODO P1 ----- Assign categoryId-->
-
+    // <!-- TODO P2 ----- Assign categoryId & areaId from Wizard steps -->
     this.activitiesStore.createActivity(this.activity_local, this.areaId);
-  }
-
-  hasTimeTracking() {
-    const durationMeasurables = this.activity_local.measurables.filter((m) => {
-      const definition = this.getMeasurableDefinition(m.measurableDefinitionId);
-      return definition && definition.type === MeasurableType.Duration;
-    });
-    return durationMeasurables.length > 0;
   }
 
   // <!-- * ---------------------------- Cancel ---------------------------->
@@ -309,8 +316,24 @@ export default class ActivityWizard extends Vue {
   }
 
   /* <!-- * ------------------------------ Utils ------------------------------> */
-  getMeasurableDefinition(id: string): MeasurableDefinition | undefined {
-    return this.area?.measurableDefinitions.find((m) => m.id === id);
+  private hasMeasurableType(measurableType: MeasurableType): boolean {
+    const matches: MeasurableForActivity[] =
+      this.activity_local.measurables.filter((m) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const def: MeasurableDefinition = this.getMeasurableDefinition(
+          m.measurableDefinitionId
+        )!;
+        return def.type === measurableType;
+      });
+    return matches.length > 0;
+  }
+
+  private getMeasurableDefinition(
+    measurableDefinitionId: string
+  ): MeasurableDefinition | undefined {
+    return this.area?.measurableDefinitions.find(
+      (m) => m.id === measurableDefinitionId
+    );
   }
 }
 </script>

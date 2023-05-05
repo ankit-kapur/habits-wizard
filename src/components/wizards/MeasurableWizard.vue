@@ -49,6 +49,7 @@ export default class MeasurableWizard extends Vue {
 
   // <!-- ? ------------------------------------------- Data -->
   measurableDef_local: MeasurableDefinition = this.resetToDefaultState();
+  originalMeasurable: MeasurableDefinition | null = null;
   showDialogForConfirmDiscard = false;
   showEmojiPicker = false;
   showAdvancedColorPicker = false;
@@ -67,6 +68,7 @@ export default class MeasurableWizard extends Vue {
 
   onShow() {
     this.resetToDefaultState();
+    this.originalMeasurable = deepCopy(this.measurableDef_local);
   }
 
   onHide() {
@@ -147,12 +149,16 @@ export default class MeasurableWizard extends Vue {
 
   hasChanged(): boolean {
     return (
-      (this.measurableDefinition &&
-        JSON.stringify(this.measurableDef_local) ===
-          JSON.stringify(this.measurableDefinition)) ||
-      JSON.stringify(this.measurableDef_local) ===
-        JSON.stringify(defaultNewMeasurable)
+      JSON.stringify(this.measurableDef_local) !==
+      JSON.stringify(this.originalMeasurable)
     );
+    // return (
+    //   (this.measurableDefinition &&
+    //     JSON.stringify(this.measurableDef_local) ===
+    //       JSON.stringify(this.measurableDefinition)) ||
+    //   JSON.stringify(this.measurableDef_local) ===
+    //     JSON.stringify(defaultNewMeasurable)
+    // );
   }
 
   /**
