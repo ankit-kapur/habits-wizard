@@ -91,9 +91,11 @@ export default class RecordWizard extends Vue {
 
   // Time-related
   timingProgressSelection = ""; // Whether in the past or in progress or yet to start.
+  durationInMinutes = 1;
 
   // Stepper
   stepperPosition = 1;
+  disabledSteps: number[] = [];
   previous_step_icon = "mdi-chevon-left";
   next_step_icon = "mdi-chevon-right";
 
@@ -192,6 +194,17 @@ export default class RecordWizard extends Vue {
 
   activitySelectionChanged(providedActivity: Activity) {
     this.selectedActivity = providedActivity;
+
+    // Skip step-2 (Time)
+    if (!this.selectedActivity.hasTimeMeasurable) {
+      this.disabledSteps.push(this.stepsConfig.STEP_2.id);
+    }
+
+    // Skip step-3 (Duration)
+    if (!this.selectedActivity.hasDurationMeasurable) {
+      this.disabledSteps.push(this.stepsConfig.STEP_3.id);
+    }
+
     // Move to next step
     if (this.selectedActivity) this.moveToNextStep();
   }
@@ -281,11 +294,15 @@ export default class RecordWizard extends Vue {
   }
 
   moveToNextStep() {
-    this.moveToStep(1 + this.stepperPosition);
+    let newStep = 1 + this.stepperPosition;
+    while (this.disabledSteps.includes(newStep)) newStep++; // Skip over disabled steps
+    this.moveToStep(newStep);
   }
 
   moveToPreviousStep() {
-    this.moveToStep(this.stepperPosition - 1);
+    let newStep = this.stepperPosition - 1;
+    while (this.disabledSteps.includes(newStep)) newStep--; // Skip over disabled steps
+    this.moveToStep(newStep);
   }
 
   isCurrentStep(stepNumber: number) {
@@ -295,6 +312,20 @@ export default class RecordWizard extends Vue {
   /* <!-- * ------------------------------ Stepper ------------------------------> */
   updateStartTime() {
     // TODO
+  }
+
+  /**
+   * Shows a strikethrough line if step is disabled.
+   */
+  getStepTitleStyle(stepNumber: number) {
+    return this.disabledSteps.includes(stepNumber)
+      ? "text-decoration: line-through"
+      : "";
+  }
+
+  onStepClick(stepNumber: number) {
+    if (!this.disabledSteps.includes(stepNumber))
+      this.stepperPosition = stepNumber;
   }
 }
 </script>
@@ -390,7 +421,7 @@ export default class RecordWizard extends Vue {
               :step="stepsConfig.STEP_1.id"
               :complete="stepsConfig.STEP_1.isComplete(selectedActivity)"
               :rules="stepsConfig.STEP_1.rules"
-              @click="stepperPosition = stepsConfig.STEP_1.id"
+              @click="onStepClick(stepsConfig.STEP_1.id)"
               class=""
             >
               <!--  -->
@@ -441,10 +472,13 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               :step="stepsConfig.STEP_2.id"
               :complete="false"
-              @click="stepperPosition = 2"
+              @click="onStepClick(stepsConfig.STEP_2.id)"
               class=""
             >
-              <span class="text-h6 font-weight-light">
+              <span
+                class="text-h6 font-weight-light"
+                :style="getStepTitleStyle(stepsConfig.STEP_2.id)"
+              >
                 {{ stepsConfig.STEP_2.title }}</span
               >
               <!-- <small>When did you do this event?</small> -->
@@ -469,6 +503,20 @@ export default class RecordWizard extends Vue {
                   v-on:time-selected="updateStartTime"
                 />
 
+                <TimePicker
+                  titleText="End Time"
+                  :isDisplayed="showDialog"
+                  v-on:time-selected="updateStartTime"
+                />
+
+                <v-text-field
+                  v-model="durationInMinutes"
+                  hide-details
+                  single-line
+                  title="Duration (in minutes)"
+                  type="number"
+                />
+
                 <!-- TODO ----- if Activity has time-tracking (i.e. has a Duration-type measurable) -->
                 <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
 
@@ -485,10 +533,14 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               step="3"
               :complete="false"
-              @click="stepperPosition = 3"
+              @click="onStepClick(stepsConfig.STEP_3.id)"
               class=""
             >
-              <span class="text-h6 font-weight-light">Measurables</span>
+              <span
+                class="text-h6 font-weight-light"
+                :style="getStepTitleStyle(stepsConfig.STEP_3.id)"
+                >Measurables</span
+              >
             </v-stepper-step>
 
             <v-stepper-content step="3" class="pa-1">
@@ -513,7 +565,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               step="4"
               :complete="false"
-              @click="stepperPosition = 4"
+              @click="onStepClick(stepsConfig.STEP_4.id)"
               class=""
             >
               <span class="text-h6 font-weight-light">Review</span>

@@ -62,6 +62,8 @@ export default class TimePicker extends Vue {
   }
 
   saveSelectedTime() {
+    console.log("OG ----- " + this.selectedTime);
+
     // Set menu action
     this.$refs.menu?.save(this.selectedTime);
 
@@ -115,7 +117,7 @@ export default class TimePicker extends Vue {
         scrollable
         @click:minute="saveSelectedTime"
         elevation="15"
-      ></v-time-picker>
+      />
 
       <!--  -->
     </v-menu>
