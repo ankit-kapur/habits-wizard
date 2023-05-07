@@ -122,7 +122,7 @@ export default class RecordWizard extends Vue {
     },
     STEP_2: {
       id: 2,
-      title: "Time",
+      title: "Status",
       isComplete: () => this.selectedActivity !== null,
       rules: [() => true],
     },
@@ -134,18 +134,11 @@ export default class RecordWizard extends Vue {
     },
     STEP_4: {
       id: 4,
-      title: "Time",
+      title: "Metrics",
       isComplete: () => this.selectedActivity !== null,
       rules: [() => true],
     },
   };
-
-  stepTitles: Map<number, string> = new Map([
-    [1, "Activity"],
-    [2, "Select Time"],
-    [3, "Record measurables"],
-    [4, "Review"],
-  ]);
 
   /* <!-- * ------------------------------- Computed props ------------------------------> */
   get categories(): CategoryTag[] {
@@ -156,20 +149,19 @@ export default class RecordWizard extends Vue {
     return this.areasStore.getAll();
   }
 
+  get isInCreateMode() {
+    return this.dialogMode && this.dialogMode === DialogMode.CREATE;
+  }
+
+  get numberOfSteps() {
+    return Object.keys(this.stepsConfig).length;
+  }
+
   get activityColor(): string {
     const areaMatched = this.areas.find(
       (area) => this.selectedActivity?.areaId === area.id
     );
     return areaMatched ? areaMatched.color : "";
-  }
-
-  get numberOfSteps() {
-    return this.stepTitles.size;
-  }
-
-  get stepperWindowTitle(): string {
-    const title = this.stepTitles.get(this.stepperPosition + 1);
-    return title ? title : "";
   }
 
   // <!-- * ---------------------------- Lifecycle ---------------------------->
@@ -181,6 +173,18 @@ export default class RecordWizard extends Vue {
     // Reset
     this.resetToDefaultState();
     this.showDialog_local = this.showDialog;
+
+    // Edit mode
+    if (this.dialogMode === DialogMode.EDIT) {
+      // Disable "Activity" and "Status" steps
+      this.disabledSteps.push(
+        this.stepsConfig.STEP_1.id,
+        this.stepsConfig.STEP_2.id
+      );
+
+      // Don't start at 1st step.
+      this.moveToNextStep();
+    }
   }
 
   onHide() {
@@ -198,13 +202,9 @@ export default class RecordWizard extends Vue {
     this.disabledSteps = []; // Reset
     if (!this.selectedActivity) return; // If nothing's selected.
 
-    // Skip step-2 (Time)
+    // Skip step-2 (Time) and 3 (Duration)
     if (!this.selectedActivity.hasTimeMeasurable) {
       this.disabledSteps.push(this.stepsConfig.STEP_2.id);
-    }
-
-    // Skip step-3 (Duration)
-    if (!this.selectedActivity.hasDurationMeasurable) {
       this.disabledSteps.push(this.stepsConfig.STEP_3.id);
     }
 
@@ -287,6 +287,7 @@ export default class RecordWizard extends Vue {
 
   /* <!-- * ------------------------------ Stepper ------------------------------> */
   moveToStep(destination: number) {
+    if (!this.selectedActivity) return; // Disallow if no Activity is selected.
     if (destination >= this.numberOfSteps) {
       this.stepperPosition = this.numberOfSteps;
     } else if (destination < 0) {
@@ -317,16 +318,21 @@ export default class RecordWizard extends Vue {
     // TODO
   }
 
+  isStepDisabled(stepNumber: number) {
+    return this.disabledSteps.includes(stepNumber);
+  }
+
   /**
    * Shows a strikethrough line if step is disabled.
    */
   getStepTitleStyle(stepNumber: number) {
-    return this.disabledSteps.includes(stepNumber)
+    return this.isStepDisabled(stepNumber)
       ? "text-decoration: line-through"
       : "";
   }
 
   onStepClick(stepNumber: number) {
+    if (!this.selectedActivity && stepNumber != 1) return; // Disallow if no Activity is selected.
     if (!this.disabledSteps.includes(stepNumber))
       this.stepperPosition = stepNumber;
   }
@@ -353,7 +359,7 @@ export default class RecordWizard extends Vue {
             class="pa-0 text-h5 font-weight-light"
             style="color: purple"
           >
-            <span :color="`primary`"> Record an event </span>
+            {{ isInCreateMode ? `New` : `Editing` }} Record
           </v-card-title>
           <v-spacer />
 
@@ -434,13 +440,13 @@ export default class RecordWizard extends Vue {
                 stepsConfig.STEP_1.title
               }}</span>
 
-              <!-- ? ---------- Sub-title -->
+              <!-- ? ---------- Subtitle -->
               <span
                 v-if="selectedActivity !== null"
                 class="text-caption font-weight-light"
               >
                 <br />
-                Selected
+                <!-- Selected -->
                 <!-- Color by category -->
                 <span
                   v-bind:style="{
@@ -471,70 +477,78 @@ export default class RecordWizard extends Vue {
               </v-card>
             </v-stepper-content>
 
-            <!-- ? --------------------------------------------- Step 2: Time selection -->
+            <!-- ? --------------------------------------------- Step 2: Status -->
             <v-stepper-step
               :step="stepsConfig.STEP_2.id"
               :complete="false"
               @click="onStepClick(stepsConfig.STEP_2.id)"
               class=""
             >
+              <!-- ? ---------- Title -->
               <span
                 class="text-h6 font-weight-light"
                 :style="getStepTitleStyle(stepsConfig.STEP_2.id)"
               >
                 {{ stepsConfig.STEP_2.title }}</span
               >
-              <!-- <small>When did you do this event?</small> -->
+
+              <!-- ? ---------- Subtitle -->
+              <span
+                v-if="eventRecord_local.eventState !== null"
+                class="text-caption font-weight-light"
+              >
+                <br />
+                <!-- Selected -->
+                <!-- Color by category -->
+                <span> {{ eventRecord_local.eventState }}</span>
+              </span>
+
+              <!--  -->
             </v-stepper-step>
 
             <v-stepper-content :step="stepsConfig.STEP_2.id" class="pa-1">
               <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
-                <!--  -->
+                <!-- TODO P2 --- Show buttons instead. Will look nicer -->
 
-                <span>Done already? </span>
+                <!------- NO duration case ------->
+                <div v-if="!selectedActivity?.hasDurationMeasurable">
+                  <!--  -->
 
-                <v-radio-group v-model="timingProgressSelection">
-                  <v-radio label="Not started" value="notStarted" />
-                  <v-radio label="In progress" value="inProgress" />
-                  <v-radio label="Already done" value="alreadyDone" />
-                </v-radio-group>
+                  <span>Done already?</span>
 
-                <!-- ? ------------ Time picker -->
-                <TimePicker
-                  titleText="Start Time"
-                  :isDisplayed="showDialog"
-                  v-on:time-selected="updateStartTime"
-                />
+                  <v-radio-group v-model="timingProgressSelection">
+                    <!-- For "Not started", & "In progress" next screen should show "START NOW" button -->
+                    <v-radio label="Now" value="justNow" />
 
-                <TimePicker
-                  titleText="End Time"
-                  :isDisplayed="showDialog"
-                  v-on:time-selected="updateStartTime"
-                />
+                    <!--  -->
+                    <v-radio
+                      label="Completed earlier"
+                      value="completedEarlier"
+                    />
+                  </v-radio-group>
+                </div>
 
-                <v-text-field
-                  v-model="durationInMinutes"
-                  hide-details
-                  single-line
-                  title="Duration (in minutes)"
-                  type="number"
-                />
+                <!------- Duration case ------->
+                <div v-if="selectedActivity?.hasDurationMeasurable">
+                  <!--  -->
 
-                <!-- TODO ----- if Activity has time-tracking (i.e. has a Duration-type measurable) -->
-                <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
+                  <span>Done already?</span>
 
-                <!-- TODO ----- show options: -->
-                <!--      1. Not started -->
-                <!--      2. Started -->
-                <!--      3. Completed already -->
+                  <v-radio-group v-model="timingProgressSelection">
+                    <!-- TODO P2 --- For "Not started", next screen should show "START NOW" button -->
+                    <v-radio label="Not started" value="notStarted" />
+                    <v-radio label="In progress" value="inProgress" />
+                    <v-radio label="Done already" value="alreadyDone" />
+                  </v-radio-group>
+                </div>
 
                 <!--  -->
               </v-card>
             </v-stepper-content>
 
-            <!-- ? --------------------------------------------- Step 3: Record Measurables -->
+            <!-- ? --------------------------------------------- Step 3: Time/Duration -->
             <v-stepper-step
-              step="3"
+              :step="stepsConfig.STEP_3.id"
               :complete="false"
               @click="onStepClick(stepsConfig.STEP_3.id)"
               class=""
@@ -542,59 +556,105 @@ export default class RecordWizard extends Vue {
               <span
                 class="text-h6 font-weight-light"
                 :style="getStepTitleStyle(stepsConfig.STEP_3.id)"
-                >Measurables</span
               >
+                {{ stepsConfig.STEP_3.title }}</span
+              >
+              <!-- <small>When did you do this event?</small> -->
             </v-stepper-step>
 
-            <v-stepper-content step="3" class="pa-1">
-              <!-- ? ----------------- Filter --------------------->
+            <v-stepper-content :step="stepsConfig.STEP_3.id" class="pa-1">
               <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
-                <!--  -->
+                <v-container>
+                  <!--  -->
+                  <v-row v-if="selectedActivity?.hasDurationMeasurable">
+                    <v-col cols="6" class="pa-auto">
+                      <span class="pb-0" style="color: gray"> Start time </span>
+                      <!-- ? ------------ Time picker for START TIME -->
+                      <TimePicker
+                        :isDisplayed="showDialog"
+                        v-on:time-selected="updateStartTime"
+                      />
+                      <!-- titleText="Start Time" -->
+                    </v-col>
+                  </v-row>
 
-                <v-text-field
-                  outlined
-                  placeholder="Under construction"
-                ></v-text-field>
+                  <v-row>
+                    <v-col cols="6" class="pa-auto">
+                      <span class="pb-0" style="color: gray">
+                        Completed at
+                      </span>
 
-                <!-- TODO ----- Should be optional. Can enter later. -->
-                <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
+                      <!-- ? ------------ Time picker for COMPLETION TIME -->
+                      <TimePicker
+                        :isDisplayed="showDialog"
+                        v-on:time-selected="updateStartTime"
+                      />
+                      <!-- titleText="Completion Time" -->
+                    </v-col>
 
-                <!--  -->
+                    <!-- ? ------------ OR -->
+                    <v-col
+                      cols="1"
+                      v-if="selectedActivity?.hasDurationMeasurable"
+                      class="mr-2 pa-auto ma-0 d-flex justify-center align-center"
+                    >
+                      <span class="pb-4" style="color: gray">OR</span>
+                    </v-col>
+
+                    <v-col
+                      cols="4"
+                      v-if="selectedActivity?.hasDurationMeasurable"
+                      class="pa-auto"
+                    >
+                      <!--  -->
+
+                      <span class="pb-4" style="color: gray">Duration</span>
+
+                      <!-- ? ------------ DURATION -->
+
+                      <v-row>
+                        <v-col cols="10">
+                          <v-text-field
+                            v-model="durationInMinutes"
+                            hide-details
+                            single-line
+                            title="Duration (in minutes)"
+                            type="number"
+                            class="ma-0 pa-0 pt-1"
+                          />
+
+                          <span>minutes</span>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                  </v-row>
+
+                  <!--  -->
+                </v-container>
               </v-card>
             </v-stepper-content>
-            <!--  -->
 
-            <!-- ? --------------------------------------------- Step 4: Review -->
+            <!-- ? --------------------------------------------- Step 4: Metrics -->
             <v-stepper-step
-              step="4"
+              :step="stepsConfig.STEP_4.id"
               :complete="false"
               @click="onStepClick(stepsConfig.STEP_4.id)"
               class=""
             >
-              <span class="text-h6 font-weight-light">Review</span>
+              <span
+                class="text-h6 font-weight-light"
+                :style="getStepTitleStyle(stepsConfig.STEP_4.id)"
+              >
+                {{ stepsConfig.STEP_4.title }}</span
+              >
               <!-- <small>When did you do this event?</small> -->
             </v-stepper-step>
 
-            <!-- TODO ------- Don't think I need a review step. 
-              Subtitles of steps should show what's selected. -->
-
-            <v-stepper-content step="4" class="pa-1">
-              <!-- ? ----------------- Filter --------------------->
+            <v-stepper-content :step="stepsConfig.STEP_4.id" class="pa-1">
               <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
                 <!--  -->
 
-                <v-text-field
-                  outlined
-                  placeholder="Under construction"
-                ></v-text-field>
-
-                <!-- TODO ----- if Activity has time-tracking (i.e. has a Duration-type measurable) -->
-                <!-- Then ask for a start time. Otherwise skip step 2 entirely. -->
-
-                <!-- TODO ----- show options: -->
-                <!--      1. Not started -->
-                <!--      2. Started -->
-                <!--      3. Completed already -->
+                <!-- TODO ------------ Implement -->
 
                 <!--  -->
               </v-card>

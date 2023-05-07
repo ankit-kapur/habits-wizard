@@ -106,6 +106,7 @@ export default class TimePicker extends Vue {
           readonly
           v-bind="attrs"
           v-on="on"
+          class="pa-0"
         ></v-text-field>
       </template>
 

@@ -1,7 +1,7 @@
 export enum EventState {
-  NOT_STARTED = "NOT_STARTED",
-  IN_PROGRESS = "IN_PROGRESS",
-  PAUSED = "PAUSED",
-  COMPLETED = "COMPLETED",
-  ERROR = "ERROR",
+  NOT_STARTED = "Not started",
+  IN_PROGRESS = "⏳ In progress",
+  PAUSED = "⏸️ Paused",
+  COMPLETED = "✅ Completed",
+  ERROR = "⛔️ Error",
 }

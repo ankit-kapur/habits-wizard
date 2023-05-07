@@ -32,7 +32,7 @@ export default interface EventRecord {
 
   // ? ------------------------------ Completion markers
   // Error state happens when Activity is complete but required metadata is missing.
-  eventState: EventState;
+  eventState?: EventState;
   // Whether all metadata needed has been provided
   isRecordComplete: boolean;
 
