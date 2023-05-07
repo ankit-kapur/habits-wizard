@@ -104,6 +104,7 @@ export default class CategorySelector extends Vue {
     // this.areasStore.addCategoryToArea();
     this.selectedItemIdList_local.push(newCategoryID);
     this.closeCategoryWizard();
+    this.onTagSelectionChange(); // Let parent know.
   }
 
   /**
@@ -113,6 +114,7 @@ export default class CategorySelector extends Vue {
   removeCategoryTagFromArea(category: CategoryTag) {
     const index = this.selectedItemIdList_local.indexOf(category.id);
     if (index >= 0) this.selectedItemIdList_local.splice(index, 1);
+    this.onTagSelectionChange(); // Let parent know.
   }
 }
 </script>

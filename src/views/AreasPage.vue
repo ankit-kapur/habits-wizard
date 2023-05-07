@@ -65,10 +65,6 @@ export default class AreasPage extends Vue {
       : undefined;
   }
 
-  get areaList(): Area[] {
-    return this.areasStore.getAll();
-  }
-
   get categoryList(): CategoryTag[] {
     return this.categoryTagsStore.getAll();
   }
@@ -100,7 +96,7 @@ export default class AreasPage extends Vue {
     <v-row dense align="start">
       <v-col
         class="pl-2 pr-2 pb-0 pt-0"
-        v-for="(area, index) in areaList"
+        v-for="(area, index) in areasStore.getAll()"
         v-bind:key="area.id"
       >
         <!------------------- Area cards -------------------->
@@ -113,7 +109,7 @@ export default class AreasPage extends Vue {
         >
           <AreaCard
             :areaId="area.id"
-            :areaList="areaList"
+            :areaList="areasStore.getAll()"
             :categoryList="categoryList"
             :activityList="activityList"
             v-bind:index="index"

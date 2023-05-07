@@ -195,6 +195,9 @@ export default class RecordWizard extends Vue {
   activitySelectionChanged(providedActivity: Activity) {
     this.selectedActivity = providedActivity;
 
+    this.disabledSteps = []; // Reset
+    if (!this.selectedActivity) return; // If nothing's selected.
+
     // Skip step-2 (Time)
     if (!this.selectedActivity.hasTimeMeasurable) {
       this.disabledSteps.push(this.stepsConfig.STEP_2.id);

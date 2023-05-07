@@ -133,9 +133,13 @@ export default class AreaWizard extends Vue {
   }
 
   // ------------------------------------------------ Methods
-  saveArea(): void {
+  saveArea() {
     // We update even for CREATE mode because onShow() creates the record.
     this.areasStore.updateArea(this.area_local);
+  }
+
+  saveAndClose() {
+    this.saveArea();
     this.closeThisDialog();
   }
 
@@ -190,7 +194,9 @@ export default class AreaWizard extends Vue {
   }
 
   onCategoryTagsChanged(updatedCategoryIDList: string[]) {
+    console.log("onCategoryTagsChanged ==> " + updatedCategoryIDList);
     this.area_local.categoryIDList = updatedCategoryIDList;
+    this.saveArea();
   }
 
   /* ------------------------------ Stepper ------------------------------*/
@@ -481,7 +487,7 @@ export default class AreaWizard extends Vue {
 
           <!------------- Save -->
           <v-btn
-            @click="saveArea"
+            @click="saveAndClose"
             density="comfortable"
             :disabled="false"
             color="primary"

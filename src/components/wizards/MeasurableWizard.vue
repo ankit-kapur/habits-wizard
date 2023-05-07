@@ -127,6 +127,7 @@ export default class MeasurableWizard extends Vue {
       this.measurableDef_local,
       this.areaId
     );
+    this.$emit("new-measurable-created", this.measurableDef_local.id);
   }
 
   saveExistingMeasurable() {

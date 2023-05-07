@@ -113,6 +113,7 @@ export default class MeasurableSelector extends Vue {
     this.areasStore.unsubscribe();
     this.resetState();
   }
+
   resetState() {
     this.selectedMeasurableId = null; // Reset
   }
@@ -140,7 +141,6 @@ export default class MeasurableSelector extends Vue {
 
   // Delete
   respondToConfirmDeleteDialog(isConfirmed: boolean): void {
-    console.log("Inside respondToConfirmDeleteDialog ");
     if (isConfirmed) {
       this.areasStore.deleteMeasurableDefinition(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -149,6 +149,19 @@ export default class MeasurableSelector extends Vue {
       );
     }
     this.showDeleteMeasurableDialog = false;
+  }
+
+  addNewlyCreatedMeasurable(newMeasurableId: string) {
+    // this.me
+    this.selectedMeasurableId = newMeasurableId;
+
+    // <!-- TODO P2 --------- This is not working. Selection in v-select should reflect the newly created thing -->
+
+    console.log("CHANGED newMeasurableId = " + newMeasurableId);
+
+    console.log(
+      "availableMeasurables = " + JSON.stringify(this.availableMeasurables)
+    );
   }
 
   discard() {
@@ -305,6 +318,7 @@ export default class MeasurableSelector extends Vue {
       :dialog-mode="`CREATE`"
       :showDialog="showCreateMeasurableDialog"
       v-on:close="closeWizardDialogs"
+      v-on:new-measurable-created="addNewlyCreatedMeasurable"
     />
 
     <!-- * ------------------------ Edit popup  -------------------------->

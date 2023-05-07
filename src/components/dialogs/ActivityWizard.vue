@@ -317,6 +317,11 @@ export default class ActivityWizard extends Vue {
 
   /* <!-- * ------------------------------ Utils ------------------------------> */
   private hasMeasurableType(measurableType: MeasurableType): boolean {
+    console.log(
+      "🚨 >>>>>> this.activity_local.measurables = " +
+        this.activity_local.measurables
+    );
+
     const matches: MeasurableForActivity[] =
       this.activity_local.measurables.filter((m) => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -364,7 +369,7 @@ export default class ActivityWizard extends Vue {
           <!-- ? ---------- EDIT button -->
           <v-btn
             icon
-            x-small
+            small
             v-if="dialogMode !== `CREATE`"
             @click="switchBetweenViewEditModes"
           >
@@ -376,11 +381,22 @@ export default class ActivityWizard extends Vue {
           <!-- ? ---------- DELETE button -->
           <v-btn
             icon
-            x-small
+            small
             v-if="dialogMode !== `CREATE`"
             @click="triggerDeleteAction"
           >
             <v-icon>mdi-delete</v-icon>
+          </v-btn>
+
+          <!-- ? ---------- CLOSE button -->
+          <v-btn
+            icon
+            medium
+            v-if="dialogMode === `CREATE`"
+            @click="closeViaParent"
+            color="primary"
+          >
+            <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-actions>
 

@@ -33,16 +33,17 @@ export const getDefaultMeasurables = [
     baseUnitName: "count",
     baseUnitEmoji: ":radio_button:", // 🔘
   },
+  // ! ------ Start time should get recorded automatically when Duration is selected.
+  // {
+  //   id: "startTime",
+  //   title: "Start Time",
+  //   type: MeasurableType.Timestamp,
+  //   baseUnitName: "",
+  //   baseUnitEmoji: ":hourglass_flowing_sand:", // ⏳
+  // },
   {
-    id: "startTime",
-    title: "Start Time",
-    type: MeasurableType.Timestamp,
-    baseUnitName: "",
-    baseUnitEmoji: ":hourglass_flowing_sand:", // ⏳
-  },
-  {
-    id: "endTime",
-    title: "End Time",
+    id: "completionTime",
+    title: "Done at Time",
     type: MeasurableType.Timestamp,
     baseUnitName: "",
     baseUnitEmoji: ":hourglass:", // ⌛️
