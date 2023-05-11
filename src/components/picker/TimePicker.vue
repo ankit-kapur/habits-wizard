@@ -19,7 +19,7 @@ export default class TimePicker extends Vue {
   /* <!-- ? ------------------------------ Data ------------------------------> */
   isDisplayed_local = false;
   showTimePicker = false;
-  selectedTime = ""; // TODO: Get as prop
+  selectedTime = "";
 
   /* <!-- ? ------------------------------ Watchers ------------------------------> */
   @Watch("isDisplayed")
@@ -58,6 +58,7 @@ export default class TimePicker extends Vue {
   }
 
   closeViaParent() {
+    // TODO ---- Don't think this is needed. Maybe don't need isDisplayed at all.
     this.$emit("cancel", false);
   }
 
