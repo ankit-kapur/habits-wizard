@@ -20,6 +20,18 @@ export default class RecordingPage extends Vue {
   // ------------------------------------------------ Stores
   appStateStore = useAppStateStore();
 
+  // ------------------------------------------------ Lifecycle
+  mounted() {
+    console.log("🐪 Mounted RecordingPage");
+
+    // Temporary hack. Automatically popup the wizard on entering this page.
+    this.showRecordingDialog = true;
+  }
+
+  unmounted() {
+    console.log("🐪 UNMOUNTED RecordingPage");
+  }
+
   // ------------------------------------------------ Methods
   recordButtonClicked() {
     this.showRecordingDialog = true;

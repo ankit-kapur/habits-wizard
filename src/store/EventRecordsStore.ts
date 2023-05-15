@@ -27,10 +27,6 @@ interface State {
   userId: string;
 }
 
-// TODO --------- Make these:
-// ?              (1) Recording dialog to CREATE & EDIT an EventRecord
-// ?              (2) Home screen for VIEW EventRecords
-
 // Replace with Generics <T> across all stores.
 // See: https://medium.com/swlh/using-firestore-with-typescript-65bd2a602945
 const firestoreConvertor: FirestoreDataConverter<EventRecord> = {
