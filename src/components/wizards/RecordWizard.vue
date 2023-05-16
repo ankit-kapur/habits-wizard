@@ -22,8 +22,9 @@ import { useIconsStore } from "@/store/IconsStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import {
-  getPrettyTimestamp,
+  getDurationSince,
   getPrettyDuration,
+  getPrettyTimestamp,
 } from "@/utils/time/TimestampConversionUtils";
 
 /**
@@ -94,7 +95,7 @@ export default class RecordWizard extends Vue {
   searchInput = "";
 
   // Time-related
-  timingProgressSelection = ""; // Whether in the past or in progress or yet to start.
+  timingProgressSelection = "doneAlready"; // Whether in the past or in progress or yet to start.
   durationInMinutes = 1;
 
   // Stepper
@@ -132,8 +133,8 @@ export default class RecordWizard extends Vue {
         eventRecord: EventRecord
       ) {
         // TODO P0 ----- Decide logic.
-        console.log("" + selectedActivity + eventRecord);
         return false;
+        console.log("" + selectedActivity + eventRecord);
       },
       rules: [() => true],
     },
@@ -145,13 +146,15 @@ export default class RecordWizard extends Vue {
         eventRecord: EventRecord
       ) {
         // TODO P0 ----- Decide logic.
-        return (
-          (selectedActivity?.hasTimeMeasurable &&
-            eventRecord?.completionTime) ||
-          (selectedActivity?.hasDurationMeasurable &&
-            eventRecord?.startTime &&
-            eventRecord?.durationInSeconds)
-        );
+        // return (
+        //   (selectedActivity?.hasTimeMeasurable &&
+        //     eventRecord?.completionTime) ||
+        //   (selectedActivity?.hasDurationMeasurable &&
+        //     eventRecord?.startTime &&
+        //     eventRecord?.durationInSeconds)
+        // );
+        return false;
+        console.log("" + selectedActivity + eventRecord);
       },
       rules: [() => true],
     },
@@ -164,8 +167,8 @@ export default class RecordWizard extends Vue {
       ) {
         // <!-- TODO P1 ------- All REQUIRED measurables must be provided. -->
         // TODO P0 ----- Decide logic.
-        console.log("" + selectedActivity + eventRecord);
         return false;
+        console.log("" + selectedActivity + eventRecord);
       },
       rules: [() => true],
     },
@@ -195,11 +198,65 @@ export default class RecordWizard extends Vue {
     return areaMatched ? areaMatched.color : "";
   }
 
+  timeElapsed = "";
+
+  calculateTimeElapsed() {
+    window.setInterval(() => {
+      this.timeElapsed = this.getDurationSince(
+        this.eventRecord_local.startTime
+      );
+    }, 1000); // Refreshes every 1 second.
+  }
+
+  // get timeElapsed(): string {
+  //   console.log("⏳ Inside durationDisplayText");
+  //   let text = this.getDurationSince();
+  //   return text;
+  // }
+
   get durationDisplayText(): string {
-    let text = getPrettyDuration(this.eventRecord_local.durationInSeconds);
-    if (text === "") text = "Click to enter duration";
+    console.log("⏳ Inside durationDisplayText");
+    let text = this.getPrettyDuration(this.eventRecord_local.durationInSeconds);
+    if (!text) text = "Click to enter duration";
     return text;
   }
+
+  // getDurationSince(): string {
+  //   const startTime = this.eventRecord_local.startTime;
+  //   console.log("⏳ ⏳ ⏳ Inside getDurationSince; startTime = " + startTime);
+  //   if (!startTime) return "ERROR";
+  //   const startMoment = moment(startTime);
+  //   const now = moment();
+  //   const duration = moment.duration(now.diff(startMoment));
+
+  //   console.log("duration = " + duration);
+
+  //   return this.getPrettyDuration(duration.as("seconds"));
+  // }
+
+  // getPrettyDuration(durationInSeconds?: number): string {
+  //   // TODO P1 --- maybe do this through Moment.js
+  //   // duration();
+
+  //   if (!durationInSeconds) return "";
+  //   let result = "";
+
+  //   if (durationInSeconds < 60) {
+  //     result = durationInSeconds + " seconds";
+  //   } else if (durationInSeconds > 60 && durationInSeconds < 60 * 60) {
+  //     const minutes = Math.floor(durationInSeconds / 60);
+  //     const seconds = Math.floor(durationInSeconds % 60);
+  //     result = minutes + " minutes";
+  //     if (seconds > 0) result += ", " + seconds + " seconds";
+  //   } else {
+  //     const hours = Math.floor(durationInSeconds / (60 * 60));
+  //     const minutes = Math.floor(durationInSeconds % (60 * 60));
+  //     result = hours + " hours";
+  //     if (minutes > 0) result += ", " + minutes + " minutes";
+  //   }
+
+  //   return result;
+  // }
 
   // <!-- * ---------------------------- Lifecycle ---------------------------->
   onShow() {
@@ -222,6 +279,9 @@ export default class RecordWizard extends Vue {
       // Don't start at 1st step.
       this.moveToNextStep();
     }
+
+    // Keeps updating time-elapsed
+    this.calculateTimeElapsed();
   }
 
   onHide() {
@@ -239,13 +299,43 @@ export default class RecordWizard extends Vue {
     this.disabledSteps = []; // Reset
     if (!this.selectedActivity) return; // If nothing's selected.
 
-    if (!this.selectedActivity.hasTimeMeasurable) {
+    const hasTime = this.selectedActivity.hasTimeMeasurable;
+    const hasDuration = this.selectedActivity.hasDurationMeasurable;
+
+    // Disable steps if needed.
+    if (!hasTime) {
       this.disabledSteps.push(this.stepsConfig.STEP_2.id); // Skip step-2 (Time)
     }
-
-    if (!this.selectedActivity.hasDurationMeasurable) {
+    if (!hasDuration) {
       this.disabledSteps.push(this.stepsConfig.STEP_3.id); // Skip step-3 (Duration)
     }
+
+    console.log("!!!! hasTime = " + hasTime);
+    console.log("!!!! hasDuration = " + hasDuration);
+
+    // Set default timestamps
+    if (hasTime) {
+      if (hasDuration) this.eventRecord_local.startTime = new Date().valueOf();
+      else this.eventRecord_local.completionTime = new Date().valueOf();
+    }
+    if (hasDuration) {
+      this.eventRecord_local.durationInSeconds = 5 * 60; // 5 mins
+      if (hasTime) {
+        this.eventRecord_local.completionTime = new Date(
+          new Date().getTime() + 5 * 60 * 1000
+        ).valueOf();
+      }
+    }
+    // Bounce to trigger reactive variables to update.
+    this.eventRecord_local = deepCopy(this.eventRecord_local);
+
+    console.log(
+      "!!!! eventRecord_local.startTime = " + this.eventRecord_local.startTime
+    );
+    console.log(
+      "!!!! eventRecord_local.completionTime = " +
+        this.eventRecord_local.completionTime
+    );
 
     // Move to next step
     if (this.selectedActivity) this.moveToNextStep();
@@ -264,6 +354,12 @@ export default class RecordWizard extends Vue {
   resetToDefaultState() {
     // Stepper
     this.stepperPosition = 1;
+
+    // Reset fields
+    this.selectedActivity = null;
+    if (this.dialogMode === DialogMode.CREATE) {
+      this.eventRecord_local = deepCopy(defaultNewEventRecord);
+    }
   }
 
   respondToDiscardConfirm(isConfirmed: boolean): void {
@@ -354,15 +450,27 @@ export default class RecordWizard extends Vue {
 
   /* <!-- * ------------------------------ Stepper ------------------------------> */
   updateStartTimestamp(epochTime: number) {
-    console.log("Start time in epoch: " + epochTime);
+    console.log("UPDATING >>>>> Start time in epoch: " + epochTime);
     this.eventRecord_local.startTime = epochTime;
-    // TODO: Same as above.
+
+    if (this.selectedActivity?.hasDurationMeasurable) {
+      // TODO P0 ----- Update based on duration
+      this.eventRecord_local.completionTime = "";
+    }
+
+    this.eventRecord_local = deepCopy(this.eventRecord_local); // Force reactive variables to update
   }
 
   updateCompletionTimestamp(epochTime: number) {
-    console.log("Completion time in epoch: " + epochTime);
+    console.log("UPDATING >>>>> Completion time in epoch: " + epochTime);
     this.eventRecord_local.completionTime = epochTime;
-    // TODO: Same as above.
+
+    if (this.selectedActivity?.hasDurationMeasurable) {
+      // TODO P0 ----- Update Duration
+      this.eventRecord_local.durationInSeconds = "";
+    }
+
+    this.eventRecord_local = deepCopy(this.eventRecord_local); // Force reactive variables to update
   }
 
   isStepDisabled(stepNumber: number) {
@@ -387,6 +495,7 @@ export default class RecordWizard extends Vue {
   /* <!-- * ------------------------------ Method imports ------------------------------> */
   getPrettyTimestamp = getPrettyTimestamp;
   getPrettyDuration = getPrettyDuration;
+  getDurationSince = getDurationSince;
 }
 </script>
 
@@ -479,7 +588,10 @@ export default class RecordWizard extends Vue {
 
               <!-- ? ---------- Subtitle -->
               <span
-                v-if="selectedActivity !== null"
+                v-if="
+                  selectedActivity !== null &&
+                  stepperPosition != stepsConfig.STEP_1.id
+                "
                 class="text-caption font-weight-light"
               >
                 <br />
@@ -577,7 +689,9 @@ export default class RecordWizard extends Vue {
 
                       <!-- ? ------------------------ COMPLETION TIME picker -->
                       <TimeDatePicker
-                        :isDisplayed="showDialog"
+                        :initialTimestampEpoch="
+                          eventRecord_local.completionTime
+                        "
                         v-on:timestamp-updated="updateCompletionTimestamp"
                       />
                       <!-- titleText="Completion Time" -->
@@ -586,35 +700,41 @@ export default class RecordWizard extends Vue {
 
                   <!------- Case 2: Has Duration measurable ------->
                   <div v-if="selectedActivity?.hasDurationMeasurable">
-                    <v-row>
-                      <v-col class="pt-4">
+                    <v-row class="pb-0">
+                      <v-col class="pa-0 pt-2">
                         <!--  -->
-                        <!-- <span>Status</span> -->
 
                         <v-radio-group
                           v-model="timingProgressSelection"
+                          :disabled="dialogMode !== `CREATE`"
                           class="pt-0 mt-0"
                         >
                           <v-radio label="Not started" value="notStarted" />
                           <v-radio label="In progress" value="inProgress" />
                           <v-radio label="Done already" value="doneAlready" />
                         </v-radio-group>
+
+                        <!--  -->
                       </v-col>
                     </v-row>
 
                     <!-- TODO P2 --- When "Not started" is selected, show "START NOW" button and skip duration screen -->
-                    <v-row>
-                      <v-col cols="" class="pa-auto">
+                    <v-row v-if="timingProgressSelection !== `notStarted`">
+                      <v-col cols="" class="pa-0">
                         <span class="pb-0" style="color: gray">
                           Started at
                         </span>
 
                         <!-- ? ------------------------ START TIME picker -->
                         <TimeDatePicker
-                          :isDisplayed="showDialog"
+                          :initialTimestampEpoch="eventRecord_local.startTime"
                           v-on:timestamp-updated="updateStartTimestamp"
                         />
                       </v-col>
+                    </v-row>
+
+                    <v-row v-if="timingProgressSelection === `notStarted`">
+                      Timer will begin once you click "Start now"
                     </v-row>
 
                     <!--  -->
@@ -638,7 +758,7 @@ export default class RecordWizard extends Vue {
               @click="onStepClick(stepsConfig.STEP_3.id)"
               class=""
             >
-              <!-- ? ---------- Title -->
+              <!-- ? ------------------------------ Title -->
               <span
                 class="text-h6 font-weight-light"
                 :style="getStepTitleStyle(stepsConfig.STEP_3.id)"
@@ -646,15 +766,37 @@ export default class RecordWizard extends Vue {
                 {{ stepsConfig.STEP_3.title }}
               </span>
 
-              <!-- ? ---------- Subtitle -->
+              <!-- ? ------------------------------ Subtitle -->
               <span
-                v-if="eventRecord_local.durationInSeconds !== null"
+                v-if="stepperPosition !== stepsConfig.STEP_3.id"
                 class="text-caption font-weight-light"
               >
                 <br />
-                <!-- TODO P1 ------ Show duration here -->
-                <span>
+
+                <span v-if="timingProgressSelection === `notStarted`">
+                  Not started yet.
+                </span>
+
+                <span v-if="timingProgressSelection === `inProgress`">
+                  In progress
+                </span>
+
+                <span
+                  v-if="
+                    eventRecord_local.durationInSeconds !== null &&
+                    timingProgressSelection === `doneAlready`
+                  "
+                >
                   {{ getPrettyDuration(eventRecord_local.durationInSeconds) }}
+                </span>
+
+                <span
+                  v-if="
+                    !eventRecord_local.durationInSeconds &&
+                    timingProgressSelection === `doneAlready`
+                  "
+                >
+                  Please specify the duration.
                 </span>
               </span>
 
@@ -662,70 +804,64 @@ export default class RecordWizard extends Vue {
             </v-stepper-step>
 
             <v-stepper-content :step="stepsConfig.STEP_3.id" class="pa-1">
-              <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
+              <v-card flat max-width="85%" class="pl-4 pt-3 pa-0 ma-0">
                 <v-container>
                   <!--  -->
 
-                  <!-- TODO P2 --- Only -->
-                  <v-row v-if="timingProgressSelection !== `doneAlready`">
-                    <span class="pb-0 ma-auto" style="color: gray">
-                      In progress
-                    </span>
-                    <span class="pb-0 ma-auto" style="color: gray">
-                      WIP. Show time elapsed here (live timer)
-                    </span>
+                  <!-- ? ----- Case 1: Not started -->
+                  <v-row v-if="timingProgressSelection === `notStarted`">
+                    <v-col class="pa-auto">
+                      <span class="pb-0 ma-auto" style="color: gray">
+                        Time elapsed will show here after you click 'Start now'
+                      </span>
+                    </v-col>
                   </v-row>
 
-                  <!-- ? ----- Only shown if DONE -->
-                  <v-row v-if="timingProgressSelection === `doneAlready`">
+                  <!-- ? ----- Case 2: In progress -->
+                  <v-row v-if="timingProgressSelection === `inProgress`">
                     <!--  -->
 
-                    <!-- ? ------------ DURATION -->
+                    <!-- ? ------------ Live timer -->
+                    <v-col cols="" class="pa-auto pt-0">
+                      <!-- TODO P1 ---- onClick should open a dialog to enter duration -->
+                      <span
+                        class="pa-0 font-weight-light"
+                        style="font-size: 42"
+                      >
+                        ⏳ {{ timeElapsed }}
+                      </span>
 
-                    <!-- <v-row> -->
-                    <!-- <v-col cols="" class="pa-auto"> -->
-                    <!-- <span class="pb-4" style="color: gray">Duration</span> -->
-                    <!-- </v-col> -->
-                    <!-- </v-row> -->
+                      <!--  -->
+                    </v-col>
+                  </v-row>
 
+                  <!-- ? ----- Case 3: Already done -->
+                  <v-row v-if="timingProgressSelection === `doneAlready`">
                     <v-row>
-                      <v-col cols="8" class="pa-auto">
+                      <!-- ? ------------ Duration picker -->
+                      <v-col cols="" class="pa-auto">
                         <!-- TODO P1 ---- onClick should open a dialog to enter duration -->
-                        <span>
-                          {{ durationDisplayText }}
+                        <span
+                          class="pa-0 font-weight-light"
+                          style="font-size: 42"
+                        >
+                          ⏳ {{ durationDisplayText }}
                         </span>
-
-                        <!-- <v-text-field
-                          disabled
-                          v-model="durationDisplayText"
-                          hide-details
-                          single-line
-                          title="Duration"
-                          type="number"
-                          class="ma-0 pa-0 pt-1"
-                        />
-                        <span>seconds</span> -->
-
-                        <!--  -->
                       </v-col>
                     </v-row>
-
                     <v-row>
                       <!-- ? ------------ Time picker for COMPLETION TIME -->
-                      <v-col cols="6" class="pa-auto">
+                      <v-col cols="" class="pa-auto">
                         <span class="pb-0" style="color: gray">
                           Completed at
                         </span>
 
                         <TimeDatePicker
-                          :isDisplayed="showDialog"
+                          :initialTimestampEpoch="
+                            eventRecord_local.completionTime
+                          "
                           v-on:timestamp-updated="updateCompletionTimestamp"
                         />
-                      </v-col>
-
-                      <!-- ? ------------ Date picker for COMPLETION TIME -->
-                      <v-col cols="6" class="pa-auto">
-                        <v-date-picker />
                       </v-col>
 
                       <!--  -->
@@ -830,7 +966,9 @@ export default class RecordWizard extends Vue {
             @click="saveEventRecord"
             :disabled="!isValidEventRecord()"
           >
-            {{ `Save` }}
+            {{
+              timingProgressSelection === `notStarted` ? `Start Now` : `Save`
+            }}
           </v-btn>
         </v-card-actions>
       </v-card>

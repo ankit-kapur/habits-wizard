@@ -1,10 +1,10 @@
 <script lang="ts">
 import {
-  getDate_ISO8601,
-  getPrettyDate,
+  getDateFromEpoch_ISO8601,
+  getPrettyShortDate,
   convertToEpoch,
+  getTimeFromEpoch,
 } from "@/utils/time/TimestampConversionUtils";
-import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component
@@ -15,18 +15,9 @@ export default class TimeDatePicker extends Vue {
 
   // ------------------------------------------------ Props
   @Prop()
-  isDisplayed!: boolean;
-  @Prop()
-  titleText!: string;
-  @Prop()
-  initialTime?: string;
-  @Prop()
-  initialDate?: Date;
-  // TODO ------- just 1 prop here. EPOCH TIMESTAMP.
+  initialTimestampEpoch!: number;
 
   /* <!-- ? ------------------------------ Data ------------------------------> */
-  isDisplayed_local = false;
-
   showTimePicker = false;
   showDatePicker = false;
 
@@ -34,20 +25,12 @@ export default class TimeDatePicker extends Vue {
   selectedDate = ""; // YYYY-MM-DD format (ISO-8601)
 
   /* <!-- ? ------------------------------ Watchers ------------------------------> */
-  @Watch("isDisplayed")
-  onIsDisplayedChanged(_newValue: string) {
-    const isDialogOpen = !!_newValue;
-    console.log("👀 @Watch in StartTimePicker. isDisplayed = " + _newValue);
-    if (isDialogOpen) {
-      this.resetState();
-    }
-    this.isDisplayed_local = this.isDisplayed;
-  }
-
-  // Workaround for when space above dialog is tapped.
-  @Watch("isDisplayed_local")
-  onLocalDisplayChanged(_newValue: boolean) {
-    if (_newValue === false) this.closeViaParent();
+  @Watch("initialTimestampEpoch")
+  onTimestampChange(_newValue: string) {
+    this.resetState();
+    console.log(
+      "👀 @Watch in StartTimePicker. initialTimestampEpoch = " + _newValue
+    );
   }
 
   /* <!-- ? ------------------------------ Lifecycle ------------------------------> */
@@ -56,26 +39,14 @@ export default class TimeDatePicker extends Vue {
   }
 
   resetState() {
-    this.showTimePicker = false;
+    // this.showTimePicker = false;
 
-    const now = new Date();
-    const currentTime = now.getHours() + ":" + now.getMinutes();
-
-    console.log("currentTime = " + currentTime);
-    console.log("initialTime = " + this.initialTime);
-
-    this.selectedTime = this.initialTime
-      ? deepCopy(this.initialTime)
-      : currentTime;
-
-    this.selectedDate = getDate_ISO8601(
-      this.initialDate ? deepCopy(this.initialDate) : new Date()
+    console.log(
+      "Inside resetState. initialTimestamp = " + this.initialTimestampEpoch
     );
-  }
 
-  closeViaParent() {
-    // TODO ---- Don't think this is needed. Maybe don't need isDisplayed at all.
-    this.$emit("cancel", false);
+    this.selectedTime = getTimeFromEpoch(this.initialTimestampEpoch);
+    this.selectedDate = getDateFromEpoch_ISO8601(this.initialTimestampEpoch);
   }
 
   saveSelectedTime() {
@@ -119,9 +90,10 @@ export default class TimeDatePicker extends Vue {
   /* <!-- ? ------------------------------ Methods ------------------------------> */
 
   /* <!-- * ------------------------------ Method imports ------------------------------> */
-  getPrettyDate = getPrettyDate;
-  getDate_ISO8601 = getDate_ISO8601;
+  getPrettyShortDate = getPrettyShortDate;
+  getDate_ISO8601 = getDateFromEpoch_ISO8601;
   convertToEpoch = convertToEpoch;
+  getTimeFromEpoch = getTimeFromEpoch;
 }
 </script>
 
@@ -145,7 +117,6 @@ export default class TimeDatePicker extends Vue {
         <template v-slot:activator="{ on, attrs }">
           <v-text-field
             v-model="timePrettyFormatted"
-            :label="titleText"
             prepend-icon="mdi-clock-time-four-outline"
             readonly
             v-bind="attrs"
@@ -181,8 +152,7 @@ export default class TimeDatePicker extends Vue {
       >
         <template v-slot:activator="{ on, attrs }">
           <v-text-field
-            :value="getPrettyDate(selectedDate)"
-            :label="titleText"
+            :value="getPrettyShortDate(selectedDate)"
             prepend-icon="mdi-calendar-today"
             readonly
             v-bind="attrs"
