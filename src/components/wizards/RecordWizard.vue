@@ -99,7 +99,7 @@ export default class RecordWizard extends Vue {
   searchInput = "";
 
   // Time-related
-  timingProgressSelection = "doneAlready"; // Whether in the past or in progress or yet to start.
+  timingProgressSelection = ""; // Whether in the past or in progress or yet to start.
   durationInMinutes = 1;
 
   // Stepper
@@ -114,9 +114,6 @@ export default class RecordWizard extends Vue {
     STEP_1: {
       id: 1,
       title: "Activity",
-      isComplete: function (selectedActivity: Activity | null) {
-        return selectedActivity !== null;
-      },
       rules: [
         () => {
           const result =
@@ -132,14 +129,6 @@ export default class RecordWizard extends Vue {
     STEP_2: {
       id: 2,
       title: "Time",
-      isComplete: function (
-        selectedActivity: Activity | null,
-        eventRecord: EventRecord
-      ) {
-        // TODO P0 ----- Decide logic.
-        return false;
-        console.log("" + selectedActivity + eventRecord);
-      },
       rules: [() => true],
     },
     STEP_3: {
@@ -276,8 +265,13 @@ export default class RecordWizard extends Vue {
 
     // Set default timestamps
     if (hasTime) {
-      if (hasDuration) this.eventRecord_local.startTime = new Date().valueOf();
-      else this.eventRecord_local.completionTimeEpoch = new Date().valueOf();
+      if (hasDuration) {
+        if (!this.eventRecord_local.startTime)
+          this.eventRecord_local.startTime = new Date().valueOf();
+      } else {
+        if (!this.eventRecord_local.completionTimeEpoch)
+          this.eventRecord_local.completionTimeEpoch = new Date().valueOf();
+      }
     }
     if (hasDuration) {
       this.eventRecord_local.durationInSeconds = 5 * 60; // 5 mins
@@ -384,6 +378,10 @@ export default class RecordWizard extends Vue {
   /* <!-- * ------------------------------ Stepper ------------------------------> */
   moveToStep(destination: number) {
     if (!this.selectedActivity) return; // Disallow if no Activity is selected.
+
+    // TODO P0: change above validation to be generic for all steps
+    //       i.e. if (!isComplete(steps 1 to destination)) ===> then return
+
     if (destination >= this.numberOfSteps) {
       this.stepperPosition = this.numberOfSteps;
     } else if (destination < 0) {
@@ -548,7 +546,7 @@ export default class RecordWizard extends Vue {
             <!-- ? --------------------------------------------- Step 1 ------- Activity selection -->
             <v-stepper-step
               :step="stepsConfig.STEP_1.id"
-              :complete="stepsConfig.STEP_1.isComplete(selectedActivity)"
+              :complete="selectedActivity !== null"
               :rules="stepsConfig.STEP_1.rules"
               @click="onStepClick(stepsConfig.STEP_1.id)"
               class=""
@@ -587,8 +585,6 @@ export default class RecordWizard extends Vue {
             </v-stepper-step>
 
             <v-stepper-content :step="stepsConfig.STEP_1.id" class="pa-1">
-              <!--  -->
-
               <v-card flat max-width="88%" class="pl-1 pa-0 ma-0">
                 <!--  -->
 
@@ -605,12 +601,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               :step="stepsConfig.STEP_2.id"
               :rules="stepsConfig.STEP_2.rules"
-              :complete="
-                stepsConfig.STEP_2.isComplete(
-                  selectedActivity,
-                  eventRecord_local
-                )
-              "
+              :complete="timingProgressSelection !== ''"
               @click="onStepClick(stepsConfig.STEP_2.id)"
               class=""
             >
@@ -624,12 +615,7 @@ export default class RecordWizard extends Vue {
 
               <!-- ? ---------- Subtitle -->
               <span
-                v-if="
-                  stepsConfig.STEP_2.isComplete(
-                    selectedActivity,
-                    eventRecord_local
-                  )
-                "
+                v-if="stepperPosition > stepsConfig.STEP_2.id"
                 class="text-caption font-weight-light"
               >
                 <br />
@@ -643,9 +629,7 @@ export default class RecordWizard extends Vue {
 
                 <span v-if="selectedActivity?.hasDurationMeasurable">
                   Started
-                  {{
-                    getPrettyTimestamp(eventRecord_local.completionTimeEpoch)
-                  }}
+                  {{ getPrettyTimestamp(eventRecord_local.startTime) }}
                 </span>
               </span>
 
@@ -782,7 +766,7 @@ export default class RecordWizard extends Vue {
             </v-stepper-step>
 
             <v-stepper-content :step="stepsConfig.STEP_3.id" class="pa-1">
-              <v-card flat max-width="85%" class="pl-4 pt-3 pa-0 ma-0">
+              <v-card flat max-width="85%" class="pl-4 pt-0 pa-0 ma-0">
                 <v-container>
                   <!--  -->
 
