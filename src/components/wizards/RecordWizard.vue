@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-non-null-assertion -->
 <script lang="ts">
 import ActivityChips from "@/components/chips/ActivityChips.vue";
 import ActivitySelector from "@/components/chips/ActivitySelector.vue";
@@ -22,9 +23,12 @@ import { useIconsStore } from "@/store/IconsStore";
 import { deepCopy } from "deep-copy-ts";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import {
+  addDuration,
+  durationDiff,
   getDurationSince,
   getPrettyDuration,
   getPrettyTimestamp,
+  subtractDuration,
 } from "@/utils/time/TimestampConversionUtils";
 
 /**
@@ -208,55 +212,12 @@ export default class RecordWizard extends Vue {
     }, 1000); // Refreshes every 1 second.
   }
 
-  // get timeElapsed(): string {
-  //   console.log("⏳ Inside durationDisplayText");
-  //   let text = this.getDurationSince();
-  //   return text;
-  // }
-
   get durationDisplayText(): string {
     console.log("⏳ Inside durationDisplayText");
     let text = this.getPrettyDuration(this.eventRecord_local.durationInSeconds);
     if (!text) text = "Click to enter duration";
     return text;
   }
-
-  // getDurationSince(): string {
-  //   const startTime = this.eventRecord_local.startTime;
-  //   console.log("⏳ ⏳ ⏳ Inside getDurationSince; startTime = " + startTime);
-  //   if (!startTime) return "ERROR";
-  //   const startMoment = moment(startTime);
-  //   const now = moment();
-  //   const duration = moment.duration(now.diff(startMoment));
-
-  //   console.log("duration = " + duration);
-
-  //   return this.getPrettyDuration(duration.as("seconds"));
-  // }
-
-  // getPrettyDuration(durationInSeconds?: number): string {
-  //   // TODO P1 --- maybe do this through Moment.js
-  //   // duration();
-
-  //   if (!durationInSeconds) return "";
-  //   let result = "";
-
-  //   if (durationInSeconds < 60) {
-  //     result = durationInSeconds + " seconds";
-  //   } else if (durationInSeconds > 60 && durationInSeconds < 60 * 60) {
-  //     const minutes = Math.floor(durationInSeconds / 60);
-  //     const seconds = Math.floor(durationInSeconds % 60);
-  //     result = minutes + " minutes";
-  //     if (seconds > 0) result += ", " + seconds + " seconds";
-  //   } else {
-  //     const hours = Math.floor(durationInSeconds / (60 * 60));
-  //     const minutes = Math.floor(durationInSeconds % (60 * 60));
-  //     result = hours + " hours";
-  //     if (minutes > 0) result += ", " + minutes + " minutes";
-  //   }
-
-  //   return result;
-  // }
 
   // <!-- * ---------------------------- Lifecycle ---------------------------->
   onShow() {
@@ -316,12 +277,12 @@ export default class RecordWizard extends Vue {
     // Set default timestamps
     if (hasTime) {
       if (hasDuration) this.eventRecord_local.startTime = new Date().valueOf();
-      else this.eventRecord_local.completionTime = new Date().valueOf();
+      else this.eventRecord_local.completionTimeEpoch = new Date().valueOf();
     }
     if (hasDuration) {
       this.eventRecord_local.durationInSeconds = 5 * 60; // 5 mins
       if (hasTime) {
-        this.eventRecord_local.completionTime = new Date(
+        this.eventRecord_local.completionTimeEpoch = new Date(
           new Date().getTime() + 5 * 60 * 1000
         ).valueOf();
       }
@@ -334,7 +295,7 @@ export default class RecordWizard extends Vue {
     );
     console.log(
       "!!!! eventRecord_local.completionTime = " +
-        this.eventRecord_local.completionTime
+        this.eventRecord_local.completionTimeEpoch
     );
 
     // Move to next step
@@ -453,9 +414,15 @@ export default class RecordWizard extends Vue {
     console.log("UPDATING >>>>> Start time in epoch: " + epochTime);
     this.eventRecord_local.startTime = epochTime;
 
-    if (this.selectedActivity?.hasDurationMeasurable) {
-      // TODO P0 ----- Update based on duration
-      this.eventRecord_local.completionTime = "";
+    // ----- Update COMPLETION time, based on duration
+    if (
+      this.selectedActivity?.hasDurationMeasurable &&
+      this.eventRecord_local.durationInSeconds
+    ) {
+      this.eventRecord_local.completionTimeEpoch = addDuration(
+        this.eventRecord_local.startTime,
+        this.eventRecord_local.durationInSeconds
+      );
     }
 
     this.eventRecord_local = deepCopy(this.eventRecord_local); // Force reactive variables to update
@@ -463,11 +430,15 @@ export default class RecordWizard extends Vue {
 
   updateCompletionTimestamp(epochTime: number) {
     console.log("UPDATING >>>>> Completion time in epoch: " + epochTime);
-    this.eventRecord_local.completionTime = epochTime;
+    this.eventRecord_local.completionTimeEpoch = epochTime;
 
+    // ----- Update DURATION
     if (this.selectedActivity?.hasDurationMeasurable) {
       // TODO P0 ----- Update Duration
-      this.eventRecord_local.durationInSeconds = "";
+      this.eventRecord_local.durationInSeconds = durationDiff(
+        this.eventRecord_local.startTime!,
+        this.eventRecord_local.completionTimeEpoch
+      );
     }
 
     this.eventRecord_local = deepCopy(this.eventRecord_local); // Force reactive variables to update
@@ -496,6 +467,9 @@ export default class RecordWizard extends Vue {
   getPrettyTimestamp = getPrettyTimestamp;
   getPrettyDuration = getPrettyDuration;
   getDurationSince = getDurationSince;
+  addDuration = addDuration;
+  subtractDuration = subtractDuration;
+  durationDiff = durationDiff;
 }
 </script>
 
@@ -662,12 +636,16 @@ export default class RecordWizard extends Vue {
                 <!-- TODO P1 ------ Show selected time here. Start time (if hasDurationMeasurable) or Completion time (if hasTimeDuration) -->
                 <span v-if="!selectedActivity?.hasDurationMeasurable">
                   Completed
-                  {{ getPrettyTimestamp(eventRecord_local.completionTime) }}
+                  {{
+                    getPrettyTimestamp(eventRecord_local.completionTimeEpoch)
+                  }}
                 </span>
 
                 <span v-if="selectedActivity?.hasDurationMeasurable">
                   Started
-                  {{ getPrettyTimestamp(eventRecord_local.completionTime) }}
+                  {{
+                    getPrettyTimestamp(eventRecord_local.completionTimeEpoch)
+                  }}
                 </span>
               </span>
 
@@ -690,7 +668,7 @@ export default class RecordWizard extends Vue {
                       <!-- ? ------------------------ COMPLETION TIME picker -->
                       <TimeDatePicker
                         :initialTimestampEpoch="
-                          eventRecord_local.completionTime
+                          eventRecord_local.completionTimeEpoch
                         "
                         v-on:timestamp-updated="updateCompletionTimestamp"
                       />
@@ -818,22 +796,29 @@ export default class RecordWizard extends Vue {
                   </v-row>
 
                   <!-- ? ----- Case 2: In progress -->
-                  <v-row v-if="timingProgressSelection === `inProgress`">
+                  <span v-if="timingProgressSelection === `inProgress`">
                     <!--  -->
+                    <v-row>
+                      <v-col cols="" class="pl-1 pt-0">
+                        <span>In progress</span>
+                      </v-col>
+                    </v-row>
 
                     <!-- ? ------------ Live timer -->
-                    <v-col cols="" class="pa-auto pt-0">
-                      <!-- TODO P1 ---- onClick should open a dialog to enter duration -->
-                      <span
-                        class="pa-0 font-weight-light"
-                        style="font-size: 42"
-                      >
-                        ⏳ {{ timeElapsed }}
-                      </span>
+                    <v-row>
+                      <v-col cols="" class="pl-1 pt-0">
+                        <!-- TODO P1 ---- onClick should open a dialog to enter duration -->
+                        <span
+                          class="pa-0 font-weight-light"
+                          style="font-size: 42"
+                        >
+                          ⏳ {{ timeElapsed }}
+                        </span>
 
-                      <!--  -->
-                    </v-col>
-                  </v-row>
+                        <!--  -->
+                      </v-col>
+                    </v-row>
+                  </span>
 
                   <!-- ? ----- Case 3: Already done -->
                   <v-row v-if="timingProgressSelection === `doneAlready`">
@@ -858,7 +843,7 @@ export default class RecordWizard extends Vue {
 
                         <TimeDatePicker
                           :initialTimestampEpoch="
-                            eventRecord_local.completionTime
+                            eventRecord_local.completionTimeEpoch
                           "
                           v-on:timestamp-updated="updateCompletionTimestamp"
                         />
@@ -901,7 +886,7 @@ export default class RecordWizard extends Vue {
               >
                 <br />
                 <!-- TODO P2 ------ Show how many required measurables have been provided v/s missing. -->
-                <span> WIP. </span>
+                <span> 2 required, 1 optional [WIP] </span>
               </span>
 
               <!--  -->
