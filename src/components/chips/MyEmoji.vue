@@ -28,7 +28,7 @@ export default class MyEmoji extends Vue {
     <Emoji
       :data="emojiStore.getEmojiIndex()"
       :emoji="emojiString"
-      :size="emojiSize ? emojiSize : defaultEmojiSize"
+      :size="emojiSize ? parseInt(emojiSize) : defaultEmojiSize"
       :native="true"
     />
   </div>

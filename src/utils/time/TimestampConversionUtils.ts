@@ -10,6 +10,20 @@ export function getPrettyTimestamp(epochTimestamp?: number): string {
   return moment(date).fromNow();
 }
 
+export function getTimeWithRelativeDate(epochTimestamp?: number): string {
+  if (!epochTimestamp) return "";
+  return moment(epochTimestamp).calendar(null, {
+    lastDay: "[Yesterday at] LT",
+    sameDay: "[Today at] LT",
+    nextDay: "[Tomorrow at] LT",
+    lastWeek: "[last] dddd [at] LT",
+    nextWeek: "dddd [at] LT",
+    sameElse: "MMM Do [at] LT",
+  });
+
+  // return moment(new Date(epochTimestamp)).fromNow() + getTimeFromEpoch(epochTimestamp);
+}
+
 /**
  * Extracts time.
  * @param epochTimestamp

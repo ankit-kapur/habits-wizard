@@ -1,9 +1,21 @@
 import { MeasurableType } from "@/model/enum/MeasurableType";
 import MeasurableDefinition from "@/model/pojo/definitions/MeasurableDefinition";
 
+// ------------- Implicit measurables
+// These don't get counted as "Metrics"
+export const DURATION_MEASURABLE_ID = "duration";
+export const START_TIME_MEASURABLE_ID = "startTime";
+export const COMPLETION_TIME_MEASURABLE_ID = "completionTime";
+
+export const IMPLICIT_MEASURABLE_ID_LIST = [
+  DURATION_MEASURABLE_ID,
+  START_TIME_MEASURABLE_ID,
+  COMPLETION_TIME_MEASURABLE_ID,
+];
+
 export const getDefaultMeasurables = [
   {
-    id: "duration",
+    id: DURATION_MEASURABLE_ID,
     title: "Duration",
     type: MeasurableType.Duration,
     baseUnitName: "minutes",
@@ -42,7 +54,7 @@ export const getDefaultMeasurables = [
   //   baseUnitEmoji: ":hourglass_flowing_sand:", // ⏳
   // },
   {
-    id: "completionTime",
+    id: COMPLETION_TIME_MEASURABLE_ID,
     title: "Done at Time",
     type: MeasurableType.Timestamp,
     baseUnitName: "",

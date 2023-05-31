@@ -6,7 +6,6 @@ import CategoryChips from "@/components/chips/CategoryChips.vue";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import TimeDatePicker from "@/components/picker/TimeDatePicker.vue";
 import {
-  defaultNewActivity,
   defaultNewArea,
   defaultNewEventRecord,
 } from "@/constants/DefaultDataForForms";
@@ -15,7 +14,6 @@ import Activity from "@/model/pojo/definitions/Activity";
 import { Area } from "@/model/pojo/definitions/Area";
 import CategoryTag from "@/model/pojo/definitions/CategoryTag";
 import EventRecord from "@/model/pojo/records/EventRecord";
-import { useActivitiesStore } from "@/store/ActivitiesStore";
 import { useAreasStore } from "@/store/AreasStore";
 import { useCategoryTagsStore } from "@/store/CategoryTagsStore";
 import { useEventRecordsStore } from "@/store/EventRecordsStore";
@@ -28,8 +26,11 @@ import {
   getDurationSince,
   getPrettyDuration,
   getPrettyTimestamp,
+  getTimeWithRelativeDate,
   subtractDuration,
 } from "@/utils/time/TimestampConversionUtils";
+import { IMPLICIT_MEASURABLE_ID_LIST } from "@/constants/DefaultMeasurables";
+import MetricsForm from "@/components/forms/MetricsForm.vue";
 
 /**
  * TODO P1 ----- Add validations.
@@ -42,6 +43,7 @@ import {
     ActivityChips: ActivityChips,
     ActivitySelector: ActivitySelector,
     TimeDatePicker: TimeDatePicker,
+    MetricsForm: MetricsForm,
   },
   methods: {},
 })
@@ -77,7 +79,7 @@ export default class RecordWizard extends Vue {
   iconsStore = useIconsStore();
   areasStore = useAreasStore();
   categoriesStore = useCategoryTagsStore();
-  activitiesStore = useActivitiesStore();
+  // activitiesStore = useActivitiesStore();
   eventRecordsStore = useEventRecordsStore();
 
   mounted() {
@@ -87,7 +89,7 @@ export default class RecordWizard extends Vue {
 
   /* <!-- ? ------------------------------ Data ------------------------------> */
   eventRecord_local: EventRecord = deepCopy(defaultNewEventRecord);
-  activity_local: Activity = deepCopy(defaultNewActivity);
+  // activity_local: Activity = deepCopy(defaultNewActivity);
   area: Area = deepCopy(defaultNewArea); // Temporary
   showDialog_local = false;
   selectedActivity: Activity | null = null;
@@ -97,6 +99,7 @@ export default class RecordWizard extends Vue {
   showDeleteConfirmDialog = false;
   showSearchBar = false;
   searchInput = "";
+  visitedSteps: number[] = [];
 
   // Time-related
   timingProgressSelection = ""; // Whether in the past or in progress or yet to start.
@@ -249,6 +252,9 @@ export default class RecordWizard extends Vue {
     this.disabledSteps = []; // Reset
     if (!this.selectedActivity) return; // If nothing's selected.
 
+    // Update area
+    this.area = this.areasStore.getAreaById(this.selectedActivity.areaId);
+
     const hasTime = this.selectedActivity.hasTimeMeasurable;
     const hasDuration = this.selectedActivity.hasDurationMeasurable;
 
@@ -309,6 +315,7 @@ export default class RecordWizard extends Vue {
   resetToDefaultState() {
     // Stepper
     this.stepperPosition = 1;
+    this.visitedSteps = [];
 
     // Reset fields
     this.selectedActivity = null;
@@ -386,9 +393,11 @@ export default class RecordWizard extends Vue {
       this.stepperPosition = this.numberOfSteps;
     } else if (destination < 0) {
       this.stepperPosition = this.numberOfSteps - 1;
-    } else {
       this.stepperPosition = destination;
     }
+
+    // Mark as visited
+    this.visitedSteps.push(this.stepperPosition);
   }
 
   moveToNextStep() {
@@ -461,9 +470,54 @@ export default class RecordWizard extends Vue {
       this.stepperPosition = stepNumber;
   }
 
+  /* <!-- * ------------------------------ Metrics ------------------------------> */
+  get metricsSubtitleText() {
+    const requiredMeasurables = this.getRequiredMeasurables();
+    const optionalMeasurables = this.getOptionalMeasurables();
+    var text = "";
+    if (requiredMeasurables.length > 0)
+      text += requiredMeasurables.length + " required";
+    if (requiredMeasurables.length > 0 && optionalMeasurables.length > 0)
+      text += ", ";
+    if (optionalMeasurables.length > 0)
+      text += optionalMeasurables.length + " optional";
+    return text;
+  }
+
+  getExplicitMeasurables() {
+    if (!this.selectedActivity) return [];
+
+    console.log("SCOTY = " + JSON.stringify(this.selectedActivity.measurables));
+
+    return this.selectedActivity.measurables.filter(
+      (m) => !IMPLICIT_MEASURABLE_ID_LIST.includes(m.measurableDefinitionId)
+    );
+  }
+
+  getRequiredMeasurables() {
+    const idList = this.getExplicitMeasurables()
+      .filter((activity) => activity.isRequired)
+      .map((m) => m.measurableDefinitionId);
+
+    return this.area.measurableDefinitions.filter((measurable) =>
+      idList.includes(measurable.id)
+    );
+  }
+
+  getOptionalMeasurables() {
+    const idList = this.getExplicitMeasurables()
+      .filter((activity) => !activity.isRequired)
+      .map((m) => m.measurableDefinitionId);
+
+    return this.area.measurableDefinitions.filter((measurable) =>
+      idList.includes(measurable.id)
+    );
+  }
+
   /* <!-- * ------------------------------ Method imports ------------------------------> */
   getPrettyTimestamp = getPrettyTimestamp;
   getPrettyDuration = getPrettyDuration;
+  getTimeWithRelativeDate = getTimeWithRelativeDate;
   getDurationSince = getDurationSince;
   addDuration = addDuration;
   subtractDuration = subtractDuration;
@@ -474,6 +528,7 @@ export default class RecordWizard extends Vue {
 <template>
   <div class="">
     <v-bottom-sheet
+      scrollable
       v-model="showDialog_local"
       inset
       max-width="600"
@@ -621,15 +676,17 @@ export default class RecordWizard extends Vue {
                 <br />
                 <!-- TODO P1 ------ Show selected time here. Start time (if hasDurationMeasurable) or Completion time (if hasTimeDuration) -->
                 <span v-if="!selectedActivity?.hasDurationMeasurable">
-                  Completed
+                  Completed:
                   {{
-                    getPrettyTimestamp(eventRecord_local.completionTimeEpoch)
+                    getTimeWithRelativeDate(
+                      eventRecord_local.completionTimeEpoch
+                    )
                   }}
                 </span>
 
                 <span v-if="selectedActivity?.hasDurationMeasurable">
-                  Started
-                  {{ getPrettyTimestamp(eventRecord_local.startTime) }}
+                  Started:
+                  {{ getTimeWithRelativeDate(eventRecord_local.startTime) }}
                 </span>
               </span>
 
@@ -870,7 +927,7 @@ export default class RecordWizard extends Vue {
               >
                 <br />
                 <!-- TODO P2 ------ Show how many required measurables have been provided v/s missing. -->
-                <span> 2 required, 1 optional [WIP] </span>
+                <span> {{ metricsSubtitleText }} </span>
               </span>
 
               <!--  -->
@@ -879,10 +936,37 @@ export default class RecordWizard extends Vue {
             <v-stepper-content :step="stepsConfig.STEP_4.id" class="pa-1">
               <v-card flat max-width="85%" class="pl-3 pa-0 ma-0">
                 <!--  -->
+                <!-- * ---------------------------------------- Required -->
+                <v-container v-if="getRequiredMeasurables().length > 0">
+                  <v-row>
+                    <v-col style="color: darkslategray"> Required </v-col>
+                  </v-row>
 
-                <!-- TODO ------------ Implement -->
-                <!-- Make a new component. 2 sections: Required and Optional -->
+                  <v-divider />
 
+                  <MetricsForm
+                    v-model="eventRecord_local.metrics"
+                    :measurables="getRequiredMeasurables()"
+                  />
+                </v-container>
+
+                <!-- * ---------------------------------------- Optional -->
+                <v-container v-if="getOptionalMeasurables().length > 0">
+                  <v-row>
+                    <v-col style="color: darkslategray"> Optional </v-col>
+                  </v-row>
+
+                  <v-divider />
+
+                  <MetricsForm
+                    v-model="eventRecord_local.metrics"
+                    :measurables="getOptionalMeasurables()"
+                  />
+
+                  <v-row>
+                    <v-col> </v-col>
+                  </v-row>
+                </v-container>
                 <!--  -->
               </v-card>
             </v-stepper-content>
