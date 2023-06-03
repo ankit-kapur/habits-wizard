@@ -59,7 +59,6 @@ export default class RecordWizard extends Vue {
   /* <!-- ? ------------------------------ Watchers ------------------------------> */
   @Watch("showDialog")
   onPropertyChanged(_newValue: string) {
-    console.log("👀 @Watch in RecordWizard. showDialog = " + _newValue);
     const isDialogOpen = !!_newValue;
     if (isDialogOpen) {
       this.onShow();
@@ -73,6 +72,16 @@ export default class RecordWizard extends Vue {
   onLocalDisplayStateChange(_newValue: string) {
     const isDialogOpen = !!_newValue;
     if (!isDialogOpen) this.closeViaParent();
+  }
+
+  @Watch("eventRecord_local.metrics")
+  onEventRecordLocalChange(_newValue: Map<string, string>) {
+    //
+    // TODO: Why is this only getting called on load?
+
+    console.log(
+      "🐳 eventRecord_local WAS CHANGED: " + JSON.stringify(_newValue)
+    );
   }
 
   /* <!-- ? ------------------------------ Stores ------------------------------> */
@@ -137,35 +146,11 @@ export default class RecordWizard extends Vue {
     STEP_3: {
       id: 3,
       title: "Duration",
-      isComplete: function (
-        selectedActivity: Activity | null,
-        eventRecord: EventRecord
-      ) {
-        // TODO P0 ----- Decide logic.
-        // return (
-        //   (selectedActivity?.hasTimeMeasurable &&
-        //     eventRecord?.completionTime) ||
-        //   (selectedActivity?.hasDurationMeasurable &&
-        //     eventRecord?.startTime &&
-        //     eventRecord?.durationInSeconds)
-        // );
-        return false;
-        console.log("" + selectedActivity + eventRecord);
-      },
       rules: [() => true],
     },
     STEP_4: {
       id: 4,
       title: "Metrics",
-      isComplete: function (
-        selectedActivity: Activity | null,
-        eventRecord: EventRecord
-      ) {
-        // <!-- TODO P1 ------- All REQUIRED measurables must be provided. -->
-        // TODO P0 ----- Decide logic.
-        return false;
-        console.log("" + selectedActivity + eventRecord);
-      },
       rules: [() => true],
     },
   };
@@ -249,7 +234,9 @@ export default class RecordWizard extends Vue {
   onActivitySelect(providedActivity: Activity) {
     this.selectedActivity = providedActivity;
 
-    this.disabledSteps = []; // Reset
+    // Reset
+    this.disabledSteps = [];
+    this.visitedSteps = [];
     if (!this.selectedActivity) return; // If nothing's selected.
 
     // Update area
@@ -322,6 +309,8 @@ export default class RecordWizard extends Vue {
     if (this.dialogMode === DialogMode.CREATE) {
       this.eventRecord_local = deepCopy(defaultNewEventRecord);
     }
+
+    this.eventRecord_local = deepCopy(defaultNewEventRecord);
   }
 
   respondToDiscardConfirm(isConfirmed: boolean): void {
@@ -339,6 +328,49 @@ export default class RecordWizard extends Vue {
   isValidEventRecord() {
     // TODO ---- Actually validate
     return false;
+  }
+
+  isStepComplete(stepNumber: number): boolean {
+    let result = !this.disabledSteps.includes(stepNumber);
+    switch (stepNumber) {
+      case 1: {
+        result &&= this.selectedActivity !== null;
+        break;
+      }
+      case 2: {
+        // Time
+        result &&= this.visitedSteps.includes(stepNumber);
+        break;
+      }
+      case 3: {
+        // Duration
+        result &&= this.visitedSteps.includes(stepNumber);
+        break;
+      }
+      case 4: {
+        // Metrics
+        const requiredMetricIDs: string[] = this.getRequiredMeasurables().map(
+          (m) => m.id
+        );
+
+        // What's been recorded so far.
+        let recordedMetricIDs: string[] = [];
+        this.eventRecord_local.metrics.forEach((key) =>
+          recordedMetricIDs.push(key)
+        );
+        recordedMetricIDs = Object.keys(this.eventRecord_local.metrics);
+
+        result &&=
+          this.selectedActivity !== null &&
+          requiredMetricIDs.every((m) => recordedMetricIDs.includes(m));
+        break;
+      }
+      default: {
+        return false;
+      }
+    }
+    console.log("isStepComplete for " + stepNumber + ". Result = " + result);
+    return result;
   }
 
   // <!-- * ---------------------------- Store actions ---------------------------->
@@ -393,10 +425,12 @@ export default class RecordWizard extends Vue {
       this.stepperPosition = this.numberOfSteps;
     } else if (destination < 0) {
       this.stepperPosition = this.numberOfSteps - 1;
+    } else {
       this.stepperPosition = destination;
     }
 
     // Mark as visited
+    console.log("MARKING AS VISITED ---> " + this.stepperPosition);
     this.visitedSteps.push(this.stepperPosition);
   }
 
@@ -487,8 +521,6 @@ export default class RecordWizard extends Vue {
   getExplicitMeasurables() {
     if (!this.selectedActivity) return [];
 
-    console.log("SCOTY = " + JSON.stringify(this.selectedActivity.measurables));
-
     return this.selectedActivity.measurables.filter(
       (m) => !IMPLICIT_MEASURABLE_ID_LIST.includes(m.measurableDefinitionId)
     );
@@ -531,7 +563,7 @@ export default class RecordWizard extends Vue {
       scrollable
       v-model="showDialog_local"
       inset
-      max-width="600"
+      max-width="400"
       overlay-opacity="0.88"
       :persistent="hasChanged"
       @keydown.esc="triggerCancellation"
@@ -601,7 +633,7 @@ export default class RecordWizard extends Vue {
             <!-- ? --------------------------------------------- Step 1 ------- Activity selection -->
             <v-stepper-step
               :step="stepsConfig.STEP_1.id"
-              :complete="selectedActivity !== null"
+              :complete="isStepComplete(stepsConfig.STEP_1.id)"
               :rules="stepsConfig.STEP_1.rules"
               @click="onStepClick(stepsConfig.STEP_1.id)"
               class=""
@@ -656,7 +688,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               :step="stepsConfig.STEP_2.id"
               :rules="stepsConfig.STEP_2.rules"
-              :complete="timingProgressSelection !== ''"
+              :complete="isStepComplete(stepsConfig.STEP_2.id)"
               @click="onStepClick(stepsConfig.STEP_2.id)"
               class=""
             >
@@ -767,12 +799,7 @@ export default class RecordWizard extends Vue {
             <!-- ? --------------------------------------------- Step 3 ------- Duration -->
             <v-stepper-step
               :step="stepsConfig.STEP_3.id"
-              :complete="
-                stepsConfig.STEP_3.isComplete(
-                  selectedActivity,
-                  eventRecord_local
-                )
-              "
+              :complete="isStepComplete(stepsConfig.STEP_3.id)"
               :rules="stepsConfig.STEP_3.rules"
               @click="onStepClick(stepsConfig.STEP_3.id)"
               class=""
@@ -903,12 +930,7 @@ export default class RecordWizard extends Vue {
             <v-stepper-step
               :step="stepsConfig.STEP_4.id"
               :rules="stepsConfig.STEP_4.rules"
-              :complete="
-                stepsConfig.STEP_4.isComplete(
-                  selectedActivity,
-                  eventRecord_local
-                )
-              "
+              :complete="isStepComplete(stepsConfig.STEP_4.id)"
               @click="onStepClick(stepsConfig.STEP_4.id)"
               class=""
             >

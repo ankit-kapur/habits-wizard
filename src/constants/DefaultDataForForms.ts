@@ -46,5 +46,5 @@ export const defaultNewEventRecord: EventRecord = {
   areaId: "",
   tags: [],
   isRecordComplete: false,
-  metrics: new Map(),
+  metrics: new Map<string, string>(),
 };
