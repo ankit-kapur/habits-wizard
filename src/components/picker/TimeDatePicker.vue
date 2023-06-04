@@ -15,7 +15,7 @@ export default class TimeDatePicker extends Vue {
 
   // ------------------------------------------------ Props
   @Prop()
-  initialTimestampEpoch!: number;
+  initialTimestampEpoch?: number;
 
   /* <!-- ? ------------------------------ Data ------------------------------> */
   showTimePicker = false;
@@ -33,6 +33,18 @@ export default class TimeDatePicker extends Vue {
     );
   }
 
+  @Watch("showTimePicker")
+  onShowTimePicker(show: boolean) {
+    console.log("👀 @Watch in showTimePicker. VALUE = " + show);
+    if (show) {
+      this.selectedTime = getTimeFromEpoch(
+        this.initialTimestampEpoch
+          ? this.initialTimestampEpoch
+          : new Date().valueOf()
+      );
+    }
+  }
+
   /* <!-- ? ------------------------------ Lifecycle ------------------------------> */
   mounted() {
     this.resetState();
@@ -45,8 +57,14 @@ export default class TimeDatePicker extends Vue {
       "Inside resetState. initialTimestamp = " + this.initialTimestampEpoch
     );
 
-    this.selectedTime = getTimeFromEpoch(this.initialTimestampEpoch);
-    this.selectedDate = getDateFromEpoch_ISO8601(this.initialTimestampEpoch);
+    this.selectedTime = this.initialTimestampEpoch
+      ? getTimeFromEpoch(this.initialTimestampEpoch)
+      : "";
+
+    const timestampEpoch = this.initialTimestampEpoch
+      ? this.initialTimestampEpoch
+      : new Date().valueOf();
+    this.selectedDate = getDateFromEpoch_ISO8601(timestampEpoch);
   }
 
   saveSelectedTime() {
@@ -79,6 +97,7 @@ export default class TimeDatePicker extends Vue {
 
   /* <!-- ? ------------------------------ Computed props ------------------------------> */
   get timePrettyFormatted() {
+    if (!this.selectedTime) return "";
     var split = this.selectedTime.split(":");
     let hours: number = parseInt(split[0]);
     let minutes = split[1];
@@ -126,14 +145,14 @@ export default class TimeDatePicker extends Vue {
         </template>
 
         <!-- ? ---------------- Time picker dialog -->
-        <v-time-picker
-          v-if="showTimePicker"
-          v-model="selectedTime"
-          full-width
-          scrollable
-          @click:minute="saveSelectedTime"
-          elevation="15"
-        />
+        <v-card v-if="showTimePicker" elevation="15">
+          <v-time-picker v-model="selectedTime" full-width scrollable />
+          <v-card-actions>
+            <v-btn @click="showTimePicker = false" outlined text>Cancel</v-btn>
+            <v-spacer />
+            <v-btn @click="saveSelectedTime" color="primary">Save</v-btn>
+          </v-card-actions>
+        </v-card>
 
         <!--  -->
       </v-menu>

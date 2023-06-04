@@ -111,7 +111,7 @@ export default class RecordWizard extends Vue {
   visitedSteps: number[] = [];
 
   // Time-related
-  timingProgressSelection = ""; // Whether in the past or in progress or yet to start.
+  timingProgressSelection = "notStarted"; // Whether in the past or in progress or yet to start.
   durationInMinutes = 1;
 
   // Stepper
@@ -257,15 +257,16 @@ export default class RecordWizard extends Vue {
     console.log("!!!! hasDuration = " + hasDuration);
 
     // Set default timestamps
-    if (hasTime) {
-      if (hasDuration) {
-        if (!this.eventRecord_local.startTime)
-          this.eventRecord_local.startTime = new Date().valueOf();
-      } else {
-        if (!this.eventRecord_local.completionTimeEpoch)
-          this.eventRecord_local.completionTimeEpoch = new Date().valueOf();
-      }
-    }
+    // if (hasTime) {
+    //   if (hasDuration) {
+    //     if (!this.eventRecord_local.startTime)
+    //       this.eventRecord_local.startTime = new Date().valueOf();
+    //   } else {
+    //     if (!this.eventRecord_local.completionTimeEpoch)
+    //       this.eventRecord_local.completionTimeEpoch = new Date().valueOf();
+    //   }
+    // }
+
     if (hasDuration) {
       this.eventRecord_local.durationInSeconds = 5 * 60; // 5 mins
       if (hasTime) {
@@ -276,14 +277,6 @@ export default class RecordWizard extends Vue {
     }
     // Bounce to trigger reactive variables to update.
     this.eventRecord_local = deepCopy(this.eventRecord_local);
-
-    console.log(
-      "!!!! eventRecord_local.startTime = " + this.eventRecord_local.startTime
-    );
-    console.log(
-      "!!!! eventRecord_local.completionTime = " +
-        this.eventRecord_local.completionTimeEpoch
-    );
 
     // Move to next step
     if (this.selectedActivity) this.moveToNextStep();
@@ -325,13 +318,38 @@ export default class RecordWizard extends Vue {
   }
 
   // <!-- * ---------------------------- Validations ---------------------------->
-  isValidEventRecord() {
-    // TODO ---- Actually validate
-    return false;
+  isSaveButtonEnabled() {
+    if (!this.selectedActivity) return false;
+    if (
+      this.timingProgressSelection === "notStarted" &&
+      this.visitedSteps.includes(this.stepsConfig.STEP_2.id)
+    )
+      return true;
+
+    // Every step must either be complete or disabled.
+    let completedStepsCount = 0;
+    [...Array(this.numberOfSteps)].forEach(
+      (_, i) => (completedStepsCount += this.isStepComplete(i) ? 1 : 0)
+    );
+
+    // Note: Last step (Metrics) doesn't need to be complete. Even required params can be provided later.
+    return (
+      this.numberOfSteps - 1 === this.disabledSteps.length + completedStepsCount
+    );
   }
 
   isStepComplete(stepNumber: number): boolean {
+    // Disabled steps should never show as Complete.
     let result = !this.disabledSteps.includes(stepNumber);
+
+    const isVisited = this.visitedSteps.includes(stepNumber);
+    const hasDuration =
+      this.selectedActivity && this.selectedActivity!.hasDurationMeasurable;
+    const notStartedCase = this.timingProgressSelection === "notStarted";
+    const startedInThePast =
+      this.timingProgressSelection === "inProgress" ||
+      this.timingProgressSelection === "doneAlready";
+
     switch (stepNumber) {
       case 1: {
         result &&= this.selectedActivity !== null;
@@ -339,12 +357,26 @@ export default class RecordWizard extends Vue {
       }
       case 2: {
         // Time
-        result &&= this.visitedSteps.includes(stepNumber);
+
+        // TODO: Make this logic work
+
+        // result &&=
+        //   isVisited &&
+        //   ((hasDuration && isStartTimeSet) ||
+        //     (!hasDuration && isCompletionTimeSet));
+
+        return true;
         break;
       }
       case 3: {
         // Duration
-        result &&= this.visitedSteps.includes(stepNumber);
+        if (this.selectedActivity === null) {
+          result = false;
+          break;
+        }
+        result &&=
+          !hasDuration ||
+          (hasDuration && isVisited && (notStartedCase || startedInThePast));
         break;
       }
       case 4: {
@@ -369,7 +401,6 @@ export default class RecordWizard extends Vue {
         return false;
       }
     }
-    console.log("isStepComplete for " + stepNumber + ". Result = " + result);
     return result;
   }
 
@@ -1039,10 +1070,14 @@ export default class RecordWizard extends Vue {
           <v-btn
             color="primary"
             @click="saveEventRecord"
-            :disabled="!isValidEventRecord()"
+            :disabled="!isSaveButtonEnabled()"
           >
             {{
-              timingProgressSelection === `notStarted` ? `Start Now` : `Save`
+              selectedActivity !== null &&
+              selectedActivity.hasDurationMeasurable &&
+              timingProgressSelection === `notStarted`
+                ? `Start Now`
+                : `Save`
             }}
           </v-btn>
         </v-card-actions>
