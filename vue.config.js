@@ -5,4 +5,7 @@ module.exports = defineConfig({
   devServer: {
     allowedHosts: "all",
   },
+  // configureWebpack: {
+  //   devtool: "source-map",
+  // },
 });

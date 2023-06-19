@@ -60,6 +60,11 @@ const router = new VueRouter({
 const googleAuth = getAuth();
 router.beforeEach(async (to, from, next) => {
   await authStatus;
+
+  // ? Temporary hack to make VS code debugger work.
+  //    console.log(googleAuth);
+  //    next();
+
   if (!googleAuth.currentUser && to.name !== "Login") next("/login");
   else next();
 });

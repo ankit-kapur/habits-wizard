@@ -22,5 +22,8 @@ export const authStatus = new Promise<void>((resolve, reject) => {
 });
 
 export function getCurrentUserId() {
+  // ? Temp hack for debugging in the VS code browser. Find a workaround.
+  // return "GXJp8WU1C1SYrEYsU9szN2E0ncH2";
+
   return googleAuth.currentUser?.uid;
 }

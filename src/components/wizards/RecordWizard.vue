@@ -208,11 +208,8 @@ export default class RecordWizard extends Vue {
 
     // Edit mode
     if (this.dialogMode === DialogMode.EDIT) {
-      // Disable "Activity" and "Status" steps
-      this.disabledSteps.push(
-        this.stepsConfig.STEP_1.id,
-        this.stepsConfig.STEP_2.id
-      );
+      // Disable "Activity" steps
+      this.disabledSteps.push(this.stepsConfig.STEP_1.id);
 
       // Don't start at 1st step.
       this.moveToNextStep();
@@ -356,7 +353,7 @@ export default class RecordWizard extends Vue {
         break;
       }
       case 2: {
-        // Time
+        // "Time" step.
 
         // TODO: Make this logic work
 
@@ -365,7 +362,9 @@ export default class RecordWizard extends Vue {
         //   ((hasDuration && isStartTimeSet) ||
         //     (!hasDuration && isCompletionTimeSet));
 
-        return true;
+        // TODO: Remove. temporary.
+        return isVisited;
+
         break;
       }
       case 3: {
